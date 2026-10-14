@@ -38,7 +38,6 @@
     [hidden] { display: none !important; }
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-    /* ===== شاشة تحقق (جلسة) ===== */
     .page { min-height: 100vh; display: grid; place-items: center; padding: 32px 16px; }
     .loading { display: grid; justify-items: center; gap: 16px; color: var(--muted); font-size: 15px; text-align:center; }
     .loading p { margin: 0; }
@@ -50,7 +49,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ===== الشريط العلوي ===== */
     .topbar {
       position: sticky; top: 0; z-index: 20;
       background: var(--surface); border-bottom: 1px solid var(--border);
@@ -80,7 +78,6 @@
       font-size: 11px; font-weight: 600; line-height: 18px; text-align: center;
     }
 
-    /* ===== قائمة الإشعارات ===== */
     .notif-wrap { position: relative; }
     .notif-panel {
       position: absolute; top: calc(100% + 8px); inset-inline-end: 0;
@@ -121,7 +118,6 @@
     }
     .logout-link:hover { text-decoration: underline; }
 
-    /* ===== محتوى ===== */
     .container { max-width: 1080px; margin: 0 auto; padding: 24px 18px 48px; }
     .hero {
       background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
@@ -152,7 +148,6 @@
 </head>
 <body>
 
-  <!-- شاشة التحقق الأولية -->
   <div class="page" id="bootView">
     <div class="loading">
       <div class="loader" aria-hidden="true"></div>
@@ -160,7 +155,6 @@
     </div>
   </div>
 
-  <!-- الصفحة الرئيسية -->
   <div id="appView" hidden>
     <header class="topbar">
       <div class="brand">
@@ -210,7 +204,9 @@
   <script>
     var SUPABASE_URL = "https://gcumvhqxcbgtedqnuzvr.supabase.co";
     var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
-    var LOGIN_PAGE = "login.html";
+
+    /* ====== الأسماء معكوسة ====== */
+    var LOGIN_PAGE = "index.html";   // صفحة تسجيل الدخول
 
     (function () {
       var bootView = document.getElementById("bootView");
@@ -239,7 +235,6 @@
         bootView.hidden = true;
         appView.hidden  = false;
 
-        // احفظ بيانات المستخدم لتستخدمها صفحة الدخول
         if (session && session.user) {
           var u = session.user, m = u.user_metadata || {};
           try {
@@ -255,16 +250,12 @@
         }
       }
 
-      /* ===== زر الخروج ===== */
       document.getElementById("logoutBtn").addEventListener("click", async function () {
-        // نعمل signOut لكن بنسيب qb-last-user عشان الدخول التلقائي
         try { await sb.auth.signOut(); } catch (e) {}
-        // امسح أي علامة محاولة تلقائية قديمة
         try { sessionStorage.removeItem("qb-auto-attempted"); } catch (e) {}
         goLogin();
       });
 
-      /* ===== زر الوضع فاتح/داكن ===== */
       var themeBtn = document.getElementById("themeBtn");
       function currentTheme() {
         var attr = document.documentElement.getAttribute("data-theme");
@@ -285,7 +276,6 @@
       });
       paintThemeIcon();
 
-      /* ===== الإشعارات ===== */
       var NOTIFS = [
         { title: "تم إضافة بنك أسئلة جديد", time: "قبل 5 دقايق" },
         { title: "نتيجتك في كويز الأحياء: 85%", time: "قبل ساعتين" },
@@ -314,35 +304,26 @@
         }
         var shown = expanded ? NOTIFS : NOTIFS.slice(0, VISIBLE_COUNT);
         shown.forEach(function (n) {
-          var li = document.createElement("li");
-          li.className = "notif-item";
-
+          var li = document.createElement("li"); li.className = "notif-item";
           var dot = document.createElement("span"); dot.className = "notif-dot";
-
           var body  = document.createElement("div"); body.className = "notif-body";
           var title = document.createElement("div"); title.className = "notif-title"; title.textContent = n.title;
           var time  = document.createElement("div"); time.className  = "notif-time";  time.textContent  = n.time;
-
           body.appendChild(title); body.appendChild(time);
           li.appendChild(dot); li.appendChild(body);
           notifList.appendChild(li);
         });
-
         if (NOTIFS.length > VISIBLE_COUNT) {
           notifMore.hidden = false;
           notifMore.textContent = expanded ? "عرض أقل" : "عرض المزيد";
-        } else {
-          notifMore.hidden = true;
-        }
+        } else notifMore.hidden = true;
       }
       function updateBadge() {
-        if (NOTIFS.length > 0) {
-          notifBadge.hidden = false;
-          notifBadge.textContent = String(NOTIFS.length);
-        } else notifBadge.hidden = true;
+        if (NOTIFS.length > 0) { notifBadge.hidden = false; notifBadge.textContent = String(NOTIFS.length); }
+        else notifBadge.hidden = true;
       }
-      function openNotif() { expanded = false; renderNotifs(); notifPanel.hidden = false; notifBtn.setAttribute("aria-expanded","true"); }
-      function closeNotif(){ notifPanel.hidden = true; notifBtn.setAttribute("aria-expanded","false"); }
+      function openNotif(){ expanded=false; renderNotifs(); notifPanel.hidden=false; notifBtn.setAttribute("aria-expanded","true"); }
+      function closeNotif(){ notifPanel.hidden=true; notifBtn.setAttribute("aria-expanded","false"); }
       function toggleNotif(){ notifPanel.hidden ? openNotif() : closeNotif(); }
 
       notifBtn.addEventListener("click", function (e) { e.stopPropagation(); toggleNotif(); });
@@ -356,14 +337,12 @@
       updateBadge();
       renderNotifs();
 
-      /* ===== التحقق من الجلسة أول ما الصفحة تفتح ===== */
       (async function init() {
         var session = null;
         try {
           var r = await sb.auth.getSession();
           session = r.data && r.data.session;
         } catch (e) {}
-
         if (!session) { goLogin(); return; }
         showApp(session);
       })();

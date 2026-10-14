@@ -10,9 +10,15 @@
 
   <style>
     :root {
-      --bg: #f6f8fa; --surface: #ffffff; --surface-2: #f6f8fa;
-      --fg: #1f2328; --muted: #59636e; --border: #d1d9e0;
-      --accent: #0969da; --accent-fg: #ffffff; --danger: #cf222e;
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --surface-2: #f6f8fa;
+      --fg: #1f2328;
+      --muted: #59636e;
+      --border: #d1d9e0;
+      --accent: #0969da;
+      --accent-fg: #ffffff;
+      --danger: #cf222e;
       --font-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
     }
     @media (prefers-color-scheme: dark) {
@@ -29,6 +35,7 @@
       --accent: #4493f8; --accent-fg: #0d1117; --danger: #f85149;
       color-scheme: dark;
     }
+
     * { box-sizing: border-box; }
     html, body { min-height: 100%; }
     body {
@@ -39,14 +46,16 @@
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     .page { min-height: 100vh; display: grid; place-items: center; padding: 32px 16px; }
-    .loading { display: grid; justify-items: center; gap: 16px; color: var(--muted); font-size: 15px; text-align: center; }
+
+    /* شاشة التحميل */
+    .loading { display: grid; justify-items: center; gap: 16px; color: var(--muted); font-size: 15px; }
     .loading p { margin: 0; }
-    .loading strong { color: var(--fg); font-weight: 600; display: block; margin-bottom: 4px; font-size: 16px; }
     .loader {
       width: 34px; height: 34px; border-radius: 50%;
       border: 3px solid var(--border); border-top-color: var(--accent);
       animation: spin .8s linear infinite;
     }
+
     .login-card {
       width: 100%; max-width: 400px;
       background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
@@ -55,6 +64,8 @@
     .card-head { display: flex; align-items: center; gap: 10px; }
     .card-head h1 { margin: 0; font-size: 21px; line-height: 1.4; }
     .card-sub { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
+
+    /* أيقونة الكتاب: من غير خلفية */
     .mini-brand { display: flex; align-items: center; justify-content: center; flex: none; color: var(--accent); }
     .mini-brand svg { width: 38px; height: 38px; display: block; }
 
@@ -100,32 +111,11 @@
     .status { min-height: 1.7em; font-size: 14px; text-align: center; color: var(--muted); }
     .status.error { color: var(--danger); }
 
-    .remembered-user {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px; border-radius: 8px;
-      background: var(--surface-2); border: 1px dashed var(--border);
-      font-size: 14px;
-    }
-    .remembered-user .avatar {
-      width: 32px; height: 32px; border-radius: 50%; flex: none;
-      background: var(--accent); color: var(--accent-fg);
-      display: grid; place-items: center; font-weight: 600;
-    }
-    .remembered-user .meta { min-width: 0; }
-    .remembered-user .meta b { display: block; font-size: 14px; font-weight: 600; }
-    .remembered-user .meta small { color: var(--muted); font-size: 12.5px; word-break: break-all; }
-
-    .switch-user {
-      background: none; border: none; color: var(--accent);
-      font: inherit; font-size: 13px; font-weight: 600;
-      cursor: pointer; padding: 0; margin-inline-start: auto;
-    }
-    .switch-user:hover { text-decoration: underline; }
-
     @media (prefers-reduced-motion: reduce) { .spinner, .loader { animation-duration: 2s; } }
   </style>
 
   <script>
+    // الوضع الفاتح / الداكن (بيتطبق بدري عشان مفيش وميض)
     (function () {
       try {
         var saved = localStorage.getItem("qb-theme");
@@ -136,13 +126,15 @@
 </head>
 <body>
 
+  <!-- شاشة التحميل: بتظهر لحد ما نتأكد لو فيه جلسة شغالة -->
   <div class="page" id="loadingView">
     <div class="loading">
       <div class="loader" aria-hidden="true"></div>
-      <p><strong id="loadTitle">ثانية واحدة...</strong><span id="loadSub">بنتأكد من الجلسة</span></p>
+      <p>ثانية واحدة...</p>
     </div>
   </div>
 
+  <!-- صفحة تسجيل الدخول (لوحدها، من غير شريط علوي) -->
   <div class="page" id="loginView" hidden>
     <main class="login-card">
       <div>
@@ -153,15 +145,6 @@
           <h1>أهلاً بيك في بنك الأسئلة</h1>
         </div>
         <p class="card-sub">سجّل دخولك عشان تدخل بنك الأسئلة والكويزات.</p>
-      </div>
-
-      <div class="remembered-user" id="rememberedBox" hidden>
-        <div class="avatar" id="remAvatar">؟</div>
-        <div class="meta">
-          <b id="remName">مستخدم</b>
-          <small id="remEmail"></small>
-        </div>
-        <button class="switch-user" id="switchUser" type="button">تغيير</button>
       </div>
 
       <label class="remember" for="remember">
@@ -190,41 +173,22 @@
     var SUPABASE_URL = "https://gcumvhqxcbgtedqnuzvr.supabase.co";
     var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
 
-    /* ====== مهم: الأسماء معكوسة زي ما طلبت ====== */
-    var HOME_PAGE  = "login.html";   // الصفحة الرئيسية
-    var LOGIN_PAGE = "index.html";   // صفحة تسجيل الدخول (الملف الحالي)
+    // اسم صفحة الرئيسية (الملف التاني)
+    var HOME_PAGE = "home.html";
 
     (function () {
-      var loadingView  = document.getElementById("loadingView");
-      var loginView    = document.getElementById("loginView");
-      var loadTitle    = document.getElementById("loadTitle");
-      var loadSub      = document.getElementById("loadSub");
-      var btn          = document.getElementById("googleBtn");
-      var label        = document.getElementById("btnLabel");
-      var statusEl     = document.getElementById("status");
-      var rememberBox  = document.getElementById("remember");
-      var rememberedBox= document.getElementById("rememberedBox");
-      var remAvatar    = document.getElementById("remAvatar");
-      var remName      = document.getElementById("remName");
-      var remEmail     = document.getElementById("remEmail");
-      var switchUser   = document.getElementById("switchUser");
+      var loadingView = document.getElementById("loadingView");
+      var loginView = document.getElementById("loginView");
+      var btn = document.getElementById("googleBtn");
+      var label = document.getElementById("btnLabel");
+      var statusEl = document.getElementById("status");
+      var rememberBox = document.getElementById("remember");
+      try { rememberBox.checked = localStorage.getItem("qb-remember") !== "0"; } catch (e) {}
 
       function remembered() {
         try { return localStorage.getItem("qb-remember") !== "0"; } catch (e) { return true; }
       }
-      try { rememberBox.checked = remembered(); } catch (e) {}
-
-      function getLastUser() {
-        try { return JSON.parse(localStorage.getItem("qb-last-user") || "null"); }
-        catch (e) { return null; }
-      }
-      function setLastUser(u) {
-        try { localStorage.setItem("qb-last-user", JSON.stringify(u || {})); } catch (e) {}
-      }
-      function clearLastUser() {
-        try { localStorage.removeItem("qb-last-user"); } catch (e) {}
-      }
-
+      // "تذكرني" مفعّل: الجلسة على الجهاز. غير كده: بتتقفل مع التبويب
       var authStorage = {
         getItem: function (k) { try { return localStorage.getItem(k) || sessionStorage.getItem(k); } catch (e) { return null; } },
         setItem: function (k, v) {
@@ -236,11 +200,10 @@
         },
         removeItem: function (k) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} }
       };
-
       var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storage: authStorage } });
 
       function homeUrl() { return new URL(HOME_PAGE, window.location.href).href; }
-      function goHome()  { window.location.replace(homeUrl()); }
+      function goHome() { window.location.replace(homeUrl()); }
 
       function setStatus(msg, isError) {
         statusEl.textContent = msg || "";
@@ -251,65 +214,10 @@
         btn.removeAttribute("aria-busy");
         label.textContent = "سجّل بحساب Google";
       }
-      function showLoading(title, sub) {
-        loadTitle.textContent = title;
-        loadSub.textContent   = sub || "";
-        loadingView.hidden = false;
-        loginView.hidden   = true;
-      }
       function showLogin() {
         loadingView.hidden = true;
-        loginView.hidden   = false;
+        loginView.hidden = false;
         resetButton();
-      }
-
-      function paintRemembered() {
-        var u = getLastUser();
-        if (!u || !u.email) { rememberedBox.hidden = true; return; }
-        rememberedBox.hidden = false;
-        var initial = (u.name || u.email || "؟").trim().charAt(0).toUpperCase();
-        remAvatar.textContent = initial;
-        remName.textContent   = u.name || "مستخدم";
-        remEmail.textContent  = u.email;
-        label.textContent = "ادخل بحساب " + (u.name || u.email);
-      }
-
-      function urlHasOAuthError() {
-        var s = (window.location.search || "") + (window.location.hash || "");
-        return /error=/.test(s);
-      }
-
-      var AUTO_KEY = "qb-auto-attempted";
-
-      async function tryAutoLogin() {
-        var u = getLastUser();
-        if (!u || !u.email || !remembered()) return false;
-
-        try { if (sessionStorage.getItem(AUTO_KEY) === "1") return false; } catch (e) {}
-        try { sessionStorage.setItem(AUTO_KEY, "1"); } catch (e) {}
-
-        showLoading("ثانية واحدة...", "بنجيب بيانات حسابك (" + u.email + ")");
-
-        await new Promise(function (r) { setTimeout(r, 900); });
-
-        try {
-          var res = await sb.auth.signInWithOAuth({
-            provider: "google",
-            options: {
-              redirectTo: homeUrl(),
-              queryParams: {
-                login_hint: u.email,
-                prompt: "none"
-              }
-            }
-          });
-          if (res.error) throw res.error;
-          return true;
-        } catch (e) {
-          setStatus("مقدرناش نسترجع حسابك، اختار الحساب يدوي.", true);
-          showLogin();
-          return false;
-        }
       }
 
       btn.addEventListener("click", async function () {
@@ -320,63 +228,30 @@
         setStatus("");
         try { localStorage.setItem("qb-remember", rememberBox.checked ? "1" : "0"); } catch (e) {}
 
-        var u = getLastUser();
-        var opts = {
-          redirectTo: homeUrl(),
-          queryParams: { prompt: "select_account" }
-        };
-        if (u && u.email) opts.queryParams.login_hint = u.email;
+        var result = await sb.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            // بعد جوجل يرجع على طول للصفحة الرئيسية
+            redirectTo: homeUrl(),
+            // بيخلي جوجل يعرض شاشة اختيار الحساب كل مرة
+            queryParams: { prompt: "select_account" }
+          }
+        });
 
-        var result = await sb.auth.signInWithOAuth({ provider: "google", options: opts });
         if (result.error) {
           resetButton();
           setStatus("ماقدرناش نفتح تسجيل الدخول، جرّب تاني.", true);
         }
       });
 
-      switchUser.addEventListener("click", function () {
-        clearLastUser();
-        try { sessionStorage.removeItem(AUTO_KEY); } catch (e) {}
-        paintRemembered();
-        rememberedBox.hidden = true;
-        resetButton();
-        setStatus("اختار حساب تاني من زرار Google.", false);
-      });
-
+      // لو رجعت من صفحة جوجل بزرار الرجوع، الزرار يرجع طبيعي
       window.addEventListener("pageshow", function (e) { if (e.persisted) resetButton(); });
 
-      (async function init() {
-        showLoading("ثانية واحدة...", "بنتأكد من الجلسة");
-
-        var hasSession = false;
-        try {
-          var r = await sb.auth.getSession();
-          hasSession = !!(r.data && r.data.session);
-        } catch (e) {}
-
-        if (hasSession) { goHome(); return; }
-
-        if (urlHasOAuthError()) {
-          try { sessionStorage.removeItem(AUTO_KEY); } catch (e) {}
-        }
-
-        var auto = await tryAutoLogin();
-        if (auto) return;
-
-        paintRemembered();
-        showLogin();
-      })();
-
-      sb.auth.onAuthStateChange(function (_evt, session) {
-        if (session && session.user) {
-          var m = session.user.user_metadata || {};
-          setLastUser({
-            email: session.user.email || "",
-            name:  m.full_name || m.name || (session.user.email || "").split("@")[0],
-            avatar: m.avatar_url || m.picture || ""
-          });
-        }
-      });
+      // لو فيه جلسة شغالة، ادخل الرئيسية على طول
+      sb.auth.getSession().then(function (res) {
+        if (res.data && res.data.session) goHome();
+        else showLogin();
+      }).catch(showLogin);
     })();
   </script>
 </body>

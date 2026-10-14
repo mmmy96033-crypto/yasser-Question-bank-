@@ -155,7 +155,6 @@
         <p class="card-sub">سجّل دخولك عشان تدخل بنك الأسئلة والكويزات.</p>
       </div>
 
-      <!-- الحساب اللي فاضل محفوظ -->
       <div class="remembered-user" id="rememberedBox" hidden>
         <div class="avatar" id="remAvatar">؟</div>
         <div class="meta">
@@ -190,8 +189,10 @@
   <script>
     var SUPABASE_URL = "https://gcumvhqxcbgtedqnuzvr.supabase.co";
     var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
-    var HOME_PAGE  = "index.html";
-    var LOGIN_PAGE = "login.html"; // اسم صفحتك
+
+    /* ====== مهم: الأسماء معكوسة زي ما طلبت ====== */
+    var HOME_PAGE  = "login.html";   // الصفحة الرئيسية
+    var LOGIN_PAGE = "index.html";   // صفحة تسجيل الدخول (الملف الحالي)
 
     (function () {
       var loadingView  = document.getElementById("loadingView");
@@ -208,13 +209,11 @@
       var remEmail     = document.getElementById("remEmail");
       var switchUser   = document.getElementById("switchUser");
 
-      /* ===== تذكرني ===== */
       function remembered() {
         try { return localStorage.getItem("qb-remember") !== "0"; } catch (e) { return true; }
       }
       try { rememberBox.checked = remembered(); } catch (e) {}
 
-      /* ===== آخر مستخدم محفوظ ===== */
       function getLastUser() {
         try { return JSON.parse(localStorage.getItem("qb-last-user") || "null"); }
         catch (e) { return null; }
@@ -226,7 +225,6 @@
         try { localStorage.removeItem("qb-last-user"); } catch (e) {}
       }
 
-      /* ===== التخزين حسب "تذكرني" ===== */
       var authStorage = {
         getItem: function (k) { try { return localStorage.getItem(k) || sessionStorage.getItem(k); } catch (e) { return null; } },
         setItem: function (k, v) {
@@ -241,9 +239,8 @@
 
       var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storage: authStorage } });
 
-      function homeUrl()  { return new URL(HOME_PAGE,  window.location.href).href; }
-      function loginUrl() { return new URL(LOGIN_PAGE, window.location.href).href; }
-      function goHome()   { window.location.replace(homeUrl()); }
+      function homeUrl() { return new URL(HOME_PAGE, window.location.href).href; }
+      function goHome()  { window.location.replace(homeUrl()); }
 
       function setStatus(msg, isError) {
         statusEl.textContent = msg || "";
@@ -266,7 +263,6 @@
         resetButton();
       }
 
-      /* ===== عرض الحساب المحفوظ فوق ===== */
       function paintRemembered() {
         var u = getLastUser();
         if (!u || !u.email) { rememberedBox.hidden = true; return; }
@@ -275,30 +271,25 @@
         remAvatar.textContent = initial;
         remName.textContent   = u.name || "مستخدم";
         remEmail.textContent  = u.email;
-        // زرار Google يبقى فيه اسم الحساب
         label.textContent = "ادخل بحساب " + (u.name || u.email);
       }
 
-      /* ===== هل URL فيه خطأ من OAuth؟ ===== */
       function urlHasOAuthError() {
         var s = (window.location.search || "") + (window.location.hash || "");
         return /error=/.test(s);
       }
 
-      /* ===== محاولة الدخول التلقائي ===== */
       var AUTO_KEY = "qb-auto-attempted";
 
       async function tryAutoLogin() {
         var u = getLastUser();
         if (!u || !u.email || !remembered()) return false;
 
-        // لو حاولنا قبل كده في نفس التبويب، مانكررش
         try { if (sessionStorage.getItem(AUTO_KEY) === "1") return false; } catch (e) {}
         try { sessionStorage.setItem(AUTO_KEY, "1"); } catch (e) {}
 
         showLoading("ثانية واحدة...", "بنجيب بيانات حسابك (" + u.email + ")");
 
-        // ننتظر شوية عشان المستخدم يشوف الرسالة
         await new Promise(function (r) { setTimeout(r, 900); });
 
         try {
@@ -308,22 +299,19 @@
               redirectTo: homeUrl(),
               queryParams: {
                 login_hint: u.email,
-                prompt: "none"          // نحاول من غير ما يسأل عن الحساب
+                prompt: "none"
               }
             }
           });
           if (res.error) throw res.error;
-          // signInWithOAuth بيعمل redirect تلقائي
           return true;
         } catch (e) {
-          // فشل → نظهر الفورم عادي
           setStatus("مقدرناش نسترجع حسابك، اختار الحساب يدوي.", true);
           showLogin();
           return false;
         }
       }
 
-      /* ===== زر Google ===== */
       btn.addEventListener("click", async function () {
         if (btn.disabled) return;
         btn.disabled = true;
@@ -346,7 +334,6 @@
         }
       });
 
-      /* ===== تغيير الحساب ===== */
       switchUser.addEventListener("click", function () {
         clearLastUser();
         try { sessionStorage.removeItem(AUTO_KEY); } catch (e) {}
@@ -358,7 +345,6 @@
 
       window.addEventListener("pageshow", function (e) { if (e.persisted) resetButton(); });
 
-      /* ===== البداية ===== */
       (async function init() {
         showLoading("ثانية واحدة...", "بنتأكد من الجلسة");
 
@@ -370,21 +356,17 @@
 
         if (hasSession) { goHome(); return; }
 
-        // لو رجعنا من OAuth بخطأ، منحاولش تلقائي
         if (urlHasOAuthError()) {
           try { sessionStorage.removeItem(AUTO_KEY); } catch (e) {}
         }
 
-        // لو فيه حساب محفوظ + تذكرني شغال → دخول تلقائي
         var auto = await tryAutoLogin();
         if (auto) return;
 
-        // غير كده → الفورم
         paintRemembered();
         showLogin();
       })();
 
-      /* ===== احفظ إيميل المستخدم بمجرد الدخول (للصفحات التانية بيحصل ده في index) ===== */
       sb.auth.onAuthStateChange(function (_evt, session) {
         if (session && session.user) {
           var m = session.user.user_metadata || {};

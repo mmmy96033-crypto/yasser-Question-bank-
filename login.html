@@ -39,9 +39,9 @@
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     .page { min-height: 100vh; display: grid; place-items: center; padding: 32px 16px; }
-    .loading { display: grid; justify-items: center; gap: 16px; color: var(--muted); font-size: 15px; text-align:center; }
+    .loading { display: grid; justify-items: center; gap: 16px; color: var(--muted); font-size: 15px; text-align: center; }
     .loading p { margin: 0; }
-    .loading strong { color: var(--fg); font-weight: 600; display:block; margin-bottom:4px; font-size:16px; }
+    .loading strong { color: var(--fg); font-weight: 600; display: block; margin-bottom: 4px; font-size: 16px; }
     .loader {
       width: 34px; height: 34px; border-radius: 50%;
       border: 3px solid var(--border); border-top-color: var(--accent);
@@ -49,6 +49,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* الشريط العلوي */
     .topbar {
       position: sticky; top: 0; z-index: 20;
       background: var(--surface); border-bottom: 1px solid var(--border);
@@ -78,9 +79,9 @@
       font-size: 11px; font-weight: 600; line-height: 18px; text-align: center;
     }
 
-    .notif-wrap { position: relative; }
+    /* قائمة الإشعارات: متثبتة على الشريط نفسه عشان ماتخرجش برة الشاشة في الموبايل */
     .notif-panel {
-      position: absolute; top: calc(100% + 8px); inset-inline-end: 0;
+      position: absolute; top: calc(100% + 6px); left: 12px; right: auto;
       width: min(340px, calc(100vw - 24px));
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.14);
@@ -95,7 +96,7 @@
     .notif-item:last-child { border-bottom: none; }
     .notif-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 9px; }
     .notif-body { flex: 1; min-width: 0; }
-    .notif-title { font-size: 14.5px; font-weight: 500; word-wrap: break-word; }
+    .notif-title { font-size: 14.5px; font-weight: 500; overflow-wrap: anywhere; }
     .notif-time { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
     .notif-empty { padding: 22px 16px; text-align: center; color: var(--muted); font-size: 14px; }
 
@@ -148,6 +149,7 @@
 </head>
 <body>
 
+  <!-- شاشة التحميل: بنجيب بيانات الطالب من Supabase قبل ما ندخّله -->
   <div class="page" id="bootView">
     <div class="loading">
       <div class="loader" aria-hidden="true"></div>
@@ -163,32 +165,30 @@
       </div>
 
       <div class="actions">
-        <div class="notif-wrap">
-          <button class="icon-btn" id="notifBtn" type="button" aria-label="الإشعارات" aria-haspopup="true" aria-expanded="false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
-              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-            </svg>
-            <span class="badge" id="notifBadge" hidden>0</span>
-          </button>
-
-          <div class="notif-panel" id="notifPanel" hidden>
-            <div class="notif-head">الإشعارات</div>
-            <ul class="notif-list" id="notifList"></ul>
-            <button class="notif-more" id="notifMore" type="button" hidden>عرض المزيد</button>
-            <div class="notif-foot">
-              <button class="logout-link" id="logoutBtn" type="button">تسجيل الخروج</button>
-            </div>
-          </div>
-        </div>
+        <button class="icon-btn" id="notifBtn" type="button" aria-label="الإشعارات" aria-haspopup="true" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+          </svg>
+          <span class="badge" id="notifBadge" hidden>0</span>
+        </button>
 
         <button class="icon-btn" id="themeBtn" type="button" aria-label="تبديل الوضع"></button>
+      </div>
+
+      <div class="notif-panel" id="notifPanel" hidden>
+        <div class="notif-head">الإشعارات</div>
+        <ul class="notif-list" id="notifList"></ul>
+        <button class="notif-more" id="notifMore" type="button" hidden>عرض المزيد</button>
+        <div class="notif-foot">
+          <button class="logout-link" id="logoutBtn" type="button">تسجيل الخروج</button>
+        </div>
       </div>
     </header>
 
     <main class="container">
       <section class="hero">
-        <h1 id="greet">أهلاً بيك 👋</h1>
+        <h1 id="greet">أهلاً بيك</h1>
         <p>اختار من بنوك الأسئلة أو ابدأ كويز سريع.</p>
       </section>
 
@@ -205,8 +205,8 @@
     var SUPABASE_URL = "https://gcumvhqxcbgtedqnuzvr.supabase.co";
     var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
 
-    /* ====== الأسماء معكوسة ====== */
-    var LOGIN_PAGE = "index.html";   // صفحة تسجيل الدخول
+    // اسم صفحة تسجيل الدخول (الملف التاني)
+    var LOGIN_PAGE = "index.html";
 
     (function () {
       var bootView = document.getElementById("bootView");
@@ -231,31 +231,26 @@
 
       function goLogin() { window.location.replace(new URL(LOGIN_PAGE, window.location.href).href); }
 
-      function showApp(session) {
+      function showApp(user) {
         bootView.hidden = true;
         appView.hidden  = false;
 
-        if (session && session.user) {
-          var u = session.user, m = u.user_metadata || {};
-          try {
-            localStorage.setItem("qb-last-user", JSON.stringify({
-              email: u.email || "",
-              name:  m.full_name || m.name || (u.email || "").split("@")[0],
-              avatar: m.avatar_url || m.picture || ""
-            }));
-          } catch (e) {}
+        var m = (user && user.user_metadata) || {};
+        var first = (m.full_name || m.name || "").split(" ")[0];
+        document.getElementById("greet").textContent = first ? "أهلاً يا " + first : "أهلاً بيك";
 
-          var first = (m.full_name || m.name || "").split(" ")[0] || "يا صاحبي";
-          document.getElementById("greet").textContent = "أهلاً يا " + first + " 👋";
+        // نظّف الرابط من بيانات الدخول بعد الرجوع من جوجل
+        if (window.location.hash || window.location.search.indexOf("code=") !== -1) {
+          history.replaceState(null, "", window.location.pathname);
         }
       }
 
       document.getElementById("logoutBtn").addEventListener("click", async function () {
         try { await sb.auth.signOut(); } catch (e) {}
-        try { sessionStorage.removeItem("qb-auto-attempted"); } catch (e) {}
         goLogin();
       });
 
+      /* ---------- الوضع الفاتح / الداكن ---------- */
       var themeBtn = document.getElementById("themeBtn");
       function currentTheme() {
         var attr = document.documentElement.getAttribute("data-theme");
@@ -276,6 +271,8 @@
       });
       paintThemeIcon();
 
+      /* ---------- الإشعارات ---------- */
+      // أمثلة ثابتة لحد ما نربطها بجدول في قاعدة البيانات
       var NOTIFS = [
         { title: "تم إضافة بنك أسئلة جديد", time: "قبل 5 دقايق" },
         { title: "نتيجتك في كويز الأحياء: 85%", time: "قبل ساعتين" },
@@ -322,9 +319,9 @@
         if (NOTIFS.length > 0) { notifBadge.hidden = false; notifBadge.textContent = String(NOTIFS.length); }
         else notifBadge.hidden = true;
       }
-      function openNotif(){ expanded=false; renderNotifs(); notifPanel.hidden=false; notifBtn.setAttribute("aria-expanded","true"); }
-      function closeNotif(){ notifPanel.hidden=true; notifBtn.setAttribute("aria-expanded","false"); }
-      function toggleNotif(){ notifPanel.hidden ? openNotif() : closeNotif(); }
+      function openNotif()  { expanded = false; renderNotifs(); notifPanel.hidden = false; notifBtn.setAttribute("aria-expanded", "true"); }
+      function closeNotif() { notifPanel.hidden = true; notifBtn.setAttribute("aria-expanded", "false"); }
+      function toggleNotif() { notifPanel.hidden ? openNotif() : closeNotif(); }
 
       notifBtn.addEventListener("click", function (e) { e.stopPropagation(); toggleNotif(); });
       notifMore.addEventListener("click", function (e) { e.stopPropagation(); expanded = !expanded; renderNotifs(); });
@@ -337,6 +334,7 @@
       updateBadge();
       renderNotifs();
 
+      /* ---------- الدخول: نجيب بيانات الطالب من Supabase وبعدين نفتح الصفحة ---------- */
       (async function init() {
         var session = null;
         try {
@@ -344,11 +342,28 @@
           session = r.data && r.data.session;
         } catch (e) {}
         if (!session) { goLogin(); return; }
-        showApp(session);
+
+        var user = null, err = null;
+        try {
+          var ur = await sb.auth.getUser();
+          user = ur.data && ur.data.user;
+          err = ur.error;
+        } catch (e) {}
+
+        if (!user) {
+          var expired = err && (err.status === 401 || err.status === 403 || err.name === "AuthSessionMissingError");
+          if (expired) {
+            try { await sb.auth.signOut(); } catch (e) {}
+            goLogin();
+            return;
+          }
+          user = session.user; // مفيش نت: نكمل بالبيانات المحفوظة
+        }
+        showApp(user);
       })();
 
-      sb.auth.onAuthStateChange(function (_evt, session) {
-        if (!session) goLogin();
+      sb.auth.onAuthStateChange(function (evt) {
+        if (evt === "SIGNED_OUT") goLogin();
       });
     })();
   </script>

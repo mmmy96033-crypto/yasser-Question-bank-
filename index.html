@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>بنك الأسئلة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+
+  <style>
+    :root {
+      --bg: #f6f8fa; --surface: #ffffff; --surface-2: #f6f8fa;
+      --fg: #1f2328; --muted: #59636e; --border: #d1d9e0;
+      --accent: #0969da; --accent-fg: #ffffff; --danger: #cf222e;
+      --font-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0d1117; --surface: #151b23; --surface-2: #0d1117;
+        --fg: #e6edf3; --muted: #9198a1; --border: #3d444d;
+        --accent: #4493f8; --accent-fg: #0d1117; --danger: #f85149;
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #0d1117; --surface: #151b23; --surface-2: #0d1117;
+      --fg: #e6edf3; --muted: #9198a1; --border: #3d444d;
+      --accent: #4493f8; --accent-fg: #0d1117; --danger: #f85149;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0; background: var(--bg); color: var(--fg);
+      font-family: var(--font-body); font-size: 16px; line-height: 1.7;
+    }
+    [hidden] { display: none !important; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* ===== شاشة تحقق (جلسة) ===== */
+    .page { min-height: 100vh; display: grid; place-items: center; padding: 32px 16px; }
+    .loading { display: grid; justify-items: center; gap: 16px; color: var(--muted); font-size: 15px; text-align:center; }
+    .loading p { margin: 0; }
+    .loading strong { color: var(--fg); font-weight: 600; display:block; margin-bottom:4px; font-size:16px; }
+    .loader {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 3px solid var(--border); border-top-color: var(--accent);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== الشريط العلوي ===== */
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 10px 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+    .brand svg { width: 26px; height: 26px; color: var(--accent); }
+    .brand span { font-size: 17px; }
+
+    .actions { display: flex; align-items: center; gap: 6px; }
+
+    .icon-btn {
+      position: relative;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 8px;
+      border: 1px solid transparent; background: transparent; color: var(--fg);
+      cursor: pointer; font: inherit;
+    }
+    .icon-btn:hover { background: var(--surface-2); border-color: var(--border); }
+    .icon-btn svg { width: 22px; height: 22px; }
+
+    .badge {
+      position: absolute; top: 3px; inset-inline-end: 3px;
+      min-width: 18px; height: 18px; padding: 0 5px;
+      border-radius: 999px; background: var(--danger); color: #fff;
+      font-size: 11px; font-weight: 600; line-height: 18px; text-align: center;
+    }
+
+    /* ===== قائمة الإشعارات ===== */
+    .notif-wrap { position: relative; }
+    .notif-panel {
+      position: absolute; top: calc(100% + 8px); inset-inline-end: 0;
+      width: min(340px, calc(100vw - 24px));
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.14);
+      overflow: hidden; z-index: 30;
+    }
+    .notif-head {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      font-weight: 600; font-size: 15px;
+    }
+    .notif-list { list-style: none; margin: 0; padding: 0; max-height: 340px; overflow: auto; }
+    .notif-item { display: flex; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 9px; }
+    .notif-body { flex: 1; min-width: 0; }
+    .notif-title { font-size: 14.5px; font-weight: 500; word-wrap: break-word; }
+    .notif-time { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+    .notif-empty { padding: 22px 16px; text-align: center; color: var(--muted); font-size: 14px; }
+
+    .notif-more {
+      display: block; width: 100%; padding: 10px;
+      background: var(--surface-2); border: none;
+      border-top: 1px solid var(--border);
+      color: var(--accent); font: inherit; font-size: 14px; font-weight: 600;
+      cursor: pointer;
+    }
+    .notif-more:hover { background: var(--border); }
+
+    .notif-foot {
+      padding: 10px 16px; border-top: 1px solid var(--border);
+      background: var(--surface-2); text-align: center;
+    }
+    .logout-link {
+      background: none; border: none; color: var(--danger);
+      font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; padding: 0;
+    }
+    .logout-link:hover { text-decoration: underline; }
+
+    /* ===== محتوى ===== */
+    .container { max-width: 1080px; margin: 0 auto; padding: 24px 18px 48px; }
+    .hero {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 24px; margin-bottom: 20px;
+    }
+    .hero h1 { margin: 0 0 6px; font-size: 22px; }
+    .hero p { margin: 0; color: var(--muted); font-size: 15px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 16px; }
+    .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    @media (prefers-reduced-motion: reduce) { .loader { animation-duration: 2s; } }
+  </style>
+
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("qb-theme");
+        if (saved === "dark" || saved === "light") document.documentElement.setAttribute("data-theme", saved);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- شاشة التحقق الأولية -->
+  <div class="page" id="bootView">
+    <div class="loading">
+      <div class="loader" aria-hidden="true"></div>
+      <p><strong>ثانية واحدة...</strong><span>بنتأكد من حسابك</span></p>
+    </div>
+  </div>
+
+  <!-- الصفحة الرئيسية -->
+  <div id="appView" hidden>
+    <header class="topbar">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5"/><path d="M9 8.5h7M9 12h5"/></svg>
+        <span>بنك الأسئلة</span>
+      </div>
+
+      <div class="actions">
+        <div class="notif-wrap">
+          <button class="icon-btn" id="notifBtn" type="button" aria-label="الإشعارات" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+            </svg>
+            <span class="badge" id="notifBadge" hidden>0</span>
+          </button>
+
+          <div class="notif-panel" id="notifPanel" hidden>
+            <div class="notif-head">الإشعارات</div>
+            <ul class="notif-list" id="notifList"></ul>
+            <button class="notif-more" id="notifMore" type="button" hidden>عرض المزيد</button>
+            <div class="notif-foot">
+              <button class="logout-link" id="logoutBtn" type="button">تسجيل الخروج</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="تبديل الوضع"></button>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <h1 id="greet">أهلاً بيك 👋</h1>
+        <p>اختار من بنوك الأسئلة أو ابدأ كويز سريع.</p>
+      </section>
+
+      <section class="grid">
+        <div class="card"><h3>بنك أسئلة 1</h3><p>مجموعة أسئلة متنوعة للتدريب.</p></div>
+        <div class="card"><h3>بنك أسئلة 2</h3><p>أسئلة متقدمة لقياس المستوى.</p></div>
+        <div class="card"><h3>كويز سريع</h3><p>10 أسئلة عشوائية.</p></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    var SUPABASE_URL = "https://gcumvhqxcbgtedqnuzvr.supabase.co";
+    var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
+    var LOGIN_PAGE = "login.html";
+
+    (function () {
+      var bootView = document.getElementById("bootView");
+      var appView  = document.getElementById("appView");
+
+      function remembered() {
+        try { return localStorage.getItem("qb-remember") !== "0"; } catch (e) { return true; }
+      }
+      var authStorage = {
+        getItem: function (k) { try { return localStorage.getItem(k) || sessionStorage.getItem(k); } catch (e) { return null; } },
+        setItem: function (k, v) {
+          try {
+            var keep = remembered();
+            (keep ? localStorage : sessionStorage).setItem(k, v);
+            (keep ? sessionStorage : localStorage).removeItem(k);
+          } catch (e) {}
+        },
+        removeItem: function (k) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} }
+      };
+
+      var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storage: authStorage } });
+
+      function goLogin() { window.location.replace(new URL(LOGIN_PAGE, window.location.href).href); }
+
+      function showApp(session) {
+        bootView.hidden = true;
+        appView.hidden  = false;
+
+        // احفظ بيانات المستخدم لتستخدمها صفحة الدخول
+        if (session && session.user) {
+          var u = session.user, m = u.user_metadata || {};
+          try {
+            localStorage.setItem("qb-last-user", JSON.stringify({
+              email: u.email || "",
+              name:  m.full_name || m.name || (u.email || "").split("@")[0],
+              avatar: m.avatar_url || m.picture || ""
+            }));
+          } catch (e) {}
+
+          var first = (m.full_name || m.name || "").split(" ")[0] || "يا صاحبي";
+          document.getElementById("greet").textContent = "أهلاً يا " + first + " 👋";
+        }
+      }
+
+      /* ===== زر الخروج ===== */
+      document.getElementById("logoutBtn").addEventListener("click", async function () {
+        // نعمل signOut لكن بنسيب qb-last-user عشان الدخول التلقائي
+        try { await sb.auth.signOut(); } catch (e) {}
+        // امسح أي علامة محاولة تلقائية قديمة
+        try { sessionStorage.removeItem("qb-auto-attempted"); } catch (e) {}
+        goLogin();
+      });
+
+      /* ===== زر الوضع فاتح/داكن ===== */
+      var themeBtn = document.getElementById("themeBtn");
+      function currentTheme() {
+        var attr = document.documentElement.getAttribute("data-theme");
+        if (attr === "dark" || attr === "light") return attr;
+        return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      function paintThemeIcon() {
+        var isDark = currentTheme() === "dark";
+        themeBtn.innerHTML = isDark
+          ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+      }
+      themeBtn.addEventListener("click", function () {
+        var next = currentTheme() === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem("qb-theme", next); } catch (e) {}
+        paintThemeIcon();
+      });
+      paintThemeIcon();
+
+      /* ===== الإشعارات ===== */
+      var NOTIFS = [
+        { title: "تم إضافة بنك أسئلة جديد", time: "قبل 5 دقايق" },
+        { title: "نتيجتك في كويز الأحياء: 85%", time: "قبل ساعتين" },
+        { title: "تذكير: كويز الفيزياء بكرة", time: "امبارح" },
+        { title: "تم تحديث بنك أسئلة الكيمياء", time: "امبارح" },
+        { title: "رسالة من المدرّس", time: "قبل 3 أيام" }
+      ];
+      var VISIBLE_COUNT = 2;
+      var expanded = false;
+
+      var notifBtn   = document.getElementById("notifBtn");
+      var notifPanel = document.getElementById("notifPanel");
+      var notifList  = document.getElementById("notifList");
+      var notifMore  = document.getElementById("notifMore");
+      var notifBadge = document.getElementById("notifBadge");
+
+      function renderNotifs() {
+        notifList.innerHTML = "";
+        if (!NOTIFS.length) {
+          var empty = document.createElement("li");
+          empty.className = "notif-empty";
+          empty.textContent = "مفيش إشعارات لحد دلوقتي.";
+          notifList.appendChild(empty);
+          notifMore.hidden = true;
+          return;
+        }
+        var shown = expanded ? NOTIFS : NOTIFS.slice(0, VISIBLE_COUNT);
+        shown.forEach(function (n) {
+          var li = document.createElement("li");
+          li.className = "notif-item";
+
+          var dot = document.createElement("span"); dot.className = "notif-dot";
+
+          var body  = document.createElement("div"); body.className = "notif-body";
+          var title = document.createElement("div"); title.className = "notif-title"; title.textContent = n.title;
+          var time  = document.createElement("div"); time.className  = "notif-time";  time.textContent  = n.time;
+
+          body.appendChild(title); body.appendChild(time);
+          li.appendChild(dot); li.appendChild(body);
+          notifList.appendChild(li);
+        });
+
+        if (NOTIFS.length > VISIBLE_COUNT) {
+          notifMore.hidden = false;
+          notifMore.textContent = expanded ? "عرض أقل" : "عرض المزيد";
+        } else {
+          notifMore.hidden = true;
+        }
+      }
+      function updateBadge() {
+        if (NOTIFS.length > 0) {
+          notifBadge.hidden = false;
+          notifBadge.textContent = String(NOTIFS.length);
+        } else notifBadge.hidden = true;
+      }
+      function openNotif() { expanded = false; renderNotifs(); notifPanel.hidden = false; notifBtn.setAttribute("aria-expanded","true"); }
+      function closeNotif(){ notifPanel.hidden = true; notifBtn.setAttribute("aria-expanded","false"); }
+      function toggleNotif(){ notifPanel.hidden ? openNotif() : closeNotif(); }
+
+      notifBtn.addEventListener("click", function (e) { e.stopPropagation(); toggleNotif(); });
+      notifMore.addEventListener("click", function (e) { e.stopPropagation(); expanded = !expanded; renderNotifs(); });
+      document.addEventListener("click", function (e) {
+        if (notifPanel.hidden) return;
+        if (!notifPanel.contains(e.target) && !notifBtn.contains(e.target)) closeNotif();
+      });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeNotif(); });
+
+      updateBadge();
+      renderNotifs();
+
+      /* ===== التحقق من الجلسة أول ما الصفحة تفتح ===== */
+      (async function init() {
+        var session = null;
+        try {
+          var r = await sb.auth.getSession();
+          session = r.data && r.data.session;
+        } catch (e) {}
+
+        if (!session) { goLogin(); return; }
+        showApp(session);
+      })();
+
+      sb.auth.onAuthStateChange(function (_evt, session) {
+        if (!session) goLogin();
+      });
+    })();
+  </script>
+</body>
+</html>

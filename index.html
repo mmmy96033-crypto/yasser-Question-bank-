@@ -3,106 +3,60 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>بنك الأسئلة</title>
+  <title>تسجيل الدخول | بنك الأسئلة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
 
   <style>
     :root {
-      --bg: #f6f8fa;
-      --surface: #ffffff;
-      --surface-2: #f6f8fa;
-      --fg: #1f2328;
-      --muted: #59636e;
-      --border: #d1d9e0;
-      --accent: #0969da;
-      --accent-fg: #ffffff;
-      --danger: #cf222e;
+      --bg: #f6f8fa; --surface: #ffffff; --surface-2: #f6f8fa;
+      --fg: #1f2328; --muted: #59636e; --border: #d1d9e0;
+      --accent: #0969da; --accent-fg: #ffffff; --danger: #cf222e;
       --font-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
-      --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
-        --bg: #0d1117;
-        --surface: #151b23;
-        --surface-2: #0d1117;
-        --fg: #e6edf3;
-        --muted: #9198a1;
-        --border: #3d444d;
-        --accent: #4493f8;
-        --accent-fg: #0d1117;
-        --danger: #f85149;
+        --bg: #0d1117; --surface: #151b23; --surface-2: #0d1117;
+        --fg: #e6edf3; --muted: #9198a1; --border: #3d444d;
+        --accent: #4493f8; --accent-fg: #0d1117; --danger: #f85149;
         color-scheme: dark;
       }
     }
     :root[data-theme="dark"] {
-      --bg: #0d1117;
-      --surface: #151b23;
-      --surface-2: #0d1117;
-      --fg: #e6edf3;
-      --muted: #9198a1;
-      --border: #3d444d;
-      --accent: #4493f8;
-      --accent-fg: #0d1117;
-      --danger: #f85149;
+      --bg: #0d1117; --surface: #151b23; --surface-2: #0d1117;
+      --fg: #e6edf3; --muted: #9198a1; --border: #3d444d;
+      --accent: #4493f8; --accent-fg: #0d1117; --danger: #f85149;
       color-scheme: dark;
     }
-
     * { box-sizing: border-box; }
     html, body { min-height: 100%; }
     body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--fg);
-      font-family: var(--font-body);
-      font-size: 16px;
-      line-height: 1.7;
+      margin: 0; background: var(--bg); color: var(--fg);
+      font-family: var(--font-body); font-size: 16px; line-height: 1.7;
     }
     [hidden] { display: none !important; }
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-    .view { min-height: 100vh; display: flex; flex-direction: column; }
-    .wrap { width: 100%; max-width: 1040px; margin-inline: auto; padding-inline: 16px; }
-
-    /* الشريط العلوي */
-    .topbar { border-bottom: 1px solid var(--border); background: var(--surface); }
-    .topbar .wrap { display: flex; align-items: center; gap: 12px; min-height: 60px; }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 17px; margin-inline-end: auto; }
-    .brand-mark {
-      width: 32px; height: 32px; border-radius: 8px;
-      background: var(--accent); color: var(--accent-fg);
-      display: grid; place-items: center; flex: none;
+    .page { min-height: 100vh; display: grid; place-items: center; padding: 32px 16px; }
+    .loading { display: grid; justify-items: center; gap: 16px; color: var(--muted); font-size: 15px; text-align: center; }
+    .loading p { margin: 0; }
+    .loading strong { color: var(--fg); font-weight: 600; display: block; margin-bottom: 4px; font-size: 16px; }
+    .loader {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 3px solid var(--border); border-top-color: var(--accent);
+      animation: spin .8s linear infinite;
     }
-    .icon-btn {
-      width: 38px; height: 38px; border-radius: 8px;
-      border: 1px solid var(--border); background: var(--surface); color: var(--fg);
-      display: grid; place-items: center; cursor: pointer;
-    }
-    .icon-btn:hover { border-color: var(--muted); }
-    .icon-btn .moon { display: none; }
-    :root[data-theme="dark"] .icon-btn .sun { display: none; }
-    :root[data-theme="dark"] .icon-btn .moon { display: block; }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) .icon-btn .sun { display: none; }
-      :root:not([data-theme="light"]) .icon-btn .moon { display: block; }
-    }
-    .btn {
-      font: inherit; font-size: 14px; font-weight: 500;
-      padding: 7px 14px; border-radius: 8px;
-      border: 1px solid var(--border); background: var(--surface); color: var(--fg); cursor: pointer;
-    }
-    .btn:hover { border-color: var(--muted); }
-
-    /* صفحة الدخول */
-    .login-main { flex: 1; display: grid; place-items: center; padding: 32px 16px; }
     .login-card {
       width: 100%; max-width: 400px;
       background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-      padding: 32px 28px; display: flex; flex-direction: column; gap: 22px;
+      padding: 28px 24px; display: flex; flex-direction: column; gap: 22px;
     }
-    .login-card h1 { margin: 0; font-size: 24px; line-height: 1.4; }
-    .login-card p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+    .card-head { display: flex; align-items: center; gap: 10px; }
+    .card-head h1 { margin: 0; font-size: 21px; line-height: 1.4; }
+    .card-sub { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
+    .mini-brand { display: flex; align-items: center; justify-content: center; flex: none; color: var(--accent); }
+    .mini-brand svg { width: 38px; height: 38px; display: block; }
 
     .google-btn {
       width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px;
@@ -146,156 +100,135 @@
     .status { min-height: 1.7em; font-size: 14px; text-align: center; color: var(--muted); }
     .status.error { color: var(--danger); }
 
-    /* الصفحة الرئيسية */
-    .user-chip { display: flex; align-items: center; gap: 10px; min-width: 0; }
-    .avatar {
-      width: 36px; height: 36px; border-radius: 50%;
-      border: 1px solid var(--border); background: var(--surface-2); color: var(--fg);
-      display: grid; place-items: center; font-weight: 600; font-size: 15px;
-      object-fit: cover; flex: none; overflow: hidden;
+    .remembered-user {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 8px;
+      background: var(--surface-2); border: 1px dashed var(--border);
+      font-size: 14px;
     }
-    .user-name {
-      font-weight: 500; font-size: 15px; white-space: nowrap;
-      overflow: hidden; text-overflow: ellipsis; max-width: 160px;
+    .remembered-user .avatar {
+      width: 32px; height: 32px; border-radius: 50%; flex: none;
+      background: var(--accent); color: var(--accent-fg);
+      display: grid; place-items: center; font-weight: 600;
     }
-    .home-main { flex: 1; padding-block: 40px; }
-    .home-main h1 { margin: 0 0 24px; font-size: clamp(24px, 5vw, 32px); line-height: 1.4; }
-    .placeholder-box {
-      border: 1px dashed var(--border); border-radius: 12px;
-      padding: 40px 20px; text-align: center; color: var(--muted); background: var(--surface);
-    }
-    .placeholder-box p { margin: 0; }
+    .remembered-user .meta { min-width: 0; }
+    .remembered-user .meta b { display: block; font-size: 14px; font-weight: 600; }
+    .remembered-user .meta small { color: var(--muted); font-size: 12.5px; word-break: break-all; }
 
-    @media (max-width: 480px) { .user-name { display: none; } }
-    @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2s; } }
+    .switch-user {
+      background: none; border: none; color: var(--accent);
+      font: inherit; font-size: 13px; font-weight: 600;
+      cursor: pointer; padding: 0; margin-inline-start: auto;
+    }
+    .switch-user:hover { text-decoration: underline; }
+
+    @media (prefers-reduced-motion: reduce) { .spinner, .loader { animation-duration: 2s; } }
   </style>
 
   <script>
-    // الوضع الفاتح / الداكن (بيتطبق بدري عشان مفيش وميض)
     (function () {
       try {
         var saved = localStorage.getItem("qb-theme");
-        if (saved === "dark" || saved === "light") {
-          document.documentElement.setAttribute("data-theme", saved);
-        }
+        if (saved === "dark" || saved === "light") document.documentElement.setAttribute("data-theme", saved);
       } catch (e) {}
     })();
   </script>
 </head>
 <body>
 
-  <!-- ========== صفحة تسجيل الدخول ========== -->
-  <div class="view" id="loginView" hidden>
-    <header class="topbar">
-      <div class="wrap">
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5"/><path d="M9 8.5h7M9 12h5"/></svg>
-          </span>
-          <span>بنك الأسئلة</span>
-        </div>
-        <button class="icon-btn" type="button" data-theme-toggle aria-label="تبديل الوضع بين الفاتح والداكن">
-          <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-          <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-        </button>
-      </div>
-    </header>
-
-    <main class="login-main">
-      <div class="login-card">
-        <div>
-          <h1>أهلاً بيك</h1>
-          <p>سجّل دخولك عشان تدخل بنك الأسئلة والكويزات.</p>
-        </div>
-
-        <label class="remember" for="remember">
-          <span>تذكرني<small>ماتسجلش دخول تاني على الجهاز ده</small></span>
-          <input type="checkbox" id="remember" checked>
-          <span class="switch" aria-hidden="true"></span>
-        </label>
-
-        <button class="google-btn" id="googleBtn" type="button">
-          <svg class="g-logo" width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-          </svg>
-          <span class="spinner" aria-hidden="true"></span>
-          <span id="btnLabel">سجّل</span>
-        </button>
-
-        <div class="status" id="status" role="status" aria-live="polite"></div>
-      </div>
-    </main>
+  <div class="page" id="loadingView">
+    <div class="loading">
+      <div class="loader" aria-hidden="true"></div>
+      <p><strong id="loadTitle">ثانية واحدة...</strong><span id="loadSub">بنتأكد من الجلسة</span></p>
+    </div>
   </div>
 
-  <!-- ========== الصفحة الرئيسية ========== -->
-  <div class="view" id="homeView" hidden>
-    <header class="topbar">
-      <div class="wrap">
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5"/><path d="M9 8.5h7M9 12h5"/></svg>
-          </span>
-          <span>بنك الأسئلة</span>
+  <div class="page" id="loginView" hidden>
+    <main class="login-card">
+      <div>
+        <div class="card-head">
+          <div class="mini-brand" role="img" aria-label="بنك الأسئلة">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5"/><path d="M9 8.5h7M9 12h5"/></svg>
+          </div>
+          <h1>أهلاً بيك في بنك الأسئلة</h1>
         </div>
-
-        <div class="user-chip">
-          <span id="avatarSlot"></span>
-          <span class="user-name" id="userName"></span>
-        </div>
-
-        <button class="icon-btn" type="button" data-theme-toggle aria-label="تبديل الوضع بين الفاتح والداكن">
-          <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-          <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-        </button>
-
-        <button class="btn" id="logoutBtn" type="button">خروج</button>
+        <p class="card-sub">سجّل دخولك عشان تدخل بنك الأسئلة والكويزات.</p>
       </div>
-    </header>
 
-    <main class="home-main">
-      <div class="wrap">
-        <h1 id="hello">أهلاً بيك</h1>
-        <div class="placeholder-box">
-          <p>المواد والكويزات هتلاقيها هنا.</p>
+      <!-- الحساب اللي فاضل محفوظ -->
+      <div class="remembered-user" id="rememberedBox" hidden>
+        <div class="avatar" id="remAvatar">؟</div>
+        <div class="meta">
+          <b id="remName">مستخدم</b>
+          <small id="remEmail"></small>
         </div>
+        <button class="switch-user" id="switchUser" type="button">تغيير</button>
       </div>
+
+      <label class="remember" for="remember">
+        <span>تذكرني<small>ماتسجلش دخول تاني على الجهاز ده</small></span>
+        <input type="checkbox" id="remember" checked>
+        <span class="switch" aria-hidden="true"></span>
+      </label>
+
+      <button class="google-btn" id="googleBtn" type="button">
+        <svg class="g-logo" width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="btnLabel">سجّل بحساب Google</span>
+      </button>
+
+      <div class="status" id="status" role="status" aria-live="polite"></div>
     </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
-    // بيانات المشروع (Project Settings -> API)
     var SUPABASE_URL = "https://gcumvhqxcbgtedqnuzvr.supabase.co";
     var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
-    /* ============================================================ */
+    var HOME_PAGE  = "index.html";
+    var LOGIN_PAGE = "login.html"; // اسم صفحتك
 
     (function () {
-      var loginView = document.getElementById("loginView");
-      var homeView = document.getElementById("homeView");
-      var btn = document.getElementById("googleBtn");
-      var label = document.getElementById("btnLabel");
-      var statusEl = document.getElementById("status");
-      var avatarSlot = document.getElementById("avatarSlot");
-      var nameEl = document.getElementById("userName");
-      var helloEl = document.getElementById("hello");
-      var logoutBtn = document.getElementById("logoutBtn");
-      var rememberBox = document.getElementById("remember");
-      try { rememberBox.checked = localStorage.getItem("qb-remember") !== "0"; } catch (e) {}
+      var loadingView  = document.getElementById("loadingView");
+      var loginView    = document.getElementById("loginView");
+      var loadTitle    = document.getElementById("loadTitle");
+      var loadSub      = document.getElementById("loadSub");
+      var btn          = document.getElementById("googleBtn");
+      var label        = document.getElementById("btnLabel");
+      var statusEl     = document.getElementById("status");
+      var rememberBox  = document.getElementById("remember");
+      var rememberedBox= document.getElementById("rememberedBox");
+      var remAvatar    = document.getElementById("remAvatar");
+      var remName      = document.getElementById("remName");
+      var remEmail     = document.getElementById("remEmail");
+      var switchUser   = document.getElementById("switchUser");
 
-      var configured =
-        SUPABASE_URL.indexOf("YOUR-PROJECT-REF") === -1 &&
-        SUPABASE_ANON_KEY.indexOf("YOUR-ANON") === -1;
-      // لو "تذكرني" مفعّل الجلسة بتتحفظ على الجهاز، وإلا بتتقفل مع التبويب
+      /* ===== تذكرني ===== */
       function remembered() {
         try { return localStorage.getItem("qb-remember") !== "0"; } catch (e) { return true; }
       }
+      try { rememberBox.checked = remembered(); } catch (e) {}
+
+      /* ===== آخر مستخدم محفوظ ===== */
+      function getLastUser() {
+        try { return JSON.parse(localStorage.getItem("qb-last-user") || "null"); }
+        catch (e) { return null; }
+      }
+      function setLastUser(u) {
+        try { localStorage.setItem("qb-last-user", JSON.stringify(u || {})); } catch (e) {}
+      }
+      function clearLastUser() {
+        try { localStorage.removeItem("qb-last-user"); } catch (e) {}
+      }
+
+      /* ===== التخزين حسب "تذكرني" ===== */
       var authStorage = {
-        getItem: function (k) {
-          try { return localStorage.getItem(k) || sessionStorage.getItem(k); } catch (e) { return null; }
-        },
+        getItem: function (k) { try { return localStorage.getItem(k) || sessionStorage.getItem(k); } catch (e) { return null; } },
         setItem: function (k, v) {
           try {
             var keep = remembered();
@@ -303,29 +236,15 @@
             (keep ? sessionStorage : localStorage).removeItem(k);
           } catch (e) {}
         },
-        removeItem: function (k) {
-          try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {}
-        }
+        removeItem: function (k) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} }
       };
-      var sb = configured
-        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storage: authStorage } })
-        : null;
 
-      /* ---------- الوضع الفاتح / الداكن ---------- */
-      function isDark() {
-        var t = document.documentElement.getAttribute("data-theme");
-        if (t) return t === "dark";
-        return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-      }
-      document.querySelectorAll("[data-theme-toggle]").forEach(function (b) {
-        b.addEventListener("click", function () {
-          var next = isDark() ? "light" : "dark";
-          document.documentElement.setAttribute("data-theme", next);
-          try { localStorage.setItem("qb-theme", next); } catch (e) {}
-        });
-      });
+      var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storage: authStorage } });
 
-      /* ---------- التنقل بين الصفحتين ---------- */
+      function homeUrl()  { return new URL(HOME_PAGE,  window.location.href).href; }
+      function loginUrl() { return new URL(LOGIN_PAGE, window.location.href).href; }
+      function goHome()   { window.location.replace(homeUrl()); }
+
       function setStatus(msg, isError) {
         statusEl.textContent = msg || "";
         statusEl.className = "status" + (isError ? " error" : "");
@@ -333,107 +252,148 @@
       function resetButton() {
         btn.disabled = false;
         btn.removeAttribute("aria-busy");
-        label.textContent = "سجّل";
+        label.textContent = "سجّل بحساب Google";
+      }
+      function showLoading(title, sub) {
+        loadTitle.textContent = title;
+        loadSub.textContent   = sub || "";
+        loadingView.hidden = false;
+        loginView.hidden   = true;
       }
       function showLogin() {
-        homeView.hidden = true;
-        loginView.hidden = false;
+        loadingView.hidden = true;
+        loginView.hidden   = false;
         resetButton();
       }
 
-      function initialsAvatar(name) {
-        var span = document.createElement("span");
-        span.className = "avatar";
-        span.textContent = (name || "؟").trim().charAt(0).toUpperCase();
-        return span;
+      /* ===== عرض الحساب المحفوظ فوق ===== */
+      function paintRemembered() {
+        var u = getLastUser();
+        if (!u || !u.email) { rememberedBox.hidden = true; return; }
+        rememberedBox.hidden = false;
+        var initial = (u.name || u.email || "؟").trim().charAt(0).toUpperCase();
+        remAvatar.textContent = initial;
+        remName.textContent   = u.name || "مستخدم";
+        remEmail.textContent  = u.email;
+        // زرار Google يبقى فيه اسم الحساب
+        label.textContent = "ادخل بحساب " + (u.name || u.email);
       }
 
-      function showHome(user) {
-        var meta = user.user_metadata || {};
-        var fullName = meta.full_name || meta.name || "مستخدم";
-        var photo = meta.avatar_url || meta.picture || "";
+      /* ===== هل URL فيه خطأ من OAuth؟ ===== */
+      function urlHasOAuthError() {
+        var s = (window.location.search || "") + (window.location.hash || "");
+        return /error=/.test(s);
+      }
 
-        nameEl.textContent = fullName;
-        helloEl.textContent = "أهلاً يا " + fullName.split(" ")[0];
+      /* ===== محاولة الدخول التلقائي ===== */
+      var AUTO_KEY = "qb-auto-attempted";
 
-        avatarSlot.textContent = "";
-        if (photo) {
-          var img = document.createElement("img");
-          img.className = "avatar";
-          img.alt = "";
-          img.referrerPolicy = "no-referrer"; // صور جوجل أحياناً بترفض الطلب بدونها
-          img.src = photo;
-          img.addEventListener("error", function () {
-            avatarSlot.textContent = "";
-            avatarSlot.appendChild(initialsAvatar(fullName));
+      async function tryAutoLogin() {
+        var u = getLastUser();
+        if (!u || !u.email || !remembered()) return false;
+
+        // لو حاولنا قبل كده في نفس التبويب، مانكررش
+        try { if (sessionStorage.getItem(AUTO_KEY) === "1") return false; } catch (e) {}
+        try { sessionStorage.setItem(AUTO_KEY, "1"); } catch (e) {}
+
+        showLoading("ثانية واحدة...", "بنجيب بيانات حسابك (" + u.email + ")");
+
+        // ننتظر شوية عشان المستخدم يشوف الرسالة
+        await new Promise(function (r) { setTimeout(r, 900); });
+
+        try {
+          var res = await sb.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+              redirectTo: homeUrl(),
+              queryParams: {
+                login_hint: u.email,
+                prompt: "none"          // نحاول من غير ما يسأل عن الحساب
+              }
+            }
           });
-          avatarSlot.appendChild(img);
-        } else {
-          avatarSlot.appendChild(initialsAvatar(fullName));
-        }
-
-        loginView.hidden = true;
-        homeView.hidden = false;
-
-        // نظّف الرابط من بيانات الدخول بعد الرجوع من جوجل
-        if (window.location.hash || window.location.search.indexOf("code=") !== -1) {
-          history.replaceState(null, "", window.location.pathname);
+          if (res.error) throw res.error;
+          // signInWithOAuth بيعمل redirect تلقائي
+          return true;
+        } catch (e) {
+          // فشل → نظهر الفورم عادي
+          setStatus("مقدرناش نسترجع حسابك، اختار الحساب يدوي.", true);
+          showLogin();
+          return false;
         }
       }
 
-      /* ---------- الدخول بجوجل ---------- */
+      /* ===== زر Google ===== */
       btn.addEventListener("click", async function () {
         if (btn.disabled) return;
-        if (!sb) {
-          setStatus("تسجيل الدخول مش متاح دلوقتي، جرّب تاني بعد شوية.", true);
-          return;
-        }
-
         btn.disabled = true;
         btn.setAttribute("aria-busy", "true");
         label.textContent = "ثانية واحدة...";
         setStatus("");
         try { localStorage.setItem("qb-remember", rememberBox.checked ? "1" : "0"); } catch (e) {}
 
-        var result = await sb.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            // بيرجع لنفس الصفحة وبعدين بتظهر الرئيسية
-            redirectTo: window.location.origin + window.location.pathname,
-            // بيخلي جوجل يعرض شاشة اختيار الحساب كل مرة
-            queryParams: { prompt: "select_account" }
-          }
-        });
+        var u = getLastUser();
+        var opts = {
+          redirectTo: homeUrl(),
+          queryParams: { prompt: "select_account" }
+        };
+        if (u && u.email) opts.queryParams.login_hint = u.email;
 
+        var result = await sb.auth.signInWithOAuth({ provider: "google", options: opts });
         if (result.error) {
           resetButton();
           setStatus("ماقدرناش نفتح تسجيل الدخول، جرّب تاني.", true);
         }
-        // لو نجح، المتصفح بيتحول لجوجل لوحده
       });
 
-      /* ---------- الخروج ---------- */
-      logoutBtn.addEventListener("click", async function () {
-        if (sb) await sb.auth.signOut();
+      /* ===== تغيير الحساب ===== */
+      switchUser.addEventListener("click", function () {
+        clearLastUser();
+        try { sessionStorage.removeItem(AUTO_KEY); } catch (e) {}
+        paintRemembered();
+        rememberedBox.hidden = true;
+        resetButton();
+        setStatus("اختار حساب تاني من زرار Google.", false);
+      });
+
+      window.addEventListener("pageshow", function (e) { if (e.persisted) resetButton(); });
+
+      /* ===== البداية ===== */
+      (async function init() {
+        showLoading("ثانية واحدة...", "بنتأكد من الجلسة");
+
+        var hasSession = false;
+        try {
+          var r = await sb.auth.getSession();
+          hasSession = !!(r.data && r.data.session);
+        } catch (e) {}
+
+        if (hasSession) { goHome(); return; }
+
+        // لو رجعنا من OAuth بخطأ، منحاولش تلقائي
+        if (urlHasOAuthError()) {
+          try { sessionStorage.removeItem(AUTO_KEY); } catch (e) {}
+        }
+
+        // لو فيه حساب محفوظ + تذكرني شغال → دخول تلقائي
+        var auto = await tryAutoLogin();
+        if (auto) return;
+
+        // غير كده → الفورم
+        paintRemembered();
         showLogin();
-      });
+      })();
 
-      /* ---------- البداية ---------- */
-      if (!sb) {
-        showLogin();
-        setStatus("تسجيل الدخول مش متاح دلوقتي، جرّب تاني بعد شوية.", true);
-        return;
-      }
-
-      sb.auth.getSession().then(function (res) {
-        var session = res.data && res.data.session;
-        if (session) showHome(session.user);
-        else showLogin();
-      });
-
-      sb.auth.onAuthStateChange(function (event, session) {
-        if (event === "SIGNED_IN" && session) showHome(session.user);
-        if (event === "SIGNED_OUT") showLogin();
+      /* ===== احفظ إيميل المستخدم بمجرد الدخول (للصفحات التانية بيحصل ده في index) ===== */
+      sb.auth.onAuthStateChange(function (_evt, session) {
+        if (session && session.user) {
+          var m = session.user.user_metadata || {};
+          setLastUser({
+            email: session.user.email || "",
+            name:  m.full_name || m.name || (session.user.email || "").split("@")[0],
+            avatar: m.avatar_url || m.picture || ""
+          });
+        }
       });
     })();
   </script>

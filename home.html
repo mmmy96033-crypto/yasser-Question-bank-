@@ -4,6 +4,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover">
   <title>بنك الأسئلة</title>
+
+  <!-- التثبيت كتطبيق + أيقونة الموقع + معاينة اللينك (غيّر YOUR-DOMAIN بدومينك) -->
+  <meta name="theme-color" content="#0969da">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="بنك الأسئلة">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="بنك الأسئلة">
+  <meta property="og:description" content="امتحانات صح وغلط واختيار من متعدد">
+  <meta property="og:image" content="https://YOUR-DOMAIN/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://YOUR-DOMAIN/og-image.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
@@ -197,6 +213,14 @@
     .result-note.ok { color: var(--ok); }
     .result-note.no { color: var(--danger); }
 
+    /* عدّادات النتيجة */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat { text-align: center; padding: 10px 4px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2); }
+    .stat strong { display: block; font-size: 24px; line-height: 1.3; }
+    .stat span { font-size: 13px; color: var(--muted); }
+    .stat.ok strong { color: var(--ok); }
+    .stat.no strong { color: var(--danger); }
+
     /* قايمة الصورة */
     .menu { display: grid; gap: 8px; }
     .menu-item {
@@ -232,16 +256,10 @@
     .exam-top strong { display: block; font-size: 17px; overflow-wrap: anywhere; }
     .exam-top small { color: var(--muted); font-size: 13px; }
     .exam-top-in > div:first-child { min-width: 0; }
-    .exam-timer {
-      font-variant-numeric: tabular-nums; font-weight: 600; font-size: 18px; direction: ltr;
-      padding: 4px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); flex: none;
-    }
-    .exam-timer.low { color: var(--danger); border-color: var(--danger); }
     .exam-body { flex: 1; overflow: auto; padding: 16px; }
     .exam-body-in { display: grid; gap: 14px; align-content: start; max-width: 720px; width: 100%; margin: 0 auto; grid-template-columns: minmax(0, 1fr); }
     .q { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
     .q-body { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
-    .q-body small { color: var(--muted); font-weight: 500; margin-inline-end: 6px; }
     .opts { display: grid; gap: 8px; }
     .opt {
       text-align: start; cursor: pointer; display: flex; align-items: center; gap: 10px;
@@ -251,12 +269,33 @@
     .opt .dot { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); }
     .opt[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
     .opt[aria-pressed="true"] .dot { border-color: var(--accent); background: radial-gradient(circle, var(--accent) 45%, transparent 50%); }
+    .opt:disabled { cursor: default; opacity: 1; }
+    .opt.right { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, var(--surface)); }
+    .opt.right .dot { border-color: var(--ok); background: radial-gradient(circle, var(--ok) 45%, transparent 50%); }
+    .opt.wrong { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 14%, var(--surface)); }
+    .opt.wrong .dot { border-color: var(--danger); background: radial-gradient(circle, var(--danger) 45%, transparent 50%); }
     .exam-foot {
       padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
       background: var(--surface); border-top: 1px solid var(--border);
       border-radius: 20px 20px 0 0; box-shadow: 0 -6px 16px var(--shadow);
     }
     .exam-foot .btn-primary { width: 100%; max-width: 720px; display: block; margin: 0 auto; }
+
+    /* دايرة العدّ التنازلي (١٠ ثواني) */
+    .ring { position: relative; width: 120px; height: 120px; margin: 4px auto 0; }
+    .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring circle { fill: none; stroke-width: 8; }
+    .ring .bg { stroke: var(--border); }
+    .ring .fg { stroke: var(--accent); stroke-linecap: round; }
+    .ring.low .fg { stroke: var(--danger); }
+    .ring span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .ring.low span { color: var(--danger); }
+    .qtype { justify-self: center; }
+    .fb { border-radius: 12px; padding: 12px 14px; border: 1px solid var(--border); display: grid; gap: 4px; font-size: 15px; }
+    .fb.right { border-color: var(--ok); } .fb.right strong { color: var(--ok); }
+    .fb.wrong { border-color: var(--danger); } .fb.wrong strong { color: var(--danger); }
+    .fb.skip { border-color: var(--muted); }
+    .fb-ex { color: var(--muted); }
 
     /* ---------- الأوائل ---------- */
     .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
@@ -294,7 +333,6 @@
     .lb-name { flex: 1; min-width: 0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .lb-pts { flex: none; font-weight: 600; font-variant-numeric: tabular-nums; }
     .lb-pts small { color: var(--muted); font-weight: 500; margin-inline-start: 4px; }
-    .lb-sep { text-align: center; color: var(--muted); letter-spacing: 4px; margin: 2px 0; }
 
     /* ---------- الصور ---------- */
     .avatar {
@@ -376,6 +414,9 @@
     .switch-row input:checked + .switch .k-moon { display: block; }
     .switch-row input:focus-visible + .switch { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+    .install-row { display: flex; align-items: center; gap: 12px; }
+    .install-ic { width: 52px; height: 52px; border-radius: 14px; box-shadow: 0 2px 8px var(--shadow); flex: none; }
+
     .account { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .account .avatar { --av: 46px; }
     .acc-sub { font-weight: 400; font-size: 13.5px; color: var(--muted); overflow-wrap: anywhere; }
@@ -437,12 +478,10 @@
     @media (min-width: 860px) {
       .settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
     }
-    /* ---------- لابتوب ---------- */
     @media (min-width: 1100px) {
       :root { --maxw: 1040px; }
       .exam-body { padding-block: 24px; }
     }
-
     @media (prefers-reduced-motion: reduce) {
       .loader { animation-duration: 2s; }
       * { transition: none !important; }
@@ -604,6 +643,27 @@
               </label>
             </div>
 
+            <!-- تثبيت التطبيق -->
+            <div class="set-card">
+              <h2 class="set-title">تثبيت التطبيق</h2>
+              <div class="install-row">
+                <img class="install-ic" src="icon-192.png" alt="">
+                <div><strong>بنك الأسئلة</strong><div class="acc-sub">ثبّته كتطبيق على موبايلك</div></div>
+              </div>
+              <button class="btn-primary" id="installBtn" type="button">تثبيت التطبيق</button>
+              <p class="field-msg" id="installMsg"></p>
+            </div>
+
+            <!-- عن التطبيق -->
+            <div class="set-card">
+              <h2 class="set-title">عن التطبيق</h2>
+              <div class="info">
+                <div class="row"><span class="k">الإصدار:</span><span class="v" id="appVer"></span></div>
+                <div class="row"><span class="k">آخر تحديث:</span><span class="v">أكتوبر ٢٠٢٦</span></div>
+                <div class="row"><span class="k">المطوّر:</span><span class="v" dir="ltr">Yasser Ayman</span></div>
+              </div>
+            </div>
+
             <div class="set-card">
               <div class="account">
                 <span id="accAvatar"></span>
@@ -643,12 +703,11 @@
           <strong id="exSubject"></strong>
           <small id="exProgress"></small>
         </div>
-        <div class="exam-timer" id="exTimer">00:00</div>
       </div>
     </div>
     <div class="exam-body"><div class="exam-body-in" id="exBody"></div></div>
     <div class="exam-foot">
-      <button class="btn-primary" id="exSubmit" type="button">تسليم الامتحان</button>
+      <button class="btn-primary" id="exSubmit" type="button">السؤال التالي</button>
     </div>
   </div>
 
@@ -669,6 +728,8 @@
 
     (function () {
       "use strict";
+
+      var APP_VERSION = "2.0.0";
 
       /* ============ أدوات صغيرة ============ */
       const $ = (id) => document.getElementById(id);
@@ -743,7 +804,7 @@
         const parts = (name || "").trim().split(/\s+/).filter(Boolean);
         if (!parts.length) return "؟";
         const first = (w) => Array.from(w)[0].toUpperCase();
-        return parts.length > 1 ? first(parts[0]) + " " + first(parts[1]) : first(parts[0]);
+        return parts.length > 1 ? first(parts[0]) + " " + first(parts[1]) : first(parts[0]);
       }
 
       function avatarEl(url, name, cls) {
@@ -767,7 +828,7 @@
       const bigUrl = (url) => (url && /googleusercontent\.com/.test(url)) ? url.replace(/=s\d+(-c)?/, "=s512-c") : url;
 
       /* ============ تخمين النوع من الاسم ============ */
-      const normAr = (s) => (s || "").replace(/[ً-ٰٟـ]/g, "").replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/\s+/g, " ").trim();
+      const normAr = (s) => (s || "").replace(/[ً-ٰٟـ]/g, "").replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/\s+/g, " ").trim();
       const keyAr = (w) => w.replace(/ة$/, "ه");
       const mkSet = (str) => new Set(str.split(" ").filter(Boolean).map((x) => keyAr(normAr(x))));
       const F_AR = mkSet("سارة مريم فاطمة نورهان نورا هدى ندى منى هاجر اية ايه ملك ملاك رحمة شهد شيماء شيما دعاء اسماء اميرة امل امال امنية ايمان الاء رنا رنيم ريم ريماس روان رودينا سلمى سلوى سمر سمية سناء سهى سهام سعاد صفاء صفية ضحى عائشة عايشة عبير علا علياء عزة غادة غدير فرح فريدة فاتن فدوى لمياء لبنى ليلى لينا لجين ليان لارا لمى ماجدة مروة مي ميار ميرنا ميرال مها ميادة منال منار مرفت ناهد نادية نجلاء نشوى نهى نيرة نيرمين نسمة نسرين هبة هدير هالة هناء هند هنا هيام وفاء ولاء ياسمين يمنى يارا يسرا بسمة بتول جميلة جنى جنة جيهان حبيبة حنان حنين حلا خلود خديجة دينا دانا داليا دارين رشا رباب رانيا رزان زينب زهراء زينة سجى سما سماء شروق شذى شادية فيروز كريمة كاميليا كوثر مارينا ماريا ماري ميرفت مديحة نانسي نبيلة نرمين نوال نورين هيفاء ورد وردة انجي ايناس اسراء ابتسام ايفا ريهام رحاب رقية ريناد سلسبيل سندس شهيرة صابرين عفاف عواطف فتحية فوزية لطيفة ليالي مايا ماجي مرام منة نهال نيفين وعد ياسمينا يقين");
@@ -1163,6 +1224,7 @@
 
           box.appendChild(h("h2", null, "ابدأ الامتحان"));
           box.appendChild(infoRows(exam));
+          box.appendChild(h("p", "sub", "كل سؤال ليه ١٠ ثواني. لو الوقت خلص من غير إجابة هيتحسب بنص درجة."));
 
           const actions = h("div", "actions");
           const enter = h("button", "btn-primary", "ادخل");
@@ -1188,75 +1250,130 @@
         });
       }
 
-      /* ============ شاشة الامتحان ============ */
-      const cur = { exam: null, questions: [], answers: {}, endsAt: 0, timer: null, submitting: false };
-      const draftKey = () => "qb-draft-" + me.id + "-" + cur.exam.id;
+      /* ============ شاشة الامتحان (سؤال بسؤال، ١٠ ثواني) ============ */
+      const QSEC = 10, CIRC = 2 * Math.PI * 45;
+      const cur = { exam: null, qs: [], i: 0, res: [], endsAt: 0, timer: null, locked: false, finishing: false, mode: "next", optEls: [] };
 
-      function updateProgress() {
-        const done = cur.questions.filter((q) => cur.answers[q.id] != null).length;
-        $("exProgress").textContent = "اتجاوب " + ar(done) + " من " + ar(cur.questions.length);
+      function setFoot(label, disabled) {
+        const b = $("exSubmit");
+        b.textContent = label;
+        b.disabled = !!disabled;
       }
 
       function openExam(exam, data) {
         cur.exam = exam;
-        cur.questions = (data && data.questions) || [];
+        cur.qs = (data && data.questions) || [];
+        cur.i = 0; cur.res = []; cur.finishing = false; cur.mode = "next";
         cur.endsAt = new Date((data && data.ends_at) || exam.ends_at).getTime();
-        cur.submitting = false;
-        cur.answers = {};
-        try { cur.answers = JSON.parse(localStorage.getItem(draftKey()) || "{}") || {}; } catch (e) {}
-
         $("exSubject").textContent = exam.subject;
-        const body = $("exBody");
-        body.innerHTML = "";
-
-        if (!cur.questions.length) {
+        $("examScreen").hidden = false;
+        document.body.style.overflow = "hidden";
+        if (!cur.qs.length) {
+          const body = $("exBody");
+          body.innerHTML = "";
           const empty = h("div", "empty");
           empty.appendChild(h("p", null, "الامتحان لسه مفيهوش أسئلة."));
           body.appendChild(empty);
-          $("exSubmit").textContent = "رجوع";
-        } else {
-          $("exSubmit").textContent = "تسليم الامتحان";
-          cur.questions.forEach((q, i) => {
-            const card = h("div", "q");
-            const qb = h("p", "q-body");
-            qb.appendChild(h("small", null, ar(i + 1) + "."));
-            qb.appendChild(document.createTextNode(q.body));
-            card.appendChild(qb);
-            const opts = h("div", "opts");
-            (q.options || []).forEach((txt, idx) => {
-              const o = h("button", "opt");
-              o.type = "button";
-              o.appendChild(h("span", "dot"));
-              o.appendChild(h("span", null, String(txt)));
-              o.setAttribute("aria-pressed", cur.answers[q.id] === idx ? "true" : "false");
-              o.addEventListener("click", () => {
-                cur.answers[q.id] = idx;
-                Array.prototype.forEach.call(opts.children, (c, ci) => c.setAttribute("aria-pressed", ci === idx ? "true" : "false"));
-                try { localStorage.setItem(draftKey(), JSON.stringify(cur.answers)); } catch (e) {}
-                updateProgress();
-              });
-              opts.appendChild(o);
-            });
-            card.appendChild(opts);
-            body.appendChild(card);
-          });
+          $("exProgress").textContent = "";
+          cur.mode = "close";
+          setFoot("رجوع", false);
+          return;
         }
-        updateProgress();
-        $("examScreen").hidden = false;
-        document.body.style.overflow = "hidden";
-        $("examScreen").querySelector(".exam-body").scrollTop = 0;
-
-        clearInterval(cur.timer);
-        tickExam();
-        cur.timer = setInterval(tickExam, 1000);
+        showQ();
       }
 
-      function tickExam() {
-        const left = cur.endsAt - now();
-        const t = $("exTimer");
-        t.textContent = ar(fmtLeft(left));
-        t.classList.toggle("low", left <= 60000);
-        if (left <= 0 && !cur.submitting) submitExam(true);
+      function showQ() {
+        const q = cur.qs[cur.i];
+        cur.locked = false;
+        $("exProgress").textContent = "سؤال " + ar(cur.i + 1) + " من " + ar(cur.qs.length);
+        const body = $("exBody");
+        body.innerHTML = "";
+        body.parentNode.scrollTop = 0;
+
+        const card = h("div", "q");
+        const ring = h("div", "ring");
+        ring.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" id="ringFg" cx="50" cy="50" r="45"/></svg><span id="ringNum"></span>';
+        card.appendChild(ring);
+        card.appendChild(h("span", "chip qtype", q.kind === "tf" ? "صح وغلط" : "اختيار من متعدد"));
+        card.appendChild(h("p", "q-body", q.body));
+
+        const opts = h("div", "opts");
+        const list = (q.options && q.options.length) ? q.options : ["صح", "غلط"];
+        cur.optEls = list.map((txt, idx) => {
+          const o = h("button", "opt");
+          o.type = "button";
+          o.appendChild(h("span", "dot"));
+          o.appendChild(h("span", null, String(txt)));
+          o.setAttribute("aria-pressed", "false");
+          o.addEventListener("click", () => reveal(idx));
+          opts.appendChild(o);
+          return o;
+        });
+        card.appendChild(opts);
+
+        const fb = h("div", "fb");
+        fb.id = "fb";
+        fb.hidden = true;
+        card.appendChild(fb);
+        body.appendChild(card);
+        setFoot("اختار إجابة", true);
+
+        const fg = $("ringFg"), num = $("ringNum"), t0 = now();
+        fg.style.strokeDasharray = CIRC;
+        clearInterval(cur.timer);
+        const tick = () => {
+          const el = now() - t0, left = Math.max(0, QSEC * 1000 - el);
+          fg.style.strokeDashoffset = CIRC * Math.min(1, el / (QSEC * 1000));
+          num.textContent = ar(Math.ceil(left / 1000));
+          ring.classList.toggle("low", left <= 3000);
+          if (left <= 0 || now() >= cur.endsAt) reveal(null);
+        };
+        tick();
+        cur.timer = setInterval(tick, 100);
+      }
+
+      async function reveal(choice) {
+        if (cur.locked) return;
+        cur.locked = true;
+        clearInterval(cur.timer);
+        const q = cur.qs[cur.i];
+        cur.optEls.forEach((o) => { o.disabled = true; });
+        if (choice != null) cur.optEls[choice].setAttribute("aria-pressed", "true");
+        setFoot("ثانية واحدة...", true);
+
+        let r = null;
+        try {
+          const x = await sb.rpc("check_answer", { p_exam_id: cur.exam.id, p_question_id: q.id, p_choice: choice == null ? -1 : choice });
+          if (!x.error) r = x.data;
+        } catch (e) {}
+
+        const status = choice == null ? "skip" : (r && r.is_correct ? "right" : "wrong");
+        cur.res[cur.i] = { id: q.id, choice: choice, status: status };
+        const good = r ? cur.optEls[r.correct_index] : null;
+        if (good) good.classList.add("right");
+        if (status === "wrong") cur.optEls[choice].classList.add("wrong");
+
+        const fb = $("fb");
+        fb.className = "fb " + status;
+        fb.innerHTML = "";
+        fb.appendChild(h("strong", null, status === "right" ? "✔ إجابة صحيحة" : status === "wrong" ? "✘ إجابة خاطئة" : "⏰ انتهى الوقت (بنص درجة)"));
+        if (good && status !== "right") fb.appendChild(h("div", null, "الإجابة الصحيحة: " + good.textContent));
+        if (r && r.explanation) fb.appendChild(h("div", "fb-ex", "الدليل: " + r.explanation));
+        if (!r) fb.appendChild(h("div", null, "ماقدرناش نجيب الإجابة الصحيحة."));
+        fb.hidden = false;
+        fb.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        setFoot(cur.i + 1 >= cur.qs.length ? "عرض النتيجة" : "السؤال التالي", false);
+      }
+
+      function nextQ() {
+        if (!cur.locked || cur.finishing) return;
+        cur.i++;
+        if (cur.i >= cur.qs.length || now() >= cur.endsAt) {
+          for (let k = cur.i; k < cur.qs.length; k++) cur.res[k] = { id: cur.qs[k].id, choice: null, status: "skip" };
+          finish();
+        } else {
+          showQ();
+        }
       }
 
       function closeExamScreen() {
@@ -1265,69 +1382,47 @@
         document.body.style.overflow = "";
       }
 
-      const SUBMIT_ERRORS = {
-        exam_ended: "الوقت خلص قبل ما التسليم يوصل.",
-        already_submitted: "أنت سلّمت الامتحان ده قبل كده.",
-        not_started: "الامتحان ده ماتفتحش من الأول."
-      };
-
-      async function submitExam(auto) {
-        if (cur.submitting) return;
-        if (!cur.questions.length) { closeExamScreen(); loadExams(); return; }
-        cur.submitting = true;
-        $("exSubmit").disabled = true;
-        $("exSubmit").textContent = "بنسلّم...";
-
-        let res = null;
-        try { res = await sb.rpc("submit_exam", { p_exam_id: cur.exam.id, p_answers: cur.answers }); } catch (e) { res = { error: e }; }
-
-        if (res.error) {
-          const msg = errText(res.error, SUBMIT_ERRORS, "ماقدرناش نسلّم الامتحان، جرّب تاني.");
-          const terminal = Object.keys(SUBMIT_ERRORS).some((k) => (res.error.message || "").indexOf(k) !== -1);
-          if (terminal) {
-            closeExamScreen();
-            try { localStorage.removeItem(draftKey()); } catch (e) {}
-            toast(msg, true);
-            loadExams();
-          } else {
-            cur.submitting = false;
-            $("exSubmit").disabled = false;
-            $("exSubmit").textContent = "تسليم الامتحان";
-            toast(msg, true);
-          }
-          return;
-        }
-
-        try { localStorage.removeItem(draftKey()); } catch (e) {}
+      async function finish() {
+        cur.finishing = true;
+        setFoot("بنسلّم...", true);
+        const answers = {};
+        cur.res.forEach((x) => { answers[x.id] = x.choice == null ? -1 : x.choice; });
+        let sr = null;
+        try {
+          const r = await sb.rpc("submit_exam", { p_exam_id: cur.exam.id, p_answers: answers });
+          if (!r.error) sr = r.data;
+        } catch (e) {}
         closeExamScreen();
-        $("exSubmit").disabled = false;
-        const r = res.data || {};
+
+        const c = { right: 0, wrong: 0, skip: 0 };
+        cur.res.forEach((x) => { c[x.status]++; });
+        const total = cur.qs.length, score = c.right + c.skip * 0.5;
+        const pp = (sr && sr.pass_percent) || 50;
+        const passed = total > 0 && (score / total) * 100 >= pp;
+
         await loadExams();
         openModal((box) => {
-          box.appendChild(h("h2", null, auto ? "الوقت خلص وتم التسليم" : "تم تسليم الامتحان"));
+          box.appendChild(h("h2", null, "تم تسليم الامتحان"));
           box.appendChild(h("p", "sub", cur.exam.subject));
-          box.appendChild(h("div", "result-score", ar(r.score) + " / " + ar(r.total)));
-          box.appendChild(h("div", "result-note " + (r.passed ? "ok" : "no"),
-            r.passed ? "ناجح" : "لم تنجح (المطلوب " + ar(r.pass_percent) + "٪)"));
+          box.appendChild(h("div", "result-score", ar(String(score).replace(".", "٫")) + " / " + ar(total)));
+          box.appendChild(h("div", "result-note " + (passed ? "ok" : "no"), passed ? "ناجح" : "لم تنجح (المطلوب " + ar(pp) + "٪)"));
+          const st = h("div", "stats");
+          [["ok", c.right, "صح"], ["no", c.wrong, "خطأ"], ["", c.skip, "لم تجاوب"]].forEach((s) => {
+            const d = h("div", "stat " + s[0]);
+            d.appendChild(h("strong", null, ar(s[1])));
+            d.appendChild(h("span", null, s[2]));
+            st.appendChild(d);
+          });
+          box.appendChild(st);
           const actions = h("div", "actions");
           actions.appendChild(modalBtn("تمام", "btn-primary", closeModal));
           box.appendChild(actions);
-        });
+        }, true);
       }
 
       $("exSubmit").addEventListener("click", () => {
-        if (!cur.questions.length) { closeExamScreen(); loadExams(); return; }
-        const left = cur.questions.filter((q) => cur.answers[q.id] == null).length;
-        openModal((box) => {
-          box.appendChild(h("h2", null, "تسليم الامتحان؟"));
-          box.appendChild(h("p", "sub", left > 0
-            ? "لسه فيه " + ar(left) + " سؤال من غير إجابة."
-            : "جاوبت على كل الأسئلة."));
-          const actions = h("div", "actions");
-          actions.appendChild(modalBtn("سلّم", "btn-primary", () => { closeModal(); submitExam(false); }));
-          actions.appendChild(modalBtn("كمّل", "btn-ghost", closeModal));
-          box.appendChild(actions);
-        });
+        if (cur.mode === "close") { closeExamScreen(); loadExams(); return; }
+        nextQ();
       });
 
       /* ============ الأوائل ============ */
@@ -1453,6 +1548,7 @@
         paintGender();
         paintSwatches();
         paintTheme();
+        paintInstall();
         if (document.activeElement !== $("phone")) $("phone").value = me.phone || "";
       }
 
@@ -1644,6 +1740,33 @@
         try { await sb.auth.signOut(); } catch (e) {}
         goLogin();
       });
+
+      /* ============ تثبيت التطبيق والإصدار ============ */
+      $("appVer").textContent = ar(APP_VERSION);
+      let deferredPrompt = null;
+      const isStandalone = () => (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+      function paintInstall() {
+        if (isStandalone()) {
+          $("installBtn").disabled = true;
+          $("installBtn").textContent = "التطبيق مثبّت ✔";
+        }
+      }
+      window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferredPrompt = e; });
+      window.addEventListener("appinstalled", () => { deferredPrompt = null; paintInstall(); toast("اتثبّت التطبيق"); });
+      $("installBtn").addEventListener("click", async () => {
+        const msg = $("installMsg");
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          try { await deferredPrompt.userChoice; } catch (e) {}
+          deferredPrompt = null;
+        } else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+          msg.textContent = "من سفاري: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».";
+        } else {
+          msg.textContent = "من قايمة المتصفح (⋮) اختار «تثبيت التطبيق».";
+        }
+      });
+      paintInstall();
+      if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
       /* ============ إكمال البيانات الإجباري (النوع والتليفون) ============ */
       function openGate(needG, needP) {

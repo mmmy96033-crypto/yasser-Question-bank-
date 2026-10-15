@@ -1,5 +1,5 @@
 const C = "qb-v2";
-self.addEventListener("install", e => { self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(["./icon-192.png"]))); });
+self.addEventListener("install", e => { self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(["./https://i.supaimg.com/965e0c3e-50d9-4ba0-97dc-487d00fde583/ef7c87c4-67fe-4ba2-b901-69ca8ee7225d.png"]))); });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(k => Promise.all(k.filter(x => x !== C).map(x => caches.delete(x)))).then(() => self.clients.claim()));
 });

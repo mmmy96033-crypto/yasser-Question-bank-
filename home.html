@@ -263,6 +263,7 @@
     .seg button { border: none; background: transparent; padding: 9px; border-radius: 9px; font-weight: 600; font-size: 14.5px; cursor: pointer; color: var(--muted); }
     .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
     .lb-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+    .chip.total { margin-inline-start: auto; color: var(--accent); border-color: var(--accent); }
     .lb-updated { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
 
     .podium { display: flex; align-items: flex-end; justify-content: center; gap: 10px; margin: 26px 0 22px; }
@@ -819,7 +820,7 @@
       };
       let offset = 0;                                   // فرق الساعة بين السيرفر والتليفون
       const now = () => Date.now() + offset;
-      const state = { exams: [], attempts: {}, period: "month", page: "home", cards: {} };
+      const state = { exams: [], attempts: {}, period: "month", studentsCount: null, page: "home", cards: {} };
 
       async function loadProfile() {
         const m = me.user.user_metadata || {};
@@ -1363,40 +1364,37 @@
         if (!rows.length) {
           const empty = h("div", "empty");
           empty.style.marginTop = "16px";
-          empty.appendChild(h("p", null, "لسه محدش خلّص امتحان ونجح. الترتيب هيظهر هنا بعد أول امتحان."));
+          empty.appendChild(h("p", null, "لسه محدش سلّم امتحان. الترتيب هيظهر هنا بعد أول تسليم."));
           body.appendChild(empty);
           return;
         }
 
         const meta = h("div", "lb-meta");
-        meta.appendChild(h("span", "chip", "أفضل ٢٠"));
         meta.appendChild(h("span", "chip", ar(rows.length) + " طالب في الترتيب"));
+        if (state.studentsCount != null) {
+          meta.appendChild(h("span", "chip total", ar(state.studentsCount) + " طالب على المنصة"));
+        }
         body.appendChild(meta);
 
-        const top = rows.slice(0, 20);
         const podium = h("div", "podium");
-        podium.appendChild(podiumSlot(top[1] || null, "p2"));
-        podium.appendChild(podiumSlot(top[0] || null, "p1"));
-        podium.appendChild(podiumSlot(top[2] || null, "p3"));
+        podium.appendChild(podiumSlot(rows[1] || null, "p2"));
+        podium.appendChild(podiumSlot(rows[0] || null, "p1"));
+        podium.appendChild(podiumSlot(rows[2] || null, "p3"));
         body.appendChild(podium);
 
         const list = h("div", "lb-list");
-        top.slice(3).forEach((row) => list.appendChild(lbRow(row)));
+        rows.slice(3).forEach((row) => list.appendChild(lbRow(row)));
         body.appendChild(list);
-
-        const mine = rows.find((r) => r.user_id === me.id);
-        if (mine && mine.place > 20) {
-          body.appendChild(h("div", "lb-sep", "• • •"));
-          const l2 = h("div", "lb-list");
-          l2.appendChild(lbRow(mine));
-          body.appendChild(l2);
-        }
       }
 
       async function loadLeaders() {
         $("perMonth").setAttribute("aria-pressed", state.period === "month" ? "true" : "false");
         $("perAll").setAttribute("aria-pressed", state.period === "all" ? "true" : "false");
         let rows = [];
+        try {
+          const c = await sb.rpc("get_students_count");
+          if (!c.error && c.data != null) state.studentsCount = Number(c.data);
+        } catch (e) {}
         try {
           const r = await sb.rpc("get_leaderboard", { p_period: state.period });
           if (!r.error && r.data) rows = r.data.map((x) => ({

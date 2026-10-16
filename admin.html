@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>لوحة التحكم | بنك الأسئلة</title>
+  <link rel="icon" type="image/png" href="https://i.supaimg.com/965e0c3e-50d9-4ba0-97dc-487d00fde583/ef7c87c4-67fe-4ba2-b901-69ca8ee7225d.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+  <style>
+    :root {
+      --bg:#f6f8fa; --surface:#fff; --surface-2:#f6f8fa; --fg:#1f2328; --muted:#59636e; --border:#d1d9e0;
+      --accent:#0969da; --accent-fg:#fff; --danger:#cf222e; --ok:#1a7f37; --warn:#d29922;
+      --shadow:rgba(31,35,40,.10); --side:248px;
+      --font:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg:#0d1117; --surface:#151b23; --surface-2:#0d1117; --fg:#e6edf3; --muted:#9198a1; --border:#3d444d;
+        --accent:#4493f8; --accent-fg:#0d1117; --danger:#f85149; --ok:#3fb950; --shadow:rgba(0,0,0,.45); color-scheme:dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg:#0d1117; --surface:#151b23; --surface-2:#0d1117; --fg:#e6edf3; --muted:#9198a1; --border:#3d444d;
+      --accent:#4493f8; --accent-fg:#0d1117; --danger:#f85149; --ok:#3fb950; --shadow:rgba(0,0,0,.45); color-scheme:dark;
+    }
+    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html { overflow-x:hidden; -webkit-text-size-adjust:100%; }
+    body { margin:0; background:var(--bg); color:var(--fg); font-family:var(--font); font-size:16px; line-height:1.7; overflow-x:clip; }
+    [hidden] { display:none !important; }
+    button, input, textarea, select { font:inherit; color:inherit; }
+    :focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+    .boot { min-height:100vh; display:grid; place-items:center; color:var(--muted); }
+    .loader { width:34px; height:34px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin .8s linear infinite; margin:0 auto 12px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ---------- الهيكل ---------- */
+    .top { position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:10px; padding:calc(10px + env(safe-area-inset-top)) 16px 10px; background:var(--surface); border-bottom:1px solid var(--border); }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:600; font-size:18px; }
+    .brand svg { width:26px; height:26px; color:var(--accent); }
+    .side { position:fixed; left:0; right:0; bottom:0; z-index:30; display:flex; gap:2px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--border); box-shadow:0 -6px 18px var(--shadow); }
+    .side .brand { display:none; }
+    .nav { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 2px; border:0; border-radius:12px; background:none; color:var(--muted); cursor:pointer; font-size:11.5px; font-weight:600; }
+    .nav svg { width:22px; height:22px; }
+    .nav.on { color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, transparent); }
+    .back { display:none; }
+    .main { max-width:1240px; margin:0 auto; padding:18px 16px calc(96px + env(safe-area-inset-bottom)); }
+    h1.title { margin:0 0 16px; font-size:22px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    h1.title .sp { flex:1; }
+
+    @media (min-width:1024px) {
+      .layout { display:grid; grid-template-columns:var(--side) minmax(0,1fr); }
+      .top { display:none; }
+      .side { position:sticky; top:0; height:100vh; align-self:start; flex-direction:column; gap:6px; padding:20px 12px; border-top:0; border-inline-end:1px solid var(--border); box-shadow:none; }
+      .side .brand { display:flex; padding:4px 10px 16px; }
+      .nav { flex:none; flex-direction:row; justify-content:flex-start; gap:12px; padding:11px 14px; font-size:15px; }
+      .back { display:flex; margin-top:auto; }
+      .main { padding:30px 36px 48px; }
+      h1.title { font-size:26px; }
+    }
+
+    /* ---------- عناصر عامة ---------- */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 2px 8px var(--shadow); }
+    .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fill, minmax(min(100%,340px),1fr)); }
+    .stats4 { display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); margin-bottom:18px; }
+    .stat { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; }
+    .stat b { display:block; font-size:28px; line-height:1.3; color:var(--accent); }
+    .stat span { color:var(--muted); font-size:14px; }
+    .btn { border-radius:10px; padding:10px 16px; font-weight:600; font-size:14.5px; cursor:pointer; border:1px solid transparent; }
+    .btn.p { background:var(--accent); color:var(--accent-fg); }
+    .btn.g { background:var(--surface-2); border-color:var(--border); }
+    .btn.d { background:transparent; border-color:var(--danger); color:var(--danger); }
+    .btn.s { padding:6px 12px; font-size:13.5px; }
+    .btn:hover { filter:brightness(1.07); }
+    button[disabled] { opacity:.55; cursor:not-allowed; }
+    .chip { display:inline-block; font-size:12.5px; font-weight:600; padding:1px 10px; border-radius:999px; border:1px solid var(--border); color:var(--muted); background:var(--surface-2); }
+    .chip.ok { color:var(--ok); border-color:var(--ok); } .chip.a { color:var(--accent); border-color:var(--accent); } .chip.w { color:var(--warn); border-color:var(--warn); }
+    .muted { color:var(--muted); font-size:14px; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .empty { text-align:center; color:var(--muted); padding:34px 16px; border:1px dashed var(--border); border-radius:14px; background:var(--surface); }
+    .e-title { font-weight:600; font-size:18px; overflow-wrap:anywhere; }
+    .kv { display:grid; gap:2px; font-size:14.5px; margin:8px 0 12px; }
+    .kv span:first-child { color:var(--muted); }
+
+    .av { width:38px; height:38px; flex:none; border-radius:50%; overflow:hidden; display:grid; place-items:center; background:var(--surface-2); border:1px solid var(--border); font-weight:600; font-size:13px; }
+    .av img { width:100%; height:100%; object-fit:cover; display:block; }
+    .who { display:flex; align-items:center; gap:10px; min-width:0; }
+    .who div { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    .tbl-wrap { overflow:auto; border:1px solid var(--border); border-radius:14px; background:var(--surface); max-height:70vh; }
+    table { border-collapse:separate; border-spacing:0; width:100%; min-width:560px; }
+    th, td { padding:10px 12px; text-align:center; border-bottom:1px solid var(--border); white-space:nowrap; font-size:14.5px; }
+    th { position:sticky; top:0; background:var(--surface-2); color:var(--muted); font-size:13px; z-index:2; }
+    th:first-child, td:first-child { position:sticky; inset-inline-start:0; text-align:start; background:var(--surface); z-index:1; min-width:190px; }
+    th:first-child { background:var(--surface-2); z-index:3; }
+    tr:last-child td { border-bottom:0; }
+    .good { color:var(--ok); font-weight:600; } .bad { color:var(--danger); font-weight:600; }
+
+    .inp, .sel { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface-2); }
+    textarea.inp { min-height:84px; resize:vertical; }
+    .inp:focus { outline:2px solid var(--accent); border-color:var(--accent); }
+    .fld { display:grid; gap:4px; font-size:14px; font-weight:500; }
+    .seg { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; border:1px solid var(--border); border-radius:12px; background:var(--surface-2); }
+    .seg button { border:0; background:none; padding:8px; border-radius:9px; font-weight:600; cursor:pointer; color:var(--muted); }
+    .seg button[aria-pressed="true"] { background:var(--accent); color:var(--accent-fg); }
+    .optrow { display:flex; align-items:center; gap:10px; }
+    .optrow input[type=radio] { width:20px; height:20px; accent-color:var(--accent); flex:none; }
+    .err { color:var(--danger); font-size:13.5px; min-height:1.3em; margin:0; }
+
+    .q-item { display:grid; gap:6px; padding:14px; }
+    .q-item .t { font-weight:600; overflow-wrap:anywhere; }
+
+    .search { max-width:420px; }
+    .sw { display:flex; flex-wrap:wrap; gap:10px; }
+    .sw button { width:36px; height:36px; border-radius:50%; border:2px solid transparent; cursor:pointer; }
+    .sw button[aria-pressed="true"] { border-color:var(--fg); box-shadow:0 0 0 2px var(--surface) inset; }
+    .toggle { display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; }
+    .toggle input { position:absolute; opacity:0; }
+    .tk { position:relative; width:56px; height:30px; border-radius:999px; background:var(--border); flex:none; transition:.2s; }
+    .tk::after { content:""; position:absolute; top:3px; inset-inline-start:3px; width:24px; height:24px; border-radius:50%; background:#fff; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+    .toggle input:checked + .tk { background:var(--accent); }
+    .toggle input:checked + .tk::after { inset-inline-start:29px; }
+    .stack { display:grid; gap:14px; max-width:560px; }
+
+    .mb { position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.55); display:grid; place-items:center; padding:14px; overflow:auto; }
+    .modal { width:min(520px,100%); max-height:92vh; overflow:auto; background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:20px; display:grid; gap:12px; box-shadow:0 16px 40px var(--shadow); }
+    .modal h2 { margin:0; font-size:20px; text-align:center; }
+    .modal .sub { margin:0; text-align:center; color:var(--muted); }
+    .actions { display:grid; gap:8px; grid-template-columns:1fr 1fr; margin-top:4px; }
+    .toast { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(92px + env(safe-area-inset-bottom)); z-index:90; background:var(--fg); color:var(--bg); padding:10px 16px; border-radius:12px; max-width:calc(100vw - 32px); text-align:center; font-size:14.5px; }
+    .toast.e { background:var(--danger); color:#fff; }
+    @media (min-width:1024px) { .toast { bottom:28px; } }
+  </style>
+  <script>
+    (function () {
+      var ACC = { blue:["#0969da","#4493f8"], green:["#1a7f37","#3fb950"], purple:["#8250df","#a371f7"], orange:["#bc4c00","#f0883e"], pink:["#bf3989","#f778ba"], teal:["#0e7c86","#39c5cf"], red:["#cf222e","#ff7b72"] };
+      function dark() { var t = document.documentElement.getAttribute("data-theme"); return t ? t === "dark" : !!(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); }
+      function apply() { var id = "blue"; try { id = localStorage.getItem("qb-accent") || "blue"; } catch (e) {} var a = ACC[id] || ACC.blue, d = dark(), s = document.documentElement.style; s.setProperty("--accent", d ? a[1] : a[0]); s.setProperty("--accent-fg", d ? "#0d1117" : "#fff"); }
+      window.QBA = { ACC: ACC, dark: dark, apply: apply };
+      try { var t = localStorage.getItem("qb-theme"); if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+      apply();
+    })();
+  </script>
+</head>
+<body>
+  <div class="boot" id="boot"><div><div class="loader"></div>بنتأكد من الصلاحية...</div></div>
+
+  <div class="layout" id="app" hidden>
+    <aside class="side" id="side">
+      <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5"/><path d="M9 8.5h7M9 12h5"/></svg>لوحة التحكم</div>
+    </aside>
+    <div>
+      <header class="top"><div class="brand"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5"/><path d="M9 8.5h7M9 12h5"/></svg>لوحة التحكم</div></header>
+      <main class="main" id="main"></main>
+    </div>
+  </div>
+
+  <div class="mb" id="modal" hidden><div class="modal" id="mbox" role="dialog" aria-modal="true"></div></div>
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    var SUPABASE_URL = "https://gcumvhqxcbgtedqnuzvr.supabase.co";
+    var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
+    var ADMIN_EMAIL = "yasser242006@gmail.com";
+    var HOME_PAGE = "home.html";
+    var LOGIN_PAGE = "index.html";
+
+    (function () {
+      "use strict";
+      const $ = (id) => document.getElementById(id);
+      const h = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+      const AD = "٠١٢٣٤٥٦٧٨٩";
+      const ar = (v) => String(v).replace(/\d/g, (d) => AD[d]);
+      const fmtNum = (n) => ar(String(Math.round(Number(n) * 10) / 10).replace(".", "٫"));
+      const fDT = new Intl.DateTimeFormat("ar-EG", { timeZone: "Africa/Cairo", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+      const pad = (n) => String(n).padStart(2, "0");
+      const toInput = (iso) => { const d = new Date(iso); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + "T" + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
+      const em = (e) => (e && (e.message || e.details)) || "حصل خطأ";
+      const svg = (p) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + p + "</svg>";
+      const IC = {
+        home: svg('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'),
+        exams: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>'),
+        users: svg('<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'),
+        bell: svg('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>'),
+        set: svg('<path d="M4 6h8M18 6h2"/><circle cx="15" cy="6" r="2.5"/><path d="M4 12h2M12 12h8"/><circle cx="9" cy="12" r="2.5"/><path d="M4 18h9M19 18h1"/><circle cx="16" cy="18" r="2.5"/>'),
+        back: svg('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>')
+      };
+
+      /* ---------- الجلسة ---------- */
+      const keep = () => { try { return localStorage.getItem("qb-remember") !== "0"; } catch (e) { return true; } };
+      const store = {
+        getItem: (k) => { try { return localStorage.getItem(k) || sessionStorage.getItem(k); } catch (e) { return null; } },
+        setItem: (k, v) => { try { const K = keep(); (K ? localStorage : sessionStorage).setItem(k, v); (K ? sessionStorage : localStorage).removeItem(k); } catch (e) {} },
+        removeItem: (k) => { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} }
+      };
+      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storage: store } });
+      const go = (p) => location.replace(new URL(p, location.href).href);
+
+      /* ---------- نافذة وتنبيه ---------- */
+      let onCancel = null, tt = null;
+      function toast(m, bad) { const t = $("toast"); t.textContent = m; t.className = "toast" + (bad ? " e" : ""); t.hidden = false; clearTimeout(tt); tt = setTimeout(() => { t.hidden = true; }, 3200); }
+      function modal(build) { const b = $("mbox"); b.innerHTML = ""; build(b); $("modal").hidden = false; }
+      function closeModal() { $("modal").hidden = true; if (onCancel) { const f = onCancel; onCancel = null; f(); } }
+      $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("modal").hidden) closeModal(); });
+      const btn = (label, cls, fn) => { const b = h("button", "btn " + cls, label); b.type = "button"; b.addEventListener("click", fn); return b; };
+      function ask(title, text, ok, danger) {
+        return new Promise((res) => {
+          modal((b) => {
+            b.appendChild(h("h2", null, title));
+            b.appendChild(h("p", "sub", text));
+            const a = h("div", "actions");
+            a.appendChild(btn(ok, danger ? "d" : "p", () => { onCancel = null; closeModal(); res(true); }));
+            a.appendChild(btn("إلغاء", "g", () => closeModal()));
+            b.appendChild(a);
+          });
+          onCancel = () => res(false);
+        });
+      }
+
+      /* ---------- البيانات ---------- */
+      const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], qExam: null, search: "" };
+      async function pull(p) { const r = await p; if (r.error) throw r.error; return r.data || []; }
+      async function loadAll() {
+        try {
+          const [ex, qs, st, at, nt] = await Promise.all([
+            pull(sb.from("exams").select("*").order("starts_at", { ascending: false })),
+            pull(sb.from("questions").select("*").order("created_at", { ascending: true })),
+            pull(sb.rpc("admin_students")),
+            pull(sb.from("attempts").select("user_id, exam_id, score, total, passed, submitted_at")),
+            pull(sb.from("notifications").select("id, title, body, created_at").order("created_at", { ascending: false }).limit(30))
+          ]);
+          S.exams = ex; S.qs = qs; S.students = st; S.atts = at; S.notifs = nt;
+        } catch (e) { toast("ماقدرناش نحمّل البيانات: " + em(e) + " (شغّل admin-setup.sql)", true); }
+        render();
+      }
+      const examOf = (id) => S.exams.find((x) => x.id === id);
+      const studOf = (id) => S.students.find((x) => x.id === id);
+      const qOf = (eid) => S.qs.filter((q) => q.exam_id === eid);
+      const isTF = (q) => q.kind === "tf" || !(q.options && q.options.length);
+      const gLabel = (g) => g === "male" ? "ذكر" : g === "female" ? "أنثى" : "—";
+
+      function av(url, name) {
+        const s = h("span", "av");
+        const ini = (name || "؟").trim().split(/\s+/).slice(0, 2).map((w) => Array.from(w)[0]).join(" ");
+        if (url && /^https?:/.test(url)) {
+          const i = document.createElement("img"); i.alt = ""; i.referrerPolicy = "no-referrer";
+          i.onerror = () => { s.textContent = ini; }; i.src = url; s.appendChild(i);
+        } else s.textContent = ini;
+        return s;
+      }
+
+      /* ---------- التنقل ---------- */
+      const TABS = [["overview", "الرئيسية", IC.home], ["exams", "الامتحانات", IC.exams], ["students", "الطلاب والدرجات", IC.users], ["notifs", "الإشعارات", IC.bell], ["settings", "الإعدادات", IC.set]];
+      function buildNav() {
+        const side = $("side");
+        TABS.forEach((t) => {
+          const b = h("button", "nav"); b.type = "button"; b.dataset.t = t[0];
+          b.innerHTML = t[2] + "<span>" + t[1] + "</span>";
+          b.addEventListener("click", () => { S.tab = t[0]; S.qExam = null; render(); window.scrollTo(0, 0); });
+          side.appendChild(b);
+        });
+        const back = h("button", "nav back"); back.type = "button"; back.innerHTML = IC.back + "<span>الرجوع للموقع</span>";
+        back.addEventListener("click", () => go(HOME_PAGE));
+        side.appendChild(back);
+      }
+      function render() {
+        document.querySelectorAll(".nav[data-t]").forEach((b) => b.classList.toggle("on", b.dataset.t === S.tab));
+        const m = $("main"); m.innerHTML = "";
+        ({ overview: rOverview, exams: rExams, students: rStudents, notifs: rNotifs, settings: rSettings })[S.tab](m);
+      }
+      const title = (m, text, extra) => { const t = h("h1", "title", text); t.appendChild(h("span", "sp")); if (extra) t.appendChild(extra); m.appendChild(t); };
+
+      /* ---------- الرئيسية ---------- */
+      function rOverview(m) {
+        title(m, "نظرة عامة");
+        const st = h("div", "stats4");
+        [[S.students.length, "طالب"], [S.exams.length, "امتحان"], [S.qs.length, "سؤال"], [S.atts.filter((a) => a.submitted_at).length, "تسليم"]].forEach((x) => {
+          const d = h("div", "stat"); d.appendChild(h("b", null, ar(x[0]))); d.appendChild(h("span", null, x[1])); st.appendChild(d);
+        });
+        m.appendChild(st);
+        m.appendChild(h("h2", null, "آخر التسليمات"));
+        const last = S.atts.filter((a) => a.submitted_at).sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at)).slice(0, 8);
+        if (!last.length) { m.appendChild(h("div", "empty", "لسه محدش سلّم امتحان.")); return; }
+        const g = h("div", "grid");
+        last.forEach((a) => {
+          const s = studOf(a.user_id) || {}, e = examOf(a.exam_id) || {};
+          const c = h("div", "card"); const w = h("div", "who");
+          w.appendChild(av(s.avatar_url, s.full_name));
+          const d = h("div"); d.appendChild(h("div", "e-title", s.full_name || "طالب")); d.appendChild(h("div", "muted", (e.subject || "") + " · " + fDT.format(new Date(a.submitted_at)))); w.appendChild(d);
+          c.appendChild(w);
+          const r = h("div", "row"); r.style.marginTop = "10px";
+          r.appendChild(h("span", "chip a", fmtNum(a.score) + " / " + fmtNum(a.total)));
+          r.appendChild(h("span", "chip " + (a.passed ? "ok" : "w"), a.passed ? "ناجح" : "لم ينجح"));
+          c.appendChild(r); g.appendChild(c);
+        });
+        m.appendChild(g);
+      }
+
+      /* ---------- الامتحانات ---------- */
+      function rExams(m) {
+        if (S.qExam) return rQuestions(m, S.qExam);
+        title(m, "الامتحانات", btn("+ امتحان جديد", "p", () => examForm(null)));
+        if (!S.exams.length) { m.appendChild(h("div", "empty", "مفيش امتحانات. اضغط «امتحان جديد».")); return; }
+        const g = h("div", "grid");
+        S.exams.forEach((e) => {
+          const c = h("div", "card");
+          const hd = h("div", "row"); hd.appendChild(h("span", "e-title", e.subject)); hd.appendChild(h("span", "chip a", "جولة " + ar(e.round_no || 1)));
+          c.appendChild(hd);
+          const kv = h("div", "kv");
+          [["الدكتور", e.doctor || "—"], ["البداية", fDT.format(new Date(e.starts_at))], ["النهاية", fDT.format(new Date(e.ends_at))], ["الأسئلة", ar(qOf(e.id).length) + " سؤال"]].forEach((p) => {
+            const r = h("div", "row"); r.appendChild(h("span", null, p[0] + ":")); r.appendChild(h("b", null, p[1])); kv.appendChild(r);
+          });
+          c.appendChild(kv);
+          const a = h("div", "row");
+          a.appendChild(btn("الأسئلة", "p s", () => { S.qExam = e.id; render(); window.scrollTo(0, 0); }));
+          a.appendChild(btn("تعديل", "g s", () => examForm(e)));
+          a.appendChild(btn("حذف", "d s", () => delExam(e)));
+          c.appendChild(a); g.appendChild(c);
+        });
+        m.appendChild(g);
+      }
+      async function delExam(e) {
+        if (!(await ask("حذف الامتحان؟", "هيتحذف الامتحان «" + e.subject + "» وكل أسئلته ودرجات الطلاب فيه.", "احذف", true))) return;
+        try {
+          for (const t of ["questions", "attempts"]) { const r = await sb.from(t).delete().eq("exam_id", e.id); if (r.error) throw r.error; }
+          const r = await sb.from("exams").delete().eq("id", e.id); if (r.error) throw r.error;
+          toast("اتحذف الامتحان"); loadAll();
+        } catch (x) { toast(em(x), true); }
+      }
+      function examForm(ex) {
+        modal((b) => {
+          b.appendChild(h("h2", null, ex ? "تعديل الامتحان" : "امتحان جديد"));
+          const now = new Date(), later = new Date(now.getTime() + 2 * 3600e3);
+          const mk = (label, type, val) => { const w = h("label", "fld"); w.appendChild(h("span", null, label)); const i = h("input", "inp"); i.type = type; i.value = val == null ? "" : val; w.appendChild(i); b.appendChild(w); return i; };
+          const f = {
+            subject: mk("اسم المادة", "text", ex && ex.subject), doctor: mk("اسم الدكتور", "text", ex && ex.doctor),
+            round: mk("رقم الجولة (الجدول اللي هتظهر فيه الدرجات)", "number", ex ? ex.round_no || 1 : 1),
+            subj: mk("تاريخ ووقت المادة", "datetime-local", toInput(ex ? ex.subject_at || ex.starts_at : now)),
+            start: mk("بداية الامتحان", "datetime-local", toInput(ex ? ex.starts_at : now)),
+            end: mk("نهاية الامتحان", "datetime-local", toInput(ex ? ex.ends_at : later))
+          };
+          f.round.min = 1;
+          const er = h("p", "err"); b.appendChild(er);
+          const a = h("div", "actions");
+          const save = btn("حفظ", "p", async () => {
+            if (!f.subject.value.trim() || !f.start.value || !f.end.value) { er.textContent = "اكتب المادة وحدد البداية والنهاية."; return; }
+            if (new Date(f.end.value) <= new Date(f.start.value)) { er.textContent = "النهاية لازم تكون بعد البداية."; return; }
+            const p = { subject: f.subject.value.trim(), doctor: f.doctor.value.trim() || null, round_no: Math.max(1, parseInt(f.round.value, 10) || 1),
+              subject_at: new Date(f.subj.value || f.start.value).toISOString(), starts_at: new Date(f.start.value).toISOString(), ends_at: new Date(f.end.value).toISOString() };
+            save.disabled = true;
+            const r = ex ? await sb.from("exams").update(p).eq("id", ex.id) : await sb.from("exams").insert(p);
+            if (r.error) { er.textContent = em(r.error); save.disabled = false; return; }
+            closeModal(); toast("اتحفظ الامتحان"); loadAll();
+          });
+          a.appendChild(save); a.appendChild(btn("إلغاء", "g", () => closeModal())); b.appendChild(a);
+        });
+      }
+
+      /* ---------- الأسئلة ---------- */
+      function rQuestions(m, eid) {
+        const e = examOf(eid);
+        if (!e) { S.qExam = null; return rExams(m); }
+        const bar = h("div", "row"); bar.style.marginBottom = "12px";
+        bar.appendChild(btn("← رجوع للامتحانات", "g s", () => { S.qExam = null; render(); }));
+        m.appendChild(bar);
+        title(m, "أسئلة: " + e.subject, btn("+ سؤال جديد", "p", () => qForm(e, null)));
+        const list = qOf(eid);
+        if (!list.length) { m.appendChild(h("div", "empty", "مفيش أسئلة لسه. اضغط «سؤال جديد».")); return; }
+        const g = h("div", "grid");
+        list.forEach((q, i) => {
+          const c = h("div", "card q-item");
+          const hd = h("div", "row"); hd.appendChild(h("span", "chip a", "سؤال " + ar(i + 1))); hd.appendChild(h("span", "chip", isTF(q) ? "صح وغلط" : "اختيار من متعدد")); c.appendChild(hd);
+          c.appendChild(h("div", "t", q.body));
+          c.appendChild(h("div", "good", "الإجابة: " + (isTF(q) ? (q.correct_index === 0 ? "صح" : "غلط") : (q.options || [])[q.correct_index])));
+          if (!isTF(q)) c.appendChild(h("div", "muted", "الاختيارات: " + q.options.join(" | ")));
+          if (q.explanation) c.appendChild(h("div", "muted", "الشرح: " + q.explanation));
+          const a = h("div", "row");
+          a.appendChild(btn("تعديل", "g s", () => qForm(e, q)));
+          a.appendChild(btn("حذف", "d s", async () => {
+            if (!(await ask("حذف السؤال؟", "السؤال هيتحذف نهائياً.", "احذف", true))) return;
+            const r = await sb.from("questions").delete().eq("id", q.id);
+            if (r.error) toast(em(r.error), true); else { toast("اتحذف السؤال"); loadAll(); }
+          }));
+          c.appendChild(a); g.appendChild(c);
+        });
+        m.appendChild(g);
+      }
+      function qForm(exam, qu) {
+        modal((b) => {
+          let kind = qu ? (isTF(qu) ? "tf" : "mcq") : "mcq";
+          let correct = qu ? qu.correct_index : 0;
+          const vals = qu && !isTF(qu) ? qu.options.map(String) : [];
+          while (vals.length < 4) vals.push("");
+          b.appendChild(h("h2", null, qu ? "تعديل السؤال" : "سؤال جديد"));
+          const seg = h("div", "seg");
+          [["mcq", "اختيار من متعدد"], ["tf", "صح وغلط"]].forEach((k) => { const s = h("button", null, k[1]); s.type = "button"; s.dataset.k = k[0]; s.addEventListener("click", () => { kind = k[0]; correct = 0; paint(); }); seg.appendChild(s); });
+          b.appendChild(seg);
+          const wb = h("label", "fld"); wb.appendChild(h("span", null, "نص السؤال"));
+          const body = h("textarea", "inp"); body.value = qu ? qu.body : ""; wb.appendChild(body); b.appendChild(wb);
+          const box = h("div", "fld"); b.appendChild(box);
+          const we = h("label", "fld"); we.appendChild(h("span", null, "الشرح / الدليل (بيظهر للطالب بعد الإجابة)"));
+          const exp = h("textarea", "inp"); exp.value = (qu && qu.explanation) || ""; we.appendChild(exp); b.appendChild(we);
+          const er = h("p", "err"); b.appendChild(er);
+          function paint() {
+            Array.prototype.forEach.call(seg.children, (s) => s.setAttribute("aria-pressed", s.dataset.k === kind ? "true" : "false"));
+            box.innerHTML = ""; box.appendChild(h("span", null, kind === "tf" ? "اختار الإجابة الصحيحة" : "الاختيارات (علّم على الإجابة الصحيحة)"));
+            const rows = kind === "tf" ? ["صح", "غلط"] : vals;
+            rows.forEach((v, i) => {
+              const r = h("div", "optrow"); const rd = h("input"); rd.type = "radio"; rd.name = "c"; rd.checked = i === correct;
+              rd.addEventListener("change", () => { correct = i; }); r.appendChild(rd);
+              if (kind === "tf") r.appendChild(h("span", null, v));
+              else { const t = h("input", "inp"); t.value = v; t.placeholder = "اختيار " + ar(i + 1); t.addEventListener("input", () => { vals[i] = t.value; }); r.appendChild(t); }
+              box.appendChild(r);
+            });
+          }
+          paint();
+          const a = h("div", "actions");
+          const save = btn("حفظ", "p", async () => {
+            if (!body.value.trim()) { er.textContent = "اكتب نص السؤال."; return; }
+            let options = [], ci = correct;
+            if (kind === "mcq") {
+              const fl = []; vals.forEach((t, i) => { if (t.trim()) fl.push([t.trim(), i]); });
+              if (fl.length < 2) { er.textContent = "اكتب اختيارين على الأقل."; return; }
+              const pos = fl.findIndex((x) => x[1] === correct);
+              if (pos < 0) { er.textContent = "علّم على إجابة صحيحة من الاختيارات المكتوبة."; return; }
+              options = fl.map((x) => x[0]); ci = pos;
+            }
+            const p = { exam_id: exam.id, body: body.value.trim(), kind, options, correct_index: ci, explanation: exp.value.trim() || null };
+            save.disabled = true;
+            const r = qu ? await sb.from("questions").update(p).eq("id", qu.id) : await sb.from("questions").insert(p);
+            if (r.error) { er.textContent = em(r.error); save.disabled = false; return; }
+            closeModal(); toast("اتحفظ السؤال"); loadAll();
+          });
+          a.appendChild(save); a.appendChild(btn("إلغاء", "g", () => closeModal())); b.appendChild(a);
+        });
+      }
+
+      /* ---------- الطلاب والدرجات ---------- */
+      function rStudents(m) {
+        title(m, "الطلاب والدرجات");
+        const s = h("input", "inp search"); s.type = "search"; s.placeholder = "ابحث بالاسم أو الإيميل"; s.value = S.search;
+        m.appendChild(s);
+        const meta = h("p", "muted"); m.appendChild(meta);
+        const wrap = h("div", "tbl-wrap"); m.appendChild(wrap);
+        const exams = S.exams.slice().sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+        function fill() {
+          S.search = s.value; const q = s.value.trim().toLowerCase();
+          const rows = S.students.filter((x) => !q || (x.full_name || "").toLowerCase().includes(q) || (x.email || "").toLowerCase().includes(q));
+          meta.textContent = ar(rows.length) + " طالب";
+          wrap.innerHTML = "";
+          if (!rows.length) { wrap.appendChild(h("div", "empty", "مفيش طلاب.")); return; }
+          const t = h("table"); const hr = h("tr");
+          ["الطالب", "الإيميل", "النوع"].forEach((x) => hr.appendChild(h("th", null, x)));
+          exams.forEach((e) => hr.appendChild(h("th", null, e.subject + " (ج" + ar(e.round_no || 1) + ")")));
+          const th = h("thead"); th.appendChild(hr); t.appendChild(th);
+          const tb = h("tbody");
+          rows.forEach((x) => {
+            const tr = h("tr"); const c0 = h("td"); const w = h("div", "who"); w.appendChild(av(x.avatar_url, x.full_name)); w.appendChild(h("div", null, x.full_name || "—")); c0.appendChild(w); tr.appendChild(c0);
+            const em2 = h("td", null, x.email || "—"); em2.style.direction = "ltr"; tr.appendChild(em2);
+            tr.appendChild(h("td", null, gLabel(x.gender)));
+            exams.forEach((e) => {
+              const a = S.atts.find((y) => y.user_id === x.id && y.exam_id === e.id && y.submitted_at);
+              const td = h("td", a ? (a.passed ? "good" : "bad") : null, a ? fmtNum(a.score) + " / " + fmtNum(a.total) : "—"); tr.appendChild(td);
+            });
+            tb.appendChild(tr);
+          });
+          t.appendChild(tb); wrap.appendChild(t);
+        }
+        s.addEventListener("input", fill); fill();
+      }
+
+      /* ---------- الإشعارات ---------- */
+      function rNotifs(m) {
+        title(m, "الإشعارات");
+        const c = h("div", "card stack"); c.style.marginBottom = "16px";
+        const mk = (l, el) => { const w = h("label", "fld"); w.appendChild(h("span", null, l)); w.appendChild(el); c.appendChild(w); return el; };
+        const t = mk("عنوان الإشعار", h("input", "inp")), bd = mk("نص الإشعار (اختياري)", h("textarea", "inp"));
+        const er = h("p", "err"); c.appendChild(er);
+        const send = btn("إرسال لكل الطلاب", "p", async () => {
+          if (!t.value.trim()) { er.textContent = "اكتب عنوان."; return; }
+          send.disabled = true;
+          const r = await sb.from("notifications").insert({ title: t.value.trim(), body: bd.value.trim() || null });
+          send.disabled = false;
+          if (r.error) { er.textContent = em(r.error); return; }
+          toast("اتبعت الإشعار"); loadAll();
+        });
+        c.appendChild(send); m.appendChild(c);
+        if (!S.notifs.length) { m.appendChild(h("div", "empty", "مفيش إشعارات.")); return; }
+        const g = h("div", "grid");
+        S.notifs.forEach((n) => {
+          const d = h("div", "card"); d.appendChild(h("div", "e-title", n.title)); if (n.body) d.appendChild(h("div", "muted", n.body));
+          d.appendChild(h("div", "muted", fDT.format(new Date(n.created_at))));
+          const r = h("div", "row"); r.style.marginTop = "8px";
+          r.appendChild(btn("حذف", "d s", async () => { const x = await sb.from("notifications").delete().eq("id", n.id); if (x.error) toast(em(x.error), true); else loadAll(); }));
+          d.appendChild(r); g.appendChild(d);
+        });
+        m.appendChild(g);
+      }
+
+      /* ---------- الإعدادات ---------- */
+      function rSettings(m) {
+        title(m, "إعدادات الأدمن");
+        const st = h("div", "stack");
+        const c1 = h("div", "card");
+        const lab = h("label", "toggle"); lab.appendChild(h("span", null, "الوضع الداكن"));
+        const cb = h("input"); cb.type = "checkbox"; cb.checked = window.QBA.dark(); lab.appendChild(cb); lab.appendChild(h("span", "tk"));
+        cb.addEventListener("change", () => { const n = cb.checked ? "dark" : "light"; document.documentElement.setAttribute("data-theme", n); try { localStorage.setItem("qb-theme", n); } catch (e) {} window.QBA.apply(); render(); });
+        c1.appendChild(lab); st.appendChild(c1);
+        const c2 = h("div", "card"); c2.appendChild(h("p", "muted", "لون الأزرار")); const sw = h("div", "sw");
+        let cur = "blue"; try { cur = localStorage.getItem("qb-accent") || "blue"; } catch (e) {}
+        Object.keys(window.QBA.ACC).forEach((k) => {
+          const b = h("button"); b.type = "button"; b.style.background = window.QBA.dark() ? window.QBA.ACC[k][1] : window.QBA.ACC[k][0]; b.setAttribute("aria-pressed", k === cur ? "true" : "false"); b.setAttribute("aria-label", k);
+          b.addEventListener("click", () => { try { localStorage.setItem("qb-accent", k); } catch (e) {} window.QBA.apply(); render(); }); sw.appendChild(b);
+        });
+        c2.appendChild(sw); st.appendChild(c2);
+        const c3 = h("div", "card stack"); c3.appendChild(btn("الرجوع للموقع", "g", () => go(HOME_PAGE)));
+        c3.appendChild(btn("تسجيل الخروج", "d", async () => { if (await ask("تسجيل الخروج", "متأكد إنك عايز تسجّل خروج؟", "تأكيد", true)) { try { await sb.auth.signOut(); } catch (e) {} go(LOGIN_PAGE); } }));
+        st.appendChild(c3); m.appendChild(st);
+      }
+
+      /* ---------- تشغيل ---------- */
+      (async function () {
+        let s = null;
+        try { s = (await sb.auth.getSession()).data.session; } catch (e) {}
+        if (!s) { go(LOGIN_PAGE); return; }
+        if ((s.user.email || "").toLowerCase() !== ADMIN_EMAIL) { go(HOME_PAGE); return; }
+        buildNav();
+        $("boot").hidden = true; $("app").hidden = false;
+        render();
+        loadAll();
+      })();
+      sb.auth.onAuthStateChange((e) => { if (e === "SIGNED_OUT") go(LOGIN_PAGE); });
+    })();
+  </script>
+</body>
+</html>

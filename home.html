@@ -527,39 +527,6 @@
       .loader { animation-duration: 2s; }
       * { transition: none !important; }
     }
-    
-    .q { position: relative; }
-.q .ring { position: absolute; top: 12px; left: 12px; width: 56px; height: 56px; margin: 0; }
-.q .ring circle { stroke-width: 10; }
-.q .ring span { font-size: 20px; }
-.ring.mid .fg { stroke: #d29922; }
-.ring.mid span { color: #d29922; }
-.q-img { width: 100%; max-height: 320px; object-fit: contain; background: #fff; border-radius: 12px; border: 1px solid var(--border); }
-.fb strong { display: flex; align-items: center; gap: 6px; }
-.fb strong svg { width: 20px; height: 20px; flex: none; }
-.fb.skip { border-color: #d29922; } .fb.skip strong { color: #d29922; }
-.stat.half { border-color: #d29922; } .stat.half strong { color: #d29922; }
-.half-note { text-align: center; font-size: 14.5px; font-weight: 600; color: #d29922; border: 1px solid #d29922; border-radius: 12px; padding: 8px 12px; background: color-mix(in srgb, #d29922 12%, var(--surface)); }
-.g-cap { margin: 18px 0 0; font-size: 16px; } 
-    .q .ring {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 42px;   /* صغرنا حجم الدايرة */
-  height: 42px;
-  margin: 0;
-}
-.q .ring circle {
-  stroke-width: 8;
-}
-.q .ring span {
-  font-size: 15px; /* صغرنا رقم الثواني جواها عشان يناسب الحجم الجديد */
-}
-/* وزودنا مسافة من الشمال في نص السؤال عشان الكلام مايدخلش في الدايرة */
-.q-body, .q .qtype, .q .q-img, .q .opts {
-  padding-inline-start: 48px; 
-}
- 
   </style>
 
   <script>
@@ -817,1349 +784,1309 @@
   </div>
 
   <div class="toast" id="toast" hidden></div>
-<script src="home-admin.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
     var SUPABASE_URL = "https://gcumvhqxcbgtedqnuzvr.supabase.co";
-var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
+    var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
 
-// اسم صفحة تسجيل الدخول (الملف التاني)
-var LOGIN_PAGE = "index.html";
+    // اسم صفحة تسجيل الدخول (الملف التاني)
+    var LOGIN_PAGE = "index.html";
 
-(function () {
-  "use strict";
+    (function () {
+      "use strict";
 
-  var APP_VERSION = "2.1.0";
+      var APP_VERSION = "2.1.0";
 
-  // هل رجعنا لسه من تسجيل الدخول بجوجل؟ (لازم نعرفها قبل ما supabase ينضّف الرابط)
-  const AUTH_REDIRECT = window.location.search.indexOf("code=") !== -1 || window.location.hash.indexOf("access_token") !== -1;
+      // هل رجعنا لسه من تسجيل الدخول بجوجل؟ (لازم نعرفها قبل ما supabase ينضّف الرابط)
+      const AUTH_REDIRECT = window.location.search.indexOf("code=") !== -1 || window.location.hash.indexOf("access_token") !== -1;
 
-  /* ============ أدوات صغيرة ============ */
-  const $ = (id) => document.getElementById(id);
-  const h = (tag, cls, text) => {
-    const e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (text != null) e.textContent = text;
-    return e;
-  };
-  const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
-  const ar = (v) => String(v).replace(/\d/g, (d) => AR_DIGITS[d]);
-  const arNum = (v) => ar(String(v).replace(".", "٫"));
-  const TZ = "Africa/Cairo";
-  const fDate = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const fTime = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, hour: "numeric", minute: "2-digit" });
-  const fStamp = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, day: "numeric", month: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
-  const fShort = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, day: "numeric", month: "long" });
+      /* ============ أدوات صغيرة ============ */
+      const $ = (id) => document.getElementById(id);
+      const h = (tag, cls, text) => {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+      };
+      const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+      const ar = (v) => String(v).replace(/\d/g, (d) => AR_DIGITS[d]);
+      const TZ = "Africa/Cairo";
+      const fDate = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      const fTime = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, hour: "numeric", minute: "2-digit" });
+      const fStamp = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, day: "numeric", month: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+      const fShort = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, day: "numeric", month: "long" });
 
-  function fmtLeft(ms) {
-    const s = Math.max(0, Math.floor(ms / 1000));
-    const hh = Math.floor(s / 3600), mm = Math.floor((s % 3600) / 60), ss = s % 60;
-    const p = (n) => String(n).padStart(2, "0");
-    return hh > 0 ? p(hh) + ":" + p(mm) + ":" + p(ss) : p(mm) + ":" + p(ss);
-  }
-  function plural(n, one, two, few, many) {
-    if (n === 1) return one;
-    if (n === 2) return two;
-    return ar(n) + " " + (n >= 3 && n <= 10 ? few : many);
-  }
-  function rel(iso) {
-    const m = Math.floor(Math.max(0, now() - new Date(iso).getTime()) / 60000);
-    if (m < 1) return "دلوقتي";
-    if (m < 60) return "قبل " + plural(m, "دقيقة", "دقيقتين", "دقايق", "دقيقة");
-    const hr = Math.floor(m / 60);
-    if (hr < 24) return "قبل " + plural(hr, "ساعة", "ساعتين", "ساعات", "ساعة");
-    const d = Math.floor(hr / 24);
-    if (d === 1) return "امبارح";
-    if (d < 7) return "قبل " + plural(d, "يوم", "يومين", "أيام", "يوم");
-    return fShort.format(new Date(iso));
-  }
-
-  let toastTimer = null;
-  function toast(msg, isErr, sticky) {
-    const t = $("toast");
-    t.textContent = msg;
-    t.className = "toast" + (isErr ? " err" : "");
-    t.hidden = false;
-    clearTimeout(toastTimer);
-    if (!sticky) toastTimer = setTimeout(() => { t.hidden = true; }, 2800);
-  }
-
-  /* ============ الأيقونات والأفاتار ============ */
-  const svg = (inner, extra) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (extra || "") + ">" + inner + "</svg>";
-  const ICON = {
-    eye: svg('<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>'),
-    image: svg('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>'),
-    user: svg('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
-    trash: svg('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>'),
-    sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>'),
-    moon: svg('<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'),
-    check: svg('<path d="M20 6 9 17l-5-5"/>', ' stroke-width="3"'),
-    // أيقونات نتيجة السؤال (بدل الإيموجي)
-    right: svg('<path d="M20 6 9 17l-5-5"/>', ' stroke-width="3"'),
-    wrong: svg('<path d="M18 6 6 18M6 6l12 12"/>', ' stroke-width="3"'),
-    skip: svg('<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>')
-  };
-
-  // أفاتار ولد وبنت (رسومات بسيطة)
-  const PRESETS = {
-    boy: '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#cfe3ff"/><path d="M16 100c0-20 15-32 34-32s34 12 34 32z" fill="#2f6fd6"/><path d="M41 68l9 9 9-9z" fill="#fff" opacity=".9"/><rect x="43" y="55" width="14" height="16" rx="6" fill="#e3a982"/><circle cx="50" cy="42" r="18" fill="#f2c29c"/><path d="M31.5 41c-2-15 7-24 18.500-24s20.500 8 18.500 24c-3-8-8-11-18.500-11s-15.500 3-18.500 11z" fill="#2b2118"/><circle cx="43" cy="45" r="2" fill="#2b2118"/><circle cx="57" cy="45" r="2" fill="#2b2118"/><path d="M44 52c3.500 3 8.500 3 12 0" stroke="#a65a3a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
-    girl: '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#ffd9e8"/><path d="M25 58c-4-24 6-42 25-42s29 18 25 42c-1 8-3 14-3 22H28c0-8-2-14-3-22z" fill="#3a2418"/><path d="M16 100c0-20 15-32 34-32s34 12 34 32z" fill="#c2417d"/><rect x="43" y="55" width="14" height="16" rx="6" fill="#e3a982"/><circle cx="50" cy="42" r="18" fill="#f2c29c"/><path d="M31 43c-2-16 8-26 19-26s21 10 19 26c-4-10-9-15-19-15s-15 5-19 15z" fill="#3a2418"/><circle cx="43" cy="45" r="2" fill="#2b2118"/><circle cx="57" cy="45" r="2" fill="#2b2118"/><path d="M44 52c3.500 3 8.500 3 12 0" stroke="#b5483a" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="38" cy="50" r="3" fill="#f59aa8" opacity=".5"/><circle cx="62" cy="50" r="3" fill="#f59aa8" opacity=".5"/></svg>'
-  };
-  const presetKey = (url) => (typeof url === "string" && url.indexOf("preset:") === 0) ? url.slice(7) : null;
-
-  // أول حرف من الاسم الأول + أول حرف من الاسم التاني
-  function initials(name) {
-    const parts = (name || "").trim().split(/\s+/).filter(Boolean);
-    if (!parts.length) return "؟";
-    const first = (w) => Array.from(w)[0].toUpperCase();
-    return parts.length > 1 ? first(parts[0]) + " " + first(parts[1]) : first(parts[0]);
-  }
-
-  function avatarEl(url, name, cls) {
-    const wrap = h("span", "avatar" + (cls ? " " + cls : ""));
-    const letters = () => { wrap.textContent = initials(name); };
-    const pk = presetKey(url);
-    if (pk && PRESETS[pk]) {
-      wrap.innerHTML = PRESETS[pk];
-    } else if (url && /^https?:\/\//.test(url)) {
-      const img = document.createElement("img");
-      img.alt = "";
-      img.referrerPolicy = "no-referrer";
-      img.addEventListener("error", () => { wrap.textContent = ""; letters(); });
-      img.src = url;
-      wrap.appendChild(img);
-    } else {
-      letters();
-    }
-    return wrap;
-  }
-  const bigUrl = (url) => (url && /googleusercontent\.com/.test(url)) ? url.replace(/=s\d+(-c)?/, "=s512-c") : url;
-
-  /* ============ تخمين النوع من الاسم ============ */
-  const normAr = (s) => (s || "").replace(/[\u064B-\u065F\u0670\u0640]/g, "").replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/\s+/g, " ").trim();
-  const keyAr = (w) => w.replace(/ة$/, "ه");
-  const mkSet = (str) => new Set(str.split(" ").filter(Boolean).map((x) => keyAr(normAr(x))));
-  const F_AR = mkSet("سارة مريم فاطمة نورهان نورا هدى ندى منى هاجر اية ايه ملك ملاك رحمة شهد شيماء شيما دعاء اسماء اميرة امل امال امنية ايمان الاء رنا رنيم ريم ريماس روان رودينا سلمى سلوى سمر سمية سناء سهى سهام سعاد صفاء صفية ضحى عائشة عايشة عبير علا علياء عزة غادة غدير فرح فريدة فاتن فدوى لمياء لبنى ليلى لينا لجين ليان لارا لمى ماجدة مروة مي ميار ميرنا ميرال مها ميادة منال منار مرفت ناهد نادية نجلاء نشوى نهى نيرة نيرمين نسمة نسرين هبة هدير هالة هناء هند هنا هيام وفاء ولاء ياسمين يمنى يارا يسرا بسمة بتول جميلة جنى جنة جيهان حبيبة حنان حنين حلا خلود خديجة دينا دانا داليا دارين رشا رباب رانيا رزان زينب زهراء زينة سجى سما سماء شروق شذى شادية فيروز كريمة كاميليا كوثر مارينا ماريا ماري ميرفت مديحة نانسي نبيلة نرمين نوال نورين هيفاء ورد وردة انجي ايناس اسراء ابتسام ايفا ريهام رحاب رقية ريناد سلسبيل سندس شهيرة صابرين عفاف عواطف فتحية فوزية لطيفة ليالي مايا ماجي مرام منة نهال نيفين وعد ياسمينا يقين");
-  const M_AR = mkSet("محمد احمد محمود مصطفى علي عمر عمرو ياسر يوسف ابراهيم اسماعيل اسلام ايمن ايهاب باسم باسل بلال تامر تميم توفيق ثروت جمال جلال جهاد حازم حاتم حسام حسن حسين حمدي حمزة خالد خليل خيري داود دياب رامي رامز رمضان رضا رافت رشاد زياد زكريا زين سامح سامي سعد سعيد سالم سليمان سيف شادي شريف شعبان شهاب صلاح صبري صالح ضياء طارق طه عادل عاطف عثمان عصام علاء عماد عمار عوض عيد غانم فادي فارس فتحي فريد فؤاد فهد فوزي قاسم كريم كمال لؤي ماجد مازن مالك مجدي محسن مختار مدحت مرتضى مروان مسعد معتز منصور منتصر مهند مهدي موسى نادر ناصر نبيل نصر نظير هاني هشام هلال همام وائل وليد ياسين يحيى يزن يونس انس اياد ادم اسامة اشرف اكرم امير انور ايوب بشير بدر بهاء تقي جابر جاد جورج جون حامد حمادة خميس رؤوف سمير سلطان شوقي صفوت عباس عبده عزت عطية فاروق فكري كارم لطفي متولي مجاهد مكرم ممدوح نجيب نعمان هيثم وسيم يعقوب يوحنا مينا بيشوي مارك مايكل بيتر مهاب معاذ مؤمن رائد راشد ربيع رجب رفعت زاهر زهير سراج سلامة شاكر شحاتة شكري صدقي عابد عارف عاصم عامر معاوية طلحة عبيدة قتادة عكرمة");
-  const F_EN = new Set("sara sarah mariam maryam mary mona mai may nora noura nada hana hanan heba hend hager hajar rana reem rahma rawan salma shahd shaimaa shahed sama samar aya asmaa esraa israa amira amal eman iman doaa dina dalia farah fatma fatima jana habiba hadeer yasmin yasmine yara menna malak mayar mirna marwa nahla nesma nermeen noha nouran nourhan rodina sondos tasneem walaa wafaa youmna zeinab zainab rewan reham rasha rania shorouk salsabil nancy nihal nivine nayera".split(" "));
-  const M_EN = new Set("ahmed ahmad mohamed mohammed muhammad mahmoud mostafa mustafa ali omar amr amro yasser yassin yousef youssef yusuf ibrahim ismail islam eslam ayman khaled khalid kareem karim hassan hossam hussein hesham hazem tamer tarek tareq sherif sameh samy sami shady walid waleed wael zeyad ziad adel ashraf essam emad fady fares hany hani hatem magdy marwan mazen medhat mina mark michael peter mohab moaz moataz nader naser nabil osama ramy ramez ramadan saad saeed said salah sayed seif saif abdallah abdullah abdelrahman abdelaziz anas adam ammar bilal basem basel gamal hamza hamdy hamada john george".split(" "));
-
-  function guessGender(full) {
-    const n = normAr(full);
-    if (!n) return null;
-    const w = n.split(" ")[0];
-    if (/^[a-zA-Z]/.test(w)) {
-      const l = w.toLowerCase().replace(/[^a-z]/g, "");
-      if (F_EN.has(l)) return "female";
-      if (M_EN.has(l)) return "male";
-      return null;
-    }
-    if (w.indexOf("عبد") === 0) return "male";
-    if (w === "ابو" || w === "ابي") return "male";
-    if (w === "ام") return "female";
-    const k = keyAr(w);
-    if (F_AR.has(k)) return "female";
-    if (M_AR.has(k)) return "male";
-    if (/ة$/.test(w)) return "female";
-    return null;
-  }
-
-  /* ============ Supabase والجلسة ============ */
-  const remembered = () => {
-    try { return localStorage.getItem("qb-remember") !== "0"; } catch (e) { return true; }
-  };
-  const authStorage = {
-    getItem: (k) => { try { return localStorage.getItem(k) || sessionStorage.getItem(k); } catch (e) { return null; } },
-    setItem: (k, v) => {
-      try {
-        const keep = remembered();
-        (keep ? localStorage : sessionStorage).setItem(k, v);
-        (keep ? sessionStorage : localStorage).removeItem(k);
-      } catch (e) {}
-    },
-    removeItem: (k) => { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} }
-  };
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storage: authStorage } });
-
-  const goLogin = () => { window.location.replace(new URL(LOGIN_PAGE, window.location.href).href); };
-
-  const me = {
-    id: "", user: null, fullName: "", avatar: null, role: "student", gender: null, phone: "",
-    profileKnown: false, phoneKnown: false
-  };
-  let offset = 0;                                   // فرق الساعة بين السيرفر والتليفون
-  const now = () => Date.now() + offset;
-  const state = { exams: [], attempts: {}, period: "month", studentsCount: null, page: "home", cards: {} };
-
-  async function loadProfile() {
-    const m = me.user.user_metadata || {};
-    me.id = me.user.id;
-    me.fullName = m.full_name || m.name || "";
-    me.avatar = m.avatar_url || m.picture || null;
-    try {
-      const r = await sb.from("profiles").select("full_name, avatar_url, role, gender").eq("id", me.id).maybeSingle();
-      if (!r.error && r.data) {
-        me.profileKnown = true;
-        if (r.data.full_name) me.fullName = r.data.full_name;
-        me.avatar = r.data.avatar_url || null;      // فاضي يعني من غير صورة
-        me.role = r.data.role || "student";
-        me.gender = r.data.gender || null;
+      function fmtLeft(ms) {
+        const s = Math.max(0, Math.floor(ms / 1000));
+        const hh = Math.floor(s / 3600), mm = Math.floor((s % 3600) / 60), ss = s % 60;
+        const p = (n) => String(n).padStart(2, "0");
+        return hh > 0 ? p(hh) + ":" + p(mm) + ":" + p(ss) : p(mm) + ":" + p(ss);
       }
-    } catch (e) {}
-  }
-  async function loadPhone() {
-    try {
-      const r = await sb.from("profile_private").select("phone").eq("user_id", me.id).maybeSingle();
-      if (!r.error) {
-        me.phoneKnown = true;
-        me.phone = (r.data && r.data.phone) || "";
+      function plural(n, one, two, few, many) {
+        if (n === 1) return one;
+        if (n === 2) return two;
+        return ar(n) + " " + (n >= 3 && n <= 10 ? few : many);
       }
-    } catch (e) {}
-  }
-  async function syncClock() {
-    try {
-      const r = await sb.rpc("server_now");
-      if (!r.error && r.data) {
-        const t = new Date(r.data).getTime();
-        if (!isNaN(t)) offset = t - Date.now();
-      }
-    } catch (e) {}
-  }
-
-  /* ============ الوضع الفاتح / الداكن ============ */
-  const themeBtn = $("themeBtn");
-  const darkSwitch = $("darkSwitch");
-  function paintTheme() {
-    const dark = window.QB.isDark();
-    themeBtn.innerHTML = dark ? ICON.moon : ICON.sun;   // الأيقونة بتوضّح الوضع الحالي
-    darkSwitch.checked = dark;
-  }
-  function setTheme(next) {
-    document.documentElement.setAttribute("data-theme", next);
-    try { localStorage.setItem("qb-theme", next); } catch (e) {}
-    window.QB.applyAccent();
-    paintTheme();
-    if (state.page === "settings") paintSwatches();
-  }
-  themeBtn.addEventListener("click", () => setTheme(window.QB.isDark() ? "light" : "dark"));
-  darkSwitch.addEventListener("change", () => setTheme(darkSwitch.checked ? "dark" : "light"));
-  paintTheme();
-
-  /* ============ نافذة في نص الشاشة ============ */
-  let modalLocked = false;
-  function openModal(build, locked) {
-    const box = $("modalBox");
-    box.innerHTML = "";
-    build(box);
-    modalLocked = !!locked;
-    $("modal").hidden = false;
-  }
-  function closeModal() { $("modal").hidden = true; modalLocked = false; }
-  $("modal").addEventListener("click", (e) => { if (e.target === $("modal") && !modalLocked) closeModal(); });
-  document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-    if (!$("modal").hidden && !modalLocked) closeModal();
-    closeNotif();
-  });
-  function modalBtn(label, cls, fn) {
-    const b = h("button", cls, label);
-    b.type = "button";
-    b.addEventListener("click", fn);
-    return b;
-  }
-
-  /* ============ التنقل (الشريط السفلي) ============ */
-  const pages = { home: $("pageHome"), leaders: $("pageLeaders"), grades: $("pageGrades"), settings: $("pageSettings") };
-  const navBtns = Array.prototype.slice.call(document.querySelectorAll(".nav-btn"));
-
-  function go(page, skipScroll) {
-    if (!pages[page]) page = "home";
-    state.page = page;
-    Object.keys(pages).forEach((k) => { pages[k].hidden = k !== page; });
-    navBtns.forEach((b) => {
-      const on = b.dataset.page === page;
-      b.classList.toggle("active", on);
-      if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
-    });
-    try { history.replaceState(null, "", "#" + page); } catch (e) {}
-    if (!skipScroll) window.scrollTo(0, 0);
-    closeNotif();
-    if (page === "home") loadExams();
-    if (page === "leaders") loadLeaders();
-    if (page === "grades") loadGrades();
-    if (page === "settings") renderSettings();
-  }
-  navBtns.forEach((b) => {
-    let tipTimer = null;
-    b.addEventListener("click", () => {
-      b.classList.add("tip-on");
-      clearTimeout(tipTimer);
-      tipTimer = setTimeout(() => b.classList.remove("tip-on"), 1300);
-      go(b.dataset.page);
-    });
-    b.addEventListener("blur", () => { clearTimeout(tipTimer); b.classList.remove("tip-on"); });
-  });
-
-  /* ============ الإشعارات ============ */
-  const notif = { items: [], server: [], login: null, seenAt: 0, seenBefore: 0, expanded: false, open: false };
-  const seenKey = () => "qb-seen-" + me.id;
-  const loginKey = () => "qb-login-" + me.id;
-  const NOTIF_VISIBLE = 2;
-
-  // إشعار "تم تسجيل الدخول بنجاح": ثابت وبيتجدّد مع كل تسجيل دخول جديد
-  function loginStamp() {
-    let t = null;
-    try { t = localStorage.getItem(loginKey()); } catch (e) {}
-    if (!t || AUTH_REDIRECT) {
-      t = new Date(now()).toISOString();
-      try { localStorage.setItem(loginKey(), t); } catch (e) {}
-    }
-    return t;
-  }
-  function mergeNotifs() {
-    const pinned = { id: "login", pin: true, title: "تم تسجيل الدخول بنجاح", body: "أهلاً بيك في بنك الأسئلة", created_at: notif.login || new Date(now()).toISOString() };
-    notif.items = [pinned].concat(notif.server);
-  }
-
-  function updateBadge() {
-    const unread = notif.items.filter((n) => new Date(n.created_at).getTime() > notif.seenAt).length;
-    const b = $("bellBadge");
-    b.hidden = unread === 0;
-    b.textContent = unread > 9 ? ar(9) + "+" : ar(unread);
-  }
-  function renderNotifs() {
-    const list = $("notifList");
-    list.innerHTML = "";
-    const more = $("notifMore");
-    if (!notif.items.length) {
-      const li = h("li", "notif-empty", "مفيش إشعارات لحد دلوقتي.");
-      list.appendChild(li);
-      more.hidden = true;
-      return;
-    }
-    const shown = notif.expanded ? notif.items : notif.items.slice(0, NOTIF_VISIBLE);
-    shown.forEach((n) => {
-      const isNew = new Date(n.created_at).getTime() > notif.seenBefore;
-      const li = h("li", "notif-item" + (isNew ? " new" : "") + (n.pin ? " pin" : ""));
-      li.appendChild(h("span", "notif-dot"));
-      const body = h("div", "notif-body");
-      body.appendChild(h("div", "notif-title", n.title));
-      if (n.body) body.appendChild(h("div", "notif-text", n.body));
-      body.appendChild(h("div", "notif-time", rel(n.created_at)));
-      li.appendChild(body);
-      list.appendChild(li);
-    });
-    if (notif.items.length > NOTIF_VISIBLE) {
-      more.hidden = false;
-      more.textContent = notif.expanded ? "عرض أقل" : "عرض المزيد";
-    } else {
-      more.hidden = true;
-    }
-  }
-  async function loadNotifs() {
-    try {
-      const r = await sb.from("notifications").select("id, title, body, created_at").order("created_at", { ascending: false }).limit(30);
-      if (!r.error && r.data) notif.server = r.data;
-    } catch (e) {}
-    mergeNotifs();
-    updateBadge();
-    if (notif.open) renderNotifs();
-  }
-  function markSeen() {
-    notif.seenAt = now();
-    try { localStorage.setItem(seenKey(), String(notif.seenAt)); } catch (e) {}
-    updateBadge();
-  }
-  function openNotif() {
-    notif.open = true;
-    notif.expanded = false;
-    notif.seenBefore = notif.seenAt;
-    renderNotifs();
-    $("notifPanel").hidden = false;
-    $("bellBtn").setAttribute("aria-expanded", "true");
-    markSeen();
-    loadNotifs();
-  }
-  function closeNotif() {
-    if (!notif.open) return;
-    notif.open = false;
-    $("notifPanel").hidden = true;
-    $("bellBtn").setAttribute("aria-expanded", "false");
-  }
-  $("bellBtn").addEventListener("click", (e) => { e.stopPropagation(); notif.open ? closeNotif() : openNotif(); });
-  $("notifMore").addEventListener("click", (e) => { e.stopPropagation(); notif.expanded = !notif.expanded; renderNotifs(); });
-  document.addEventListener("click", (e) => {
-    if (!notif.open) return;
-    if (!$("notifPanel").contains(e.target) && !$("bellBtn").contains(e.target)) closeNotif();
-  });
-
-  /* ============ الرئيسية: الامتحانات ============ */
-  function infoRows(exam) {
-    const box = h("div", "info");
-    const subjAt = new Date(exam.subject_at || exam.starts_at);
-    const add = (k, v) => {
-      const r = h("div", "row");
-      r.appendChild(h("span", "k", k));
-      r.appendChild(h("span", "v", v));
-      box.appendChild(r);
-    };
-    add("اسم المادة:", exam.subject);
-    add("تاريخ ووقت المادة:", fDate.format(subjAt) + " · " + fTime.format(subjAt));
-    add("اسم الدكتور:", exam.doctor);
-    add("بداية الامتحان الساعة:", fTime.format(new Date(exam.starts_at)));
-    add("نهاية الامتحان الساعة:", fTime.format(new Date(exam.ends_at)));
-    return box;
-  }
-
-  function examStatus(exam) {
-    const t = now();
-    const att = state.attempts[exam.id];
-    if (att && att.submitted_at) return "done";
-    if (t >= new Date(exam.ends_at).getTime()) return "ended";
-    if (t < new Date(exam.starts_at).getTime()) return "soon";
-    return "open";
-  }
-
-  function updateCard(ref) {
-    const exam = ref.exam;
-    const st = examStatus(exam);
-    const t = now();
-    ref.status = st;
-    ref.chip.className = "chip" + (st === "open" ? " open" : st === "done" ? " done" : "");
-    if (st === "done") {
-      const a = state.attempts[exam.id];
-      ref.chip.textContent = "تم التسليم";
-      ref.line.textContent = "درجتك: " + arNum(a.score) + " من " + ar(a.total) + (a.passed ? " · ناجح" : " · لم تنجح");
-    } else if (st === "soon") {
-      ref.chip.textContent = "قريباً";
-      ref.line.textContent = "يبدأ بعد " + ar(fmtLeft(new Date(exam.starts_at).getTime() - t));
-    } else if (st === "open") {
-      ref.chip.textContent = "متاح الآن";
-      ref.line.textContent = "باقي على النهاية " + ar(fmtLeft(new Date(exam.ends_at).getTime() - t));
-    }
-  }
-
-  function showEmpty() {
-    const t = now();
-    const missed = state.exams.some((e) => {
-      const att = state.attempts[e.id];
-      return new Date(e.ends_at).getTime() <= t && !(att && att.submitted_at);
-    });
-    $("examEmptyText").textContent = missed
-      ? "تم انتهاء الامتحان، استنى الامتحان القادم."
-      : "مفيش امتحانات دلوقتي.";
-    $("examEmpty").hidden = false;
-  }
-
-  function renderExams() {
-    const list = $("examList");
-    list.innerHTML = "";
-    state.cards = {};
-    $("examEmpty").hidden = true;
-
-    const shown = state.exams.filter((e) => new Date(e.ends_at).getTime() > now());
-    if (!shown.length) { showEmpty(); return; }
-
-    shown.forEach((exam) => {
-      const card = h("button", "exam");
-      card.type = "button";
-      const head = h("div", "exam-head");
-      head.appendChild(h("span", "exam-title", exam.subject));
-      const chip = h("span", "chip");
-      head.appendChild(chip);
-      card.appendChild(head);
-      card.appendChild(infoRows(exam));
-      const line = h("div", "exam-line");
-      card.appendChild(line);
-      card.addEventListener("click", () => showExamModal(exam));
-      list.appendChild(card);
-      const ref = { exam, card, chip, line, status: "" };
-      state.cards[exam.id] = ref;
-      updateCard(ref);
-    });
-  }
-
-  async function loadExams() {
-    let exams = [];
-    const attempts = {};
-    try {
-      const since = new Date(now() - 24 * 3600 * 1000).toISOString();
-      const r = await sb.from("exams").select("*").gt("ends_at", since).order("starts_at", { ascending: true });
-      if (!r.error && r.data) exams = r.data;
-    } catch (e) {}
-    try {
-      const a = await sb.from("attempts").select("exam_id, submitted_at, score, total, passed").eq("user_id", me.id);
-      if (!a.error && a.data) a.data.forEach((x) => { attempts[x.exam_id] = x; });
-    } catch (e) {}
-    state.exams = exams;
-    state.attempts = attempts;
-    renderExams();
-  }
-
-  // كل ثانية: نحدّث العدّاد، ولو الامتحان خلص من غير ما أدخله يتشال من الصفحة
-  setInterval(() => {
-    if (state.page !== "home") return;
-    let removed = false;
-    Object.keys(state.cards).forEach((id) => {
-      const ref = state.cards[id];
-      updateCard(ref);
-      if (ref.status === "ended") {
-        ref.card.remove();
-        delete state.cards[id];
-        removed = true;
-      }
-    });
-    if (removed && !Object.keys(state.cards).length) showEmpty();
-  }, 1000);
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden || !me.id) return;
-    loadNotifs();
-    if (state.page === "home" && $("examScreen").hidden) loadExams();
-  });
-  setInterval(() => { if (me.id && !document.hidden) loadNotifs(); }, 60000);
-
-  const START_ERRORS = {
-    exam_not_started: "الامتحان لسه ما بدأش.",
-    exam_ended: "تم انتهاء الامتحان.",
-    already_submitted: "أنت سلّمت الامتحان ده قبل كده.",
-    exam_not_found: "الامتحان ده مش موجود."
-  };
-  function errText(err, map, fallback) {
-    const msg = (err && err.message) || "";
-    for (const k in map) if (msg.indexOf(k) !== -1) return map[k];
-    return fallback;
-  }
-
-  function showExamModal(exam) {
-    const st = examStatus(exam);
-    if (st === "ended") { loadExams(); return; }
-    const att = state.attempts[exam.id];
-
-    openModal((box) => {
-      if (st === "done") {
-        box.appendChild(h("h2", null, "تم تسليم الامتحان"));
-        box.appendChild(h("p", "sub", exam.subject));
-        box.appendChild(h("div", "result-score", arNum(att.score) + " / " + ar(att.total)));
-        box.appendChild(h("div", "result-note " + (att.passed ? "ok" : "no"), att.passed ? "ناجح" : "لم تنجح"));
-        const actions = h("div", "actions");
-        actions.appendChild(modalBtn("تمام", "btn-ghost", closeModal));
-        box.appendChild(actions);
-        return;
+      function rel(iso) {
+        const m = Math.floor(Math.max(0, now() - new Date(iso).getTime()) / 60000);
+        if (m < 1) return "دلوقتي";
+        if (m < 60) return "قبل " + plural(m, "دقيقة", "دقيقتين", "دقايق", "دقيقة");
+        const hr = Math.floor(m / 60);
+        if (hr < 24) return "قبل " + plural(hr, "ساعة", "ساعتين", "ساعات", "ساعة");
+        const d = Math.floor(hr / 24);
+        if (d === 1) return "امبارح";
+        if (d < 7) return "قبل " + plural(d, "يوم", "يومين", "أيام", "يوم");
+        return fShort.format(new Date(iso));
       }
 
-      box.appendChild(h("h2", null, "ابدأ الامتحان"));
-      box.appendChild(infoRows(exam));
-      box.appendChild(h("p", "sub", "كل سؤال ليه ١٠ ثواني. لو الوقت خلص من غير إجابة هيتحسب بنص درجة."));
+      let toastTimer = null;
+      function toast(msg, isErr, sticky) {
+        const t = $("toast");
+        t.textContent = msg;
+        t.className = "toast" + (isErr ? " err" : "");
+        t.hidden = false;
+        clearTimeout(toastTimer);
+        if (!sticky) toastTimer = setTimeout(() => { t.hidden = true; }, 2800);
+      }
 
-      const actions = h("div", "actions");
-      const enter = h("button", "btn-primary", "ادخل");
-      enter.type = "button";
-      if (st === "soon") { enter.disabled = true; enter.textContent = "لسه ما بدأش"; }
-      enter.addEventListener("click", async () => {
-        enter.disabled = true;
-        enter.textContent = "ثانية واحدة...";
-        let res = null;
-        try { res = await sb.rpc("start_exam", { p_exam_id: exam.id }); } catch (e) { res = { error: e }; }
-        if (res.error) {
-          toast(errText(res.error, START_ERRORS, "ماقدرناش نفتح الامتحان، جرّب تاني."), true);
-          closeModal();
-          loadExams();
-          return;
+      /* ============ الأيقونات والأفاتار ============ */
+      const svg = (inner, extra) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (extra || "") + ">" + inner + "</svg>";
+      const ICON = {
+        eye: svg('<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>'),
+        image: svg('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>'),
+        user: svg('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+        trash: svg('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>'),
+        sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>'),
+        moon: svg('<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'),
+        check: svg('<path d="M20 6 9 17l-5-5"/>', ' stroke-width="3"')
+      };
+
+      // أفاتار ولد وبنت (رسومات بسيطة)
+      const PRESETS = {
+        boy: '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#cfe3ff"/><path d="M16 100c0-20 15-32 34-32s34 12 34 32z" fill="#2f6fd6"/><path d="M41 68l9 9 9-9z" fill="#fff" opacity=".9"/><rect x="43" y="55" width="14" height="16" rx="6" fill="#e3a982"/><circle cx="50" cy="42" r="18" fill="#f2c29c"/><path d="M31.5 41c-2-15 7-24 18.500-24s20.500 8 18.500 24c-3-8-8-11-18.500-11s-15.500 3-18.500 11z" fill="#2b2118"/><circle cx="43" cy="45" r="2" fill="#2b2118"/><circle cx="57" cy="45" r="2" fill="#2b2118"/><path d="M44 52c3.500 3 8.500 3 12 0" stroke="#a65a3a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
+        girl: '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#ffd9e8"/><path d="M25 58c-4-24 6-42 25-42s29 18 25 42c-1 8-3 14-3 22H28c0-8-2-14-3-22z" fill="#3a2418"/><path d="M16 100c0-20 15-32 34-32s34 12 34 32z" fill="#c2417d"/><rect x="43" y="55" width="14" height="16" rx="6" fill="#e3a982"/><circle cx="50" cy="42" r="18" fill="#f2c29c"/><path d="M31 43c-2-16 8-26 19-26s21 10 19 26c-4-10-9-15-19-15s-15 5-19 15z" fill="#3a2418"/><circle cx="43" cy="45" r="2" fill="#2b2118"/><circle cx="57" cy="45" r="2" fill="#2b2118"/><path d="M44 52c3.500 3 8.500 3 12 0" stroke="#b5483a" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="38" cy="50" r="3" fill="#f59aa8" opacity=".5"/><circle cx="62" cy="50" r="3" fill="#f59aa8" opacity=".5"/></svg>'
+      };
+      const presetKey = (url) => (typeof url === "string" && url.indexOf("preset:") === 0) ? url.slice(7) : null;
+
+      // أول حرف من الاسم الأول + أول حرف من الاسم التاني
+      function initials(name) {
+        const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+        if (!parts.length) return "؟";
+        const first = (w) => Array.from(w)[0].toUpperCase();
+        return parts.length > 1 ? first(parts[0]) + " " + first(parts[1]) : first(parts[0]);
+      }
+
+      function avatarEl(url, name, cls) {
+        const wrap = h("span", "avatar" + (cls ? " " + cls : ""));
+        const letters = () => { wrap.textContent = initials(name); };
+        const pk = presetKey(url);
+        if (pk && PRESETS[pk]) {
+          wrap.innerHTML = PRESETS[pk];
+        } else if (url && /^https?:\/\//.test(url)) {
+          const img = document.createElement("img");
+          img.alt = "";
+          img.referrerPolicy = "no-referrer";
+          img.addEventListener("error", () => { wrap.textContent = ""; letters(); });
+          img.src = url;
+          wrap.appendChild(img);
+        } else {
+          letters();
         }
-        // صور الأسئلة (من دالة get_question_images)
+        return wrap;
+      }
+      const bigUrl = (url) => (url && /googleusercontent\.com/.test(url)) ? url.replace(/=s\d+(-c)?/, "=s512-c") : url;
+
+      /* ============ تخمين النوع من الاسم ============ */
+      const normAr = (s) => (s || "").replace(/[ً-ٰٟـ]/g, "").replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/\s+/g, " ").trim();
+      const keyAr = (w) => w.replace(/ة$/, "ه");
+      const mkSet = (str) => new Set(str.split(" ").filter(Boolean).map((x) => keyAr(normAr(x))));
+      const F_AR = mkSet("سارة مريم فاطمة نورهان نورا هدى ندى منى هاجر اية ايه ملك ملاك رحمة شهد شيماء شيما دعاء اسماء اميرة امل امال امنية ايمان الاء رنا رنيم ريم ريماس روان رودينا سلمى سلوى سمر سمية سناء سهى سهام سعاد صفاء صفية ضحى عائشة عايشة عبير علا علياء عزة غادة غدير فرح فريدة فاتن فدوى لمياء لبنى ليلى لينا لجين ليان لارا لمى ماجدة مروة مي ميار ميرنا ميرال مها ميادة منال منار مرفت ناهد نادية نجلاء نشوى نهى نيرة نيرمين نسمة نسرين هبة هدير هالة هناء هند هنا هيام وفاء ولاء ياسمين يمنى يارا يسرا بسمة بتول جميلة جنى جنة جيهان حبيبة حنان حنين حلا خلود خديجة دينا دانا داليا دارين رشا رباب رانيا رزان زينب زهراء زينة سجى سما سماء شروق شذى شادية فيروز كريمة كاميليا كوثر مارينا ماريا ماري ميرفت مديحة نانسي نبيلة نرمين نوال نورين هيفاء ورد وردة انجي ايناس اسراء ابتسام ايفا ريهام رحاب رقية ريناد سلسبيل سندس شهيرة صابرين عفاف عواطف فتحية فوزية لطيفة ليالي مايا ماجي مرام منة نهال نيفين وعد ياسمينا يقين");
+      const M_AR = mkSet("محمد احمد محمود مصطفى علي عمر عمرو ياسر يوسف ابراهيم اسماعيل اسلام ايمن ايهاب باسم باسل بلال تامر تميم توفيق ثروت جمال جلال جهاد حازم حاتم حسام حسن حسين حمدي حمزة خالد خليل خيري داود دياب رامي رامز رمضان رضا رافت رشاد زياد زكريا زين سامح سامي سعد سعيد سالم سليمان سيف شادي شريف شعبان شهاب صلاح صبري صالح ضياء طارق طه عادل عاطف عثمان عصام علاء عماد عمار عوض عيد غانم فادي فارس فتحي فريد فؤاد فهد فوزي قاسم كريم كمال لؤي ماجد مازن مالك مجدي محسن مختار مدحت مرتضى مروان مسعد معتز منصور منتصر مهند مهدي موسى نادر ناصر نبيل نصر نظير هاني هشام هلال همام وائل وليد ياسين يحيى يزن يونس انس اياد ادم اسامة اشرف اكرم امير انور ايوب بشير بدر بهاء تقي جابر جاد جورج جون حامد حمادة خميس رؤوف سمير سلطان شوقي صفوت عباس عبده عزت عطية فاروق فكري كارم لطفي متولي مجاهد مكرم ممدوح نجيب نعمان هيثم وسيم يعقوب يوحنا مينا بيشوي مارك مايكل بيتر مهاب معاذ مؤمن رائد راشد ربيع رجب رفعت زاهر زهير سراج سلامة شاكر شحاتة شكري صدقي عابد عارف عاصم عامر معاوية طلحة عبيدة قتادة عكرمة");
+      const F_EN = new Set("sara sarah mariam maryam mary mona mai may nora noura nada hana hanan heba hend hager hajar rana reem rahma rawan salma shahd shaimaa shahed sama samar aya asmaa esraa israa amira amal eman iman doaa dina dalia farah fatma fatima jana habiba hadeer yasmin yasmine yara menna malak mayar mirna marwa nahla nesma nermeen noha nouran nourhan rodina sondos tasneem walaa wafaa youmna zeinab zainab rewan reham rasha rania shorouk salsabil nancy nihal nivine nayera".split(" "));
+      const M_EN = new Set("ahmed ahmad mohamed mohammed muhammad mahmoud mostafa mustafa ali omar amr amro yasser yassin yousef youssef yusuf ibrahim ismail islam eslam ayman khaled khalid kareem karim hassan hossam hussein hesham hazem tamer tarek tareq sherif sameh samy sami shady walid waleed wael zeyad ziad adel ashraf essam emad fady fares hany hani hatem magdy marwan mazen medhat mina mark michael peter mohab moaz moataz nader naser nabil osama ramy ramez ramadan saad saeed said salah sayed seif saif abdallah abdullah abdelrahman abdelaziz anas adam ammar bilal basem basel gamal hamza hamdy hamada john george".split(" "));
+
+      function guessGender(full) {
+        const n = normAr(full);
+        if (!n) return null;
+        const w = n.split(" ")[0];
+        if (/^[a-zA-Z]/.test(w)) {
+          const l = w.toLowerCase().replace(/[^a-z]/g, "");
+          if (F_EN.has(l)) return "female";
+          if (M_EN.has(l)) return "male";
+          return null;
+        }
+        if (w.indexOf("عبد") === 0) return "male";
+        if (w === "ابو" || w === "ابي") return "male";
+        if (w === "ام") return "female";
+        const k = keyAr(w);
+        if (F_AR.has(k)) return "female";
+        if (M_AR.has(k)) return "male";
+        if (/ة$/.test(w)) return "female";
+        return null;
+      }
+
+      /* ============ Supabase والجلسة ============ */
+      const remembered = () => {
+        try { return localStorage.getItem("qb-remember") !== "0"; } catch (e) { return true; }
+      };
+      const authStorage = {
+        getItem: (k) => { try { return localStorage.getItem(k) || sessionStorage.getItem(k); } catch (e) { return null; } },
+        setItem: (k, v) => {
+          try {
+            const keep = remembered();
+            (keep ? localStorage : sessionStorage).setItem(k, v);
+            (keep ? sessionStorage : localStorage).removeItem(k);
+          } catch (e) {}
+        },
+        removeItem: (k) => { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} }
+      };
+      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storage: authStorage } });
+
+      const goLogin = () => { window.location.replace(new URL(LOGIN_PAGE, window.location.href).href); };
+
+      const me = {
+        id: "", user: null, fullName: "", avatar: null, role: "student", gender: null, phone: "",
+        profileKnown: false, phoneKnown: false
+      };
+      let offset = 0;                                   // فرق الساعة بين السيرفر والتليفون
+      const now = () => Date.now() + offset;
+      const state = { exams: [], attempts: {}, period: "month", studentsCount: null, page: "home", cards: {} };
+
+      async function loadProfile() {
+        const m = me.user.user_metadata || {};
+        me.id = me.user.id;
+        me.fullName = m.full_name || m.name || "";
+        me.avatar = m.avatar_url || m.picture || null;
         try {
-          const im = await sb.rpc("get_question_images", { p_exam_id: exam.id });
-          if (!im.error && im.data && res.data && res.data.questions) {
-            res.data.questions.forEach((q) => { if (im.data[q.id]) q.image_url = im.data[q.id]; });
+          const r = await sb.from("profiles").select("full_name, avatar_url, role, gender").eq("id", me.id).maybeSingle();
+          if (!r.error && r.data) {
+            me.profileKnown = true;
+            if (r.data.full_name) me.fullName = r.data.full_name;
+            me.avatar = r.data.avatar_url || null;      // فاضي يعني من غير صورة
+            me.role = r.data.role || "student";
+            me.gender = r.data.gender || null;
           }
         } catch (e) {}
-        closeModal();
-        openExam(exam, res.data);
-      });
-      actions.appendChild(enter);
-      actions.appendChild(modalBtn("إلغاء", "btn-ghost", closeModal));
-      box.appendChild(actions);
-    });
-  }
-
-  /* ============ شاشة الامتحان (سؤال بسؤال، ١٠ ثواني) ============ */
-  const QSEC = 10, CIRC = 2 * Math.PI * 45;
-  const cur = { exam: null, qs: [], i: 0, res: [], endsAt: 0, timer: null, locked: false, finishing: false, mode: "next", optEls: [] };
-
-  function setFoot(label, disabled) {
-    const b = $("exSubmit");
-    b.textContent = label;
-    b.disabled = !!disabled;
-  }
-
-  function openExam(exam, data) {
-    cur.exam = exam;
-    cur.qs = (data && data.questions) || [];
-    cur.i = 0; cur.res = []; cur.finishing = false; cur.mode = "next";
-    cur.endsAt = new Date((data && data.ends_at) || exam.ends_at).getTime();
-    $("exSubject").textContent = exam.subject;
-    $("examScreen").hidden = false;
-    document.body.style.overflow = "hidden";
-    if (!cur.qs.length) {
-      const body = $("exBody");
-      body.innerHTML = "";
-      const empty = h("div", "empty");
-      empty.appendChild(h("p", null, "الامتحان لسه مفيهوش أسئلة."));
-      body.appendChild(empty);
-      $("exProgress").textContent = "";
-      cur.mode = "close";
-      setFoot("رجوع", false);
-      return;
-    }
-    showQ();
-  }
-
-  function showQ() {
-    const q = cur.qs[cur.i];
-    cur.locked = false;
-    $("exProgress").textContent = "سؤال " + ar(cur.i + 1) + " من " + ar(cur.qs.length);
-    const body = $("exBody");
-    body.innerHTML = "";
-    body.parentNode.scrollTop = 0;
-
-    const card = h("div", "q");
-    const ring = h("div", "ring");
-    ring.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" id="ringFg" cx="50" cy="50" r="45"/></svg><span id="ringNum"></span>';
-    card.appendChild(ring);
-    card.appendChild(h("span", "chip qtype", q.kind === "tf" ? "صح وغلط" : "اختيار من متعدد"));
-    card.appendChild(h("p", "q-body", q.body));
-
-    // صورة السؤال (مسألة)
-    if (q.image_url) {
-      const im = document.createElement("img");
-      im.className = "q-img";
-      im.alt = "";
-      im.src = q.image_url;
-      card.appendChild(im);
-    }
-
-    const opts = h("div", "opts");
-    const list = (q.options && q.options.length) ? q.options : ["صح", "غلط"];
-    cur.optEls = list.map((txt, idx) => {
-      const o = h("button", "opt");
-      o.type = "button";
-      o.appendChild(h("span", "dot"));
-      o.appendChild(h("span", null, String(txt)));
-      o.setAttribute("aria-pressed", "false");
-      o.addEventListener("click", () => reveal(idx));
-      opts.appendChild(o);
-      return o;
-    });
-    card.appendChild(opts);
-
-    const fb = h("div", "fb");
-    fb.id = "fb";
-    fb.hidden = true;
-    card.appendChild(fb);
-    body.appendChild(card);
-    setFoot("اختار إجابة", true);
-
-    const fg = $("ringFg"), num = $("ringNum"), t0 = now();
-    fg.style.strokeDasharray = CIRC;
-    clearInterval(cur.timer);
-    const tick = () => {
-      const el = now() - t0, left = Math.max(0, QSEC * 1000 - el);
-      fg.style.strokeDashoffset = CIRC * Math.min(1, el / (QSEC * 1000));
-      num.textContent = ar(Math.ceil(left / 1000));
-      // أزرق ← أصفر ← أحمر
-      ring.classList.toggle("mid", left <= 6000 && left > 3000);
-      ring.classList.toggle("low", left <= 3000);
-      if (left <= 0 || now() >= cur.endsAt) reveal(null);
-    };
-    tick();
-    cur.timer = setInterval(tick, 100);
-  }
-
-  async function reveal(choice) {
-    if (cur.locked) return;
-    cur.locked = true;
-    clearInterval(cur.timer);
-    const q = cur.qs[cur.i];
-    cur.optEls.forEach((o) => { o.disabled = true; });
-    if (choice != null) cur.optEls[choice].setAttribute("aria-pressed", "true");
-    setFoot("ثانية واحدة...", true);
-
-    let r = null;
-    try {
-      const x = await sb.rpc("check_answer", { p_exam_id: cur.exam.id, p_question_id: q.id, p_choice: choice == null ? -1 : choice });
-      if (!x.error) r = x.data;
-    } catch (e) {}
-
-    const status = choice == null ? "skip" : (r && r.is_correct ? "right" : "wrong");
-    cur.res[cur.i] = { id: q.id, choice: choice, status: status };
-    const good = r ? cur.optEls[r.correct_index] : null;
-    if (good) good.classList.add("right");
-    if (status === "wrong") cur.optEls[choice].classList.add("wrong");
-
-    const fb = $("fb");
-    fb.className = "fb " + status;
-    fb.innerHTML = "";
-    const stg = h("strong");
-    stg.innerHTML = ICON[status] + "<span></span>";
-    stg.lastChild.textContent = status === "right" ? "إجابة صحيحة" : status === "wrong" ? "إجابة خاطئة" : "انتهى الوقت (بنص درجة)";
-    fb.appendChild(stg);
-    const ex = (r && r.explanation) || "";
-    if (good && status !== "right") fb.appendChild(h("div", null, "الإجابة الصحيحة: " + good.textContent));
-    if (status === "right") fb.appendChild(h("div", "fb-ex", "ليه صح: " + (ex || "إجابتك مطابقة للإجابة الصحيحة.")));
-    else if (status === "wrong") fb.appendChild(h("div", "fb-ex", "ليه إجابتك غلط: " + (ex || "مش مطابقة للإجابة الصحيحة.")));
-    else fb.appendChild(h("div", "fb-ex", "ليه دي الإجابة الصح: " + (ex || "دي الإجابة الصحيحة للسؤال.")));
-    if (!r) fb.appendChild(h("div", null, "ماقدرناش نجيب الإجابة الصحيحة."));
-    fb.hidden = false;
-    fb.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    setFoot(cur.i + 1 >= cur.qs.length ? "عرض النتيجة" : "السؤال التالي", false);
-  }
-
-  function nextQ() {
-    if (!cur.locked || cur.finishing) return;
-    cur.i++;
-    if (cur.i >= cur.qs.length || now() >= cur.endsAt) {
-      for (let k = cur.i; k < cur.qs.length; k++) cur.res[k] = { id: cur.qs[k].id, choice: null, status: "skip" };
-      finish();
-    } else {
-      showQ();
-    }
-  }
-
-  function closeExamScreen() {
-    clearInterval(cur.timer);
-    $("examScreen").hidden = true;
-    document.body.style.overflow = "";
-  }
-
-  async function finish() {
-    cur.finishing = true;
-    setFoot("بنسلّم...", true);
-    const answers = {};
-    cur.res.forEach((x) => { answers[x.id] = x.choice == null ? -1 : x.choice; });
-    let sr = null;
-    try {
-      const r = await sb.rpc("submit_exam", { p_exam_id: cur.exam.id, p_answers: answers });
-      if (!r.error) sr = r.data;
-    } catch (e) {}
-    closeExamScreen();
-
-    const c = { right: 0, wrong: 0, skip: 0 };
-    cur.res.forEach((x) => { c[x.status]++; });
-    const total = cur.qs.length, score = c.right + c.skip * 0.5;
-    const pp = (sr && sr.pass_percent) || 50;
-    const passed = total > 0 && (score / total) * 100 >= pp;
-
-    await loadExams();
-    openModal((box) => {
-      box.appendChild(h("h2", null, "تم تسليم الامتحان"));
-      box.appendChild(h("p", "sub", cur.exam.subject));
-      box.appendChild(h("div", "result-score", arNum(score) + " / " + ar(total)));
-      box.appendChild(h("div", "result-note " + (passed ? "ok" : "no"), passed ? "ناجح" : "لم تنجح (المطلوب " + ar(pp) + "٪)"));
-      const st = h("div", "stats");
-      [["ok", c.right, "صح"], ["no", c.wrong, "خطأ"], ["half", c.skip, "لم تجاوب"]].forEach((s) => {
-        const d = h("div", "stat " + s[0]);
-        d.appendChild(h("strong", null, ar(s[1])));
-        d.appendChild(h("span", null, s[2]));
-        st.appendChild(d);
-      });
-      box.appendChild(st);
-      // نص الدرجة بتبان بوضوح
-      if (c.skip) box.appendChild(h("div", "half-note", "اتحسب لك نص درجة على " + ar(c.skip) + " سؤال ما جاوبتش = " + arNum(c.skip * 0.5) + " درجة"));
-      const actions = h("div", "actions");
-      actions.appendChild(modalBtn("تمام", "btn-primary", closeModal));
-      box.appendChild(actions);
-    }, true);
-  }
-
-  $("exSubmit").addEventListener("click", () => {
-    if (cur.mode === "close") { closeExamScreen(); loadExams(); return; }
-    nextQ();
-  });
-
-  /* ============ الأوائل ============ */
-  const CROWN = '<svg class="crown" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"/></svg>';
-  const shortName = (n) => (n || "طالب").trim().split(/\s+/).slice(0, 2).join(" ");
-
-  function podiumSlot(row, cls) {
-    const d = h("div", "pod " + cls + (row ? "" : " ghost"));
-    if (!row) { d.appendChild(h("div", "pod-block")); return d; }
-    if (cls === "p1") { const c = h("span"); c.innerHTML = CROWN; d.appendChild(c.firstChild); }
-    d.appendChild(avatarEl(row.avatar_url, row.full_name));
-    d.appendChild(h("div", "pod-name", shortName(row.full_name)));
-    d.appendChild(h("div", "pod-pts", ar(row.points) + " نقطة"));
-    d.appendChild(h("div", "pod-block", ar(row.place)));
-    return d;
-  }
-
-  function lbRow(row) {
-    const r = h("div", "lb-row" + (row.user_id === me.id ? " me" : ""));
-    r.appendChild(h("span", "lb-rank", "#" + ar(row.place)));
-    r.appendChild(avatarEl(row.avatar_url, row.full_name));
-    r.appendChild(h("span", "lb-name", row.full_name || "طالب"));
-    const pts = h("span", "lb-pts", ar(row.points));
-    pts.appendChild(h("small", null, "نقطة"));
-    r.appendChild(pts);
-    return r;
-  }
-
-  function renderLeaders(rows) {
-    const body = $("lbBody");
-    body.innerHTML = "";
-    $("lbUpdated").textContent = "آخر تحديث للقائمة: " + fStamp.format(new Date(now()));
-
-    if (!rows.length) {
-      const empty = h("div", "empty");
-      empty.style.marginTop = "16px";
-      empty.appendChild(h("p", null, "لسه محدش سلّم امتحان. الترتيب هيظهر هنا بعد أول تسليم."));
-      body.appendChild(empty);
-      return;
-    }
-
-    const meta = h("div", "lb-meta");
-    // ترتيبك أنت (بيختلف من طالب للتاني)
-    const mine = rows.find((x) => x.user_id === me.id);
-    meta.appendChild(h("span", "chip mine", mine ? "ترتيبك: #" + ar(mine.place) : "ترتيبك: لسه مفيش"));
-    if (state.studentsCount != null) {
-      meta.appendChild(h("span", "chip total", ar(state.studentsCount) + " طالب على المنصة"));
-    }
-    body.appendChild(meta);
-
-    const podium = h("div", "podium");
-    podium.appendChild(podiumSlot(rows[1] || null, "p2"));
-    podium.appendChild(podiumSlot(rows[0] || null, "p1"));
-    podium.appendChild(podiumSlot(rows[2] || null, "p3"));
-    body.appendChild(podium);
-
-    const list = h("div", "lb-list");
-    rows.slice(3).forEach((row) => list.appendChild(lbRow(row)));
-    body.appendChild(list);
-  }
-
-  async function loadLeaders() {
-    $("perMonth").setAttribute("aria-pressed", state.period === "month" ? "true" : "false");
-    $("perAll").setAttribute("aria-pressed", state.period === "all" ? "true" : "false");
-    let rows = [];
-    try {
-      const c = await sb.rpc("get_students_count");
-      if (!c.error && c.data != null) state.studentsCount = Number(c.data);
-    } catch (e) {}
-    try {
-      const r = await sb.rpc("get_leaderboard", { p_period: state.period });
-      if (!r.error && r.data) rows = r.data.map((x) => ({
-        place: Number(x.place), user_id: x.user_id, full_name: x.full_name,
-        avatar_url: x.avatar_url, points: Number(x.points)
-      }));
-    } catch (e) {}
-    renderLeaders(rows);
-  }
-  $("perMonth").addEventListener("click", () => { state.period = "month"; loadLeaders(); });
-  $("perAll").addEventListener("click", () => { state.period = "all"; loadLeaders(); });
-
-  /* ============ درجات الطالب: جدول لكل جولة امتحانات ============ */
-  const gstate = { exams: [], att: {} };
-  const fmtNum = (n) => ar(String(Math.round(Number(n) * 10) / 10).replace(".", "٫"));
-  function gradeOf(p) {
-    if (p >= 85) return ["ممتاز", "a"];
-    if (p >= 75) return ["جيد جداً", "b"];
-    if (p >= 65) return ["جيد", "b"];
-    if (p >= 50) return ["مقبول", "c"];
-    return ["راسب", "f"];
-  }
-  const gDone = (e) => (gstate.att[e.id] && gstate.att[e.id].submitted_at) || new Date(e.ends_at).getTime() <= now();
-
-  function gTable(round, exams) {
-    const wrap = h("div");
-    wrap.appendChild(h("h2", "g-cap", "جدول الجولة " + ar(round)));
-    const t = h("table", "g-table");
-    const thead = h("thead"), head = h("tr");
-    ["المادة", "الدرجة", "التقدير"].forEach((x) => head.appendChild(h("th", null, x)));
-    thead.appendChild(head);
-    t.appendChild(thead);
-    const tb = h("tbody");
-    exams.forEach((e) => {
-      const a = gstate.att[e.id], has = a && a.submitted_at;
-      const tr = h("tr");
-      tr.appendChild(h("td", null, e.subject));
-      tr.appendChild(h("td", "g-score", has ? fmtNum(a.score) + " / " + fmtNum(a.total) : "—"));
-      const td = h("td");
-      if (has) {
-        const gr = gradeOf((Number(a.score) / (Number(a.total) || 1)) * 100);
-        td.appendChild(h("span", "g-grade " + gr[1], gr[0]));
-      } else if (new Date(e.ends_at).getTime() <= now()) {
-        td.appendChild(h("span", "g-grade f", "غايب"));
-      } else {
-        td.appendChild(h("span", "g-grade", "لسه"));
       }
-      tr.appendChild(td);
-      tb.appendChild(tr);
-    });
-    t.appendChild(tb);
-    wrap.appendChild(t);
-    return wrap;
-  }
-
-  function renderGrades() {
-    const av = $("gAvatar");
-    av.innerHTML = "";
-    av.appendChild(avatarEl(me.avatar, me.fullName));
-    $("gName").textContent = me.fullName || "حسابك";
-    $("gMail").textContent = (me.user && me.user.email) || "";
-    $("term1").parentNode.hidden = true;
-
-    const body = $("gBody");
-    body.innerHTML = "";
-    const rounds = Array.from(new Set(gstate.exams.map((e) => e.round_no || 1))).sort((a, b) => a - b);
-    let shown = 0;
-    rounds.forEach((r, i) => {
-      const list = gstate.exams.filter((e) => (e.round_no || 1) === r);
-      // الجدول التاني يظهر بس لما الجولة اللي قبله تخلص
-      if (i > 0) {
-        const prev = gstate.exams.filter((e) => (e.round_no || 1) === rounds[i - 1]);
-        if (!prev.every(gDone)) return;
+      async function loadPhone() {
+        try {
+          const r = await sb.from("profile_private").select("phone").eq("user_id", me.id).maybeSingle();
+          if (!r.error) {
+            me.phoneKnown = true;
+            me.phone = (r.data && r.data.phone) || "";
+          }
+        } catch (e) {}
       }
-      body.appendChild(gTable(r, list));
-      shown++;
-    });
-    if (!shown) {
-      const empty = h("div", "empty");
-      empty.style.marginTop = "14px";
-      empty.appendChild(h("p", null, "مفيش امتحانات لسه."));
-      body.appendChild(empty);
-    }
-  }
+      async function syncClock() {
+        try {
+          const r = await sb.rpc("server_now");
+          if (!r.error && r.data) {
+            const t = new Date(r.data).getTime();
+            if (!isNaN(t)) offset = t - Date.now();
+          }
+        } catch (e) {}
+      }
 
-  async function loadGrades() {
-    renderGrades();
-    let exams = [];
-    const att = {};
-    try {
-      const r = await sb.from("exams").select("id, subject, round_no, starts_at, ends_at").order("starts_at", { ascending: true });
-      if (!r.error && r.data) exams = r.data;
-    } catch (e) {}
-    try {
-      const a = await sb.from("attempts").select("exam_id, submitted_at, score, total").eq("user_id", me.id);
-      if (!a.error && a.data) a.data.forEach((x) => { att[x.exam_id] = x; });
-    } catch (e) {}
-    gstate.exams = exams;
-    gstate.att = att;
-    renderGrades();
-  }
-
-  /* ============ الإعدادات: الصورة والحساب ============ */
-  function paintAvatars() {
-    const a1 = $("setAvatar"), a2 = $("accAvatar"), a3 = $("navAvatar");
-    a1.innerHTML = ""; a2.innerHTML = ""; a3.innerHTML = "";
-    a1.appendChild(avatarEl(me.avatar, me.fullName, "lg"));
-    a2.appendChild(avatarEl(me.avatar, me.fullName));
-    a3.appendChild(avatarEl(me.avatar, me.fullName, "sm"));
-    $("setName").textContent = me.fullName || "حسابك";
-    $("accName").textContent = me.fullName || "حسابك";
-    $("accEmail").textContent = (me.user && me.user.email) || "";
-    $("accGender").textContent = me.gender === "female" ? "أنثى" : me.gender === "male" ? "ذكر" : "";
-  }
-
-  function paintGender() {
-    Array.prototype.forEach.call($("genderSeg").children, (b) => {
-      b.setAttribute("aria-pressed", b.dataset.g === me.gender ? "true" : "false");
-    });
-  }
-
-  function paintSwatches() {
-    const box = $("swatches");
-    box.innerHTML = "";
-    const current = window.QB.currentAccent().id;
-    const dark = window.QB.isDark();
-    window.QB.ACCENTS.forEach((a) => {
-      const b = h("button", "swatch");
-      b.type = "button";
-      b.title = a.name;
-      b.setAttribute("aria-label", a.name);
-      b.style.background = dark ? a.dark : a.light;
-      b.setAttribute("aria-pressed", a.id === current ? "true" : "false");
-      b.innerHTML = ICON.check;
-      b.addEventListener("click", () => {
-        try { localStorage.setItem("qb-accent", a.id); } catch (e) {}
+      /* ============ الوضع الفاتح / الداكن ============ */
+      const themeBtn = $("themeBtn");
+      const darkSwitch = $("darkSwitch");
+      function paintTheme() {
+        const dark = window.QB.isDark();
+        themeBtn.innerHTML = dark ? ICON.moon : ICON.sun;   // الأيقونة بتوضّح الوضع الحالي
+        darkSwitch.checked = dark;
+      }
+      function setTheme(next) {
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem("qb-theme", next); } catch (e) {}
         window.QB.applyAccent();
-        paintSwatches();
+        paintTheme();
+        if (state.page === "settings") paintSwatches();
+      }
+      themeBtn.addEventListener("click", () => setTheme(window.QB.isDark() ? "light" : "dark"));
+      darkSwitch.addEventListener("change", () => setTheme(darkSwitch.checked ? "dark" : "light"));
+      paintTheme();
+
+      /* ============ نافذة في نص الشاشة ============ */
+      let modalLocked = false;
+      function openModal(build, locked) {
+        const box = $("modalBox");
+        box.innerHTML = "";
+        build(box);
+        modalLocked = !!locked;
+        $("modal").hidden = false;
+      }
+      function closeModal() { $("modal").hidden = true; modalLocked = false; }
+      $("modal").addEventListener("click", (e) => { if (e.target === $("modal") && !modalLocked) closeModal(); });
+      document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        if (!$("modal").hidden && !modalLocked) closeModal();
+        closeNotif();
       });
-      box.appendChild(b);
-    });
-  }
-
-  function renderSettings() {
-    paintAvatars();
-    paintGender();
-    paintSwatches();
-    paintTheme();
-    paintInstall();
-    if (document.activeElement !== $("phone")) $("phone").value = me.phone || "";
-  }
-
-  async function saveAvatar(value) {
-    let res = null;
-    try { res = await sb.from("profiles").update({ avatar_url: value }).eq("id", me.id); } catch (e) { res = { error: e }; }
-    if (res.error) return false;
-    me.avatar = value;
-    paintAvatars();
-    return true;
-  }
-
-  function openAvatarMenu() {
-    openModal((box) => {
-      box.appendChild(h("h2", null, "صورة الحساب"));
-      const menu = h("div", "menu");
-      const item = (icon, label, fn, cls, disabled) => {
-        const b = h("button", "menu-item" + (cls ? " " + cls : ""));
+      function modalBtn(label, cls, fn) {
+        const b = h("button", cls, label);
         b.type = "button";
-        b.innerHTML = icon;
-        b.appendChild(h("span", null, label));
-        if (disabled) b.disabled = true;
         b.addEventListener("click", fn);
-        menu.appendChild(b);
-      };
-      item(ICON.eye, "عرض الصورة", openViewer);
-      item(ICON.image, "تغيير الصورة", () => { closeModal(); $("avatarFile").click(); });
-      item(ICON.user, "اختيار أفاتار", openPresetPicker);
-      item(ICON.trash, "حذف الصورة", openDeleteConfirm, "danger", !me.avatar);
-      box.appendChild(menu);
-      const actions = h("div", "actions");
-      actions.appendChild(modalBtn("إلغاء", "btn-ghost", closeModal));
-      box.appendChild(actions);
-    });
-  }
+        return b;
+      }
 
-  function openViewer() {
-    openModal((box) => {
-      const v = h("div", "viewer");
-      v.appendChild(avatarEl(bigUrl(me.avatar), me.fullName, "xl"));
-      v.appendChild(h("div", "profile-name", me.fullName || "حسابك"));
-      box.appendChild(v);
-      const actions = h("div", "actions");
-      actions.appendChild(modalBtn("إغلاق", "btn-ghost", closeModal));
-      box.appendChild(actions);
-    });
-  }
+      /* ============ التنقل (الشريط السفلي) ============ */
+      const pages = { home: $("pageHome"), leaders: $("pageLeaders"), grades: $("pageGrades"), settings: $("pageSettings") };
+      const navBtns = Array.prototype.slice.call(document.querySelectorAll(".nav-btn"));
 
-  function openPresetPicker() {
-    openModal((box) => {
-      box.appendChild(h("h2", null, "اختار أفاتار"));
-      const grid = h("div", "presets");
-      [["boy", "ولد"], ["girl", "بنت"]].forEach((p) => {
-        const b = h("button", "preset");
-        b.type = "button";
-        b.setAttribute("aria-pressed", presetKey(me.avatar) === p[0] ? "true" : "false");
-        b.appendChild(avatarEl("preset:" + p[0], me.fullName, "md"));
-        b.appendChild(h("span", null, p[1]));
-        b.addEventListener("click", async () => {
-          const ok = await saveAvatar("preset:" + p[0]);
-          if (ok) { closeModal(); toast("اتغيّر الأفاتار"); }
-          else toast("ماقدرناش نغيّر الأفاتار، جرّب تاني.", true);
+      function go(page, skipScroll) {
+        if (!pages[page]) page = "home";
+        state.page = page;
+        Object.keys(pages).forEach((k) => { pages[k].hidden = k !== page; });
+        navBtns.forEach((b) => {
+          const on = b.dataset.page === page;
+          b.classList.toggle("active", on);
+          if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
         });
-        grid.appendChild(b);
+        try { history.replaceState(null, "", "#" + page); } catch (e) {}
+        if (!skipScroll) window.scrollTo(0, 0);
+        closeNotif();
+        if (page === "home") loadExams();
+        if (page === "leaders") loadLeaders();
+        if (page === "grades") loadGrades();
+        if (page === "settings") renderSettings();
+      }
+      navBtns.forEach((b) => {
+        let tipTimer = null;
+        b.addEventListener("click", () => {
+          b.classList.add("tip-on");
+          clearTimeout(tipTimer);
+          tipTimer = setTimeout(() => b.classList.remove("tip-on"), 1300);
+          go(b.dataset.page);
+        });
+        b.addEventListener("blur", () => { clearTimeout(tipTimer); b.classList.remove("tip-on"); });
       });
-      box.appendChild(grid);
-      const actions = h("div", "actions");
-      actions.appendChild(modalBtn("رجوع", "btn-ghost", openAvatarMenu));
-      box.appendChild(actions);
-    });
-  }
 
-  function openDeleteConfirm() {
-    openModal((box) => {
-      box.appendChild(h("h2", null, "حذف الصورة؟"));
-      box.appendChild(h("p", "sub", "هيظهر بدالها أول حرف من اسمك."));
-      const actions = h("div", "actions");
-      const del = h("button", "btn-danger", "احذف");
-      del.type = "button";
-      del.addEventListener("click", async () => {
-        del.disabled = true;
-        const ok = await saveAvatar(null);
-        if (ok) {
-          closeModal();
-          toast("اتحذفت الصورة");
-          try { sb.storage.from("avatars").remove([me.id + "/avatar.jpg"]); } catch (e) {}
-        } else {
-          del.disabled = false;
-          toast("ماقدرناش نحذف الصورة، جرّب تاني.", true);
+      /* ============ الإشعارات ============ */
+      const notif = { items: [], server: [], login: null, seenAt: 0, seenBefore: 0, expanded: false, open: false };
+      const seenKey = () => "qb-seen-" + me.id;
+      const loginKey = () => "qb-login-" + me.id;
+      const NOTIF_VISIBLE = 2;
+
+      // إشعار "تم تسجيل الدخول بنجاح": ثابت وبيتجدّد مع كل تسجيل دخول جديد
+      function loginStamp() {
+        let t = null;
+        try { t = localStorage.getItem(loginKey()); } catch (e) {}
+        if (!t || AUTH_REDIRECT) {
+          t = new Date(now()).toISOString();
+          try { localStorage.setItem(loginKey(), t); } catch (e) {}
         }
-      });
-      actions.appendChild(del);
-      actions.appendChild(modalBtn("إلغاء", "btn-ghost", closeModal));
-      box.appendChild(actions);
-    });
-  }
-
-  $("avatarEdit").addEventListener("click", openAvatarMenu);
-
-  async function resizeToBlob(file, size) {
-    let bmp = null;
-    try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); }
-    catch (e) { bmp = await createImageBitmap(file); }
-    const s = Math.min(bmp.width, bmp.height);
-    const c = document.createElement("canvas");
-    c.width = c.height = size;
-    c.getContext("2d").drawImage(bmp, (bmp.width - s) / 2, (bmp.height - s) / 2, s, s, 0, 0, size, size);
-    return await new Promise((resolve) => c.toBlob(resolve, "image/jpeg", 0.85));
-  }
-
-  $("avatarFile").addEventListener("change", async (e) => {
-    const file = e.target.files && e.target.files[0];
-    e.target.value = "";
-    if (!file) return;
-    if (!/^image\//.test(file.type)) { toast("اختار صورة من فضلك.", true); return; }
-
-    toast("بنرفع الصورة...", false, true);
-    try {
-      const blob = await resizeToBlob(file, 512);
-      if (!blob) throw new Error("resize");
-      const path = me.id + "/avatar.jpg";
-      const up = await sb.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" });
-      if (up.error) throw up.error;
-      const url = sb.storage.from("avatars").getPublicUrl(path).data.publicUrl + "?v=" + Date.now();
-      const ok = await saveAvatar(url);
-      if (!ok) throw new Error("save");
-      toast("اتغيّرت الصورة");
-    } catch (err) {
-      toast("ماقدرناش نغيّر الصورة، جرّب تاني.", true);
-    }
-  });
-
-  /* ============ الإعدادات: النوع ورقم التليفون ============ */
-  async function saveGender(g) {
-    let res = null;
-    try { res = await sb.from("profiles").update({ gender: g }).eq("id", me.id); } catch (e) { res = { error: e }; }
-    if (res.error) return false;
-    me.gender = g;
-    return true;
-  }
-  Array.prototype.forEach.call($("genderSeg").children, (b) => {
-    b.addEventListener("click", async () => {
-      const g = b.dataset.g;
-      if (g === me.gender) return;
-      const ok = await saveGender(g);
-      paintGender(); paintAvatars();
-      if (ok) toast("اتحفظ النوع"); else toast("ماقدرناش نحفظ النوع، جرّب تاني.", true);
-    });
-  });
-
-  function cleanPhone(raw) {
-    return (raw || "").replace(/[\s-]/g, "").replace(/[٠-٩]/g, (d) => AR_DIGITS.indexOf(d));
-  }
-  const PHONE_RE = /^01[0125][0-9]{8}$/;
-  async function savePhone(value) {
-    let res = null;
-    try {
-      res = await sb.from("profile_private").upsert({ user_id: me.id, phone: value, updated_at: new Date().toISOString() });
-    } catch (e) { res = { error: e }; }
-    if (res.error) return false;
-    me.phone = value;
-    return true;
-  }
-
-  const phoneMsg = $("phoneMsg");
-  $("phoneSave").addEventListener("click", async () => {
-    const raw = cleanPhone($("phone").value);
-    if (!PHONE_RE.test(raw)) {
-      phoneMsg.className = "field-msg err";
-      phoneMsg.textContent = raw ? "اكتب رقم موبايل مصري صحيح من ١١ رقم، يبدأ بـ ٠١." : "رقم التليفون مطلوب.";
-      return;
-    }
-    const btn = $("phoneSave");
-    btn.disabled = true;
-    phoneMsg.className = "field-msg";
-    phoneMsg.textContent = "";
-    const ok = await savePhone(raw);
-    btn.disabled = false;
-    if (!ok) {
-      phoneMsg.className = "field-msg err";
-      phoneMsg.textContent = "ماقدرناش نحفظ الرقم، جرّب تاني.";
-      return;
-    }
-    $("phone").value = raw;
-    toast("اتحفظ رقم التليفون");
-  });
-
-  $("logoutBtn").addEventListener("click", async () => {
-    try { await sb.auth.signOut(); } catch (e) {}
-    goLogin();
-  });
-
-  /* ============ تثبيت التطبيق والإصدار ============ */
-  $("appVer").textContent = ar(APP_VERSION);
-  const isStandalone = () => (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
-  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  function paintInstall() {
-    if (isStandalone()) {
-      $("installBtn").disabled = true;
-      $("installBtn").textContent = "التطبيق مثبّت ✔";
-      $("installMsg").textContent = "";
-    }
-  }
-  window.addEventListener("appinstalled", () => { window.__qbPrompt = null; paintInstall(); toast("اتثبّت التطبيق"); });
-  $("installBtn").addEventListener("click", async () => {
-    const msg = $("installMsg"), p = window.__qbPrompt;
-    if (p) {
-      // نافذة التثبيت الرسمية: بتثبّت التطبيق نفسه مش اختصار
-      p.prompt();
-      let c = null;
-      try { c = await p.userChoice; } catch (e) {}
-      window.__qbPrompt = null;
-      msg.textContent = c && c.outcome === "accepted" ? "جاري تثبيت التطبيق..." : "";
-      return;
-    }
-    if (isIOS()) {
-      msg.textContent = "على الآيفون: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».";
-      return;
-    }
-    msg.textContent = "التثبيت مش جاهز دلوقتي، حدّث الصفحة واستنى ثواني وجرّب تاني.";
-  });
-  paintInstall();
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
-
-  /* ============ إكمال البيانات الإجباري (النوع والتليفون) ============ */
-  function openGate(needG, needP) {
-    let g = null;
-    openModal((box) => {
-      box.appendChild(h("h2", null, "كمّل بياناتك"));
-      box.appendChild(h("p", "sub", "محتاجين بيانات بسيطة قبل ما تكمّل."));
-
-      let segEl = null, phoneEl = null;
-      if (needG) {
-        const f = h("div", "field");
-        f.appendChild(h("span", "label", "النوع"));
-        segEl = h("div", "seg");
-        [["male", "ذكر"], ["female", "أنثى"]].forEach((o) => {
-          const b = h("button", null, o[1]);
-          b.type = "button";
-          b.dataset.g = o[0];
-          b.setAttribute("aria-pressed", "false");
-          b.addEventListener("click", () => {
-            g = o[0];
-            Array.prototype.forEach.call(segEl.children, (c) => c.setAttribute("aria-pressed", c.dataset.g === g ? "true" : "false"));
-            check();
-          });
-          segEl.appendChild(b);
-        });
-        f.appendChild(segEl);
-        box.appendChild(f);
+        return t;
       }
-      if (needP) {
-        const f = h("div", "field");
-        const lab = h("label", null, "رقم التليفون");
-        lab.htmlFor = "gatePhone";
-        f.appendChild(lab);
-        phoneEl = h("input", "input");
-        phoneEl.id = "gatePhone";
-        phoneEl.type = "tel";
-        phoneEl.inputMode = "numeric";
-        phoneEl.autocomplete = "tel";
-        phoneEl.placeholder = "01xxxxxxxxx";
-        phoneEl.maxLength = 11;
-        phoneEl.addEventListener("input", check);
-        f.appendChild(phoneEl);
-        box.appendChild(f);
+      function mergeNotifs() {
+        const pinned = { id: "login", pin: true, title: "تم تسجيل الدخول بنجاح", body: "أهلاً بيك في بنك الأسئلة", created_at: notif.login || new Date(now()).toISOString() };
+        notif.items = [pinned].concat(notif.server);
       }
-      const msg = h("p", "field-msg");
-      box.appendChild(msg);
 
-      const actions = h("div", "actions");
-      const save = h("button", "btn-primary", "حفظ ومتابعة");
-      save.type = "button";
-      save.disabled = true;
-      function check() {
-        const okG = !needG || !!g;
-        const okP = !needP || PHONE_RE.test(cleanPhone(phoneEl.value));
-        save.disabled = !(okG && okP);
+      function updateBadge() {
+        const unread = notif.items.filter((n) => new Date(n.created_at).getTime() > notif.seenAt).length;
+        const b = $("bellBadge");
+        b.hidden = unread === 0;
+        b.textContent = unread > 9 ? ar(9) + "+" : ar(unread);
       }
-      save.addEventListener("click", async () => {
-        save.disabled = true;
-        msg.className = "field-msg";
-        msg.textContent = "";
-        let ok = true;
-        if (needG) ok = await saveGender(g);
-        if (ok && needP) ok = await savePhone(cleanPhone(phoneEl.value));
-        if (!ok) {
-          msg.className = "field-msg err";
-          msg.textContent = "ماقدرناش نحفظ البيانات، جرّب تاني.";
-          check();
+      function renderNotifs() {
+        const list = $("notifList");
+        list.innerHTML = "";
+        const more = $("notifMore");
+        if (!notif.items.length) {
+          const li = h("li", "notif-empty", "مفيش إشعارات لحد دلوقتي.");
+          list.appendChild(li);
+          more.hidden = true;
           return;
         }
-        closeModal();
-        renderSettings();
-        toast("اتحفظت بياناتك");
+        const shown = notif.expanded ? notif.items : notif.items.slice(0, NOTIF_VISIBLE);
+        shown.forEach((n) => {
+          const isNew = new Date(n.created_at).getTime() > notif.seenBefore;
+          const li = h("li", "notif-item" + (isNew ? " new" : "") + (n.pin ? " pin" : ""));
+          li.appendChild(h("span", "notif-dot"));
+          const body = h("div", "notif-body");
+          body.appendChild(h("div", "notif-title", n.title));
+          if (n.body) body.appendChild(h("div", "notif-text", n.body));
+          body.appendChild(h("div", "notif-time", rel(n.created_at)));
+          li.appendChild(body);
+          list.appendChild(li);
+        });
+        if (notif.items.length > NOTIF_VISIBLE) {
+          more.hidden = false;
+          more.textContent = notif.expanded ? "عرض أقل" : "عرض المزيد";
+        } else {
+          more.hidden = true;
+        }
+      }
+      async function loadNotifs() {
+        try {
+          const r = await sb.from("notifications").select("id, title, body, created_at").order("created_at", { ascending: false }).limit(30);
+          if (!r.error && r.data) notif.server = r.data;
+        } catch (e) {}
+        mergeNotifs();
+        updateBadge();
+        if (notif.open) renderNotifs();
+      }
+      function markSeen() {
+        notif.seenAt = now();
+        try { localStorage.setItem(seenKey(), String(notif.seenAt)); } catch (e) {}
+        updateBadge();
+      }
+      function openNotif() {
+        notif.open = true;
+        notif.expanded = false;
+        notif.seenBefore = notif.seenAt;
+        renderNotifs();
+        $("notifPanel").hidden = false;
+        $("bellBtn").setAttribute("aria-expanded", "true");
+        markSeen();
+        loadNotifs();
+      }
+      function closeNotif() {
+        if (!notif.open) return;
+        notif.open = false;
+        $("notifPanel").hidden = true;
+        $("bellBtn").setAttribute("aria-expanded", "false");
+      }
+      $("bellBtn").addEventListener("click", (e) => { e.stopPropagation(); notif.open ? closeNotif() : openNotif(); });
+      $("notifMore").addEventListener("click", (e) => { e.stopPropagation(); notif.expanded = !notif.expanded; renderNotifs(); });
+      document.addEventListener("click", (e) => {
+        if (!notif.open) return;
+        if (!$("notifPanel").contains(e.target) && !$("bellBtn").contains(e.target)) closeNotif();
       });
-      actions.appendChild(save);
-      box.appendChild(actions);
-    }, true);
-  }
 
-  async function ensureProfile() {
-    if (me.profileKnown && !me.gender) {
-      const guess = guessGender(me.fullName);
-      if (guess) await saveGender(guess);          // لو الاسم واضح بنحدد النوع لوحدنا
-    }
-    const needG = me.profileKnown && !me.gender;
-    const needP = me.phoneKnown && !me.phone;
-    if (needG || needP) openGate(needG, needP);
-  }
+      /* ============ الرئيسية: الامتحانات ============ */
+      function infoRows(exam) {
+        const box = h("div", "info");
+        const subjAt = new Date(exam.subject_at || exam.starts_at);
+        const add = (k, v) => {
+          const r = h("div", "row");
+          r.appendChild(h("span", "k", k));
+          r.appendChild(h("span", "v", v));
+          box.appendChild(r);
+        };
+        add("اسم المادة:", exam.subject);
+        add("تاريخ ووقت المادة:", fDate.format(subjAt) + " · " + fTime.format(subjAt));
+        add("اسم الدكتور:", exam.doctor);
+        add("بداية الامتحان الساعة:", fTime.format(new Date(exam.starts_at)));
+        add("نهاية الامتحان الساعة:", fTime.format(new Date(exam.ends_at)));
+        return box;
+      }
 
-  /* ============ تشغيل الصفحة ============ */
-  function showApp() {
-    $("bootView").hidden = true;
-    $("appView").hidden = false;
-    $("greet").textContent = me.fullName ? "أهلاً يا " + me.fullName : "أهلاً بيك";
-    paintAvatars();
+      function examStatus(exam) {
+        const t = now();
+        const att = state.attempts[exam.id];
+        if (att && att.submitted_at) return "done";
+        if (t >= new Date(exam.ends_at).getTime()) return "ended";
+        if (t < new Date(exam.starts_at).getTime()) return "soon";
+        return "open";
+      }
 
-    // لو لسه راجع من جوجل نبدأ من الرئيسية، غير كده نرجع لآخر صفحة كنت فيها
-    const hash = window.location.hash.replace("#", "");
-    go(pages[hash] && !AUTH_REDIRECT ? hash : "home", true);
-  }
+      function updateCard(ref) {
+        const exam = ref.exam;
+        const st = examStatus(exam);
+        const t = now();
+        ref.status = st;
+        ref.chip.className = "chip" + (st === "open" ? " open" : st === "done" ? " done" : "");
+        if (st === "done") {
+          const a = state.attempts[exam.id];
+          ref.chip.textContent = "تم التسليم";
+          ref.line.textContent = "درجتك: " + ar(a.score) + " من " + ar(a.total) + (a.passed ? " · ناجح" : " · لم تنجح");
+        } else if (st === "soon") {
+          ref.chip.textContent = "قريباً";
+          ref.line.textContent = "يبدأ بعد " + ar(fmtLeft(new Date(exam.starts_at).getTime() - t));
+        } else if (st === "open") {
+          ref.chip.textContent = "متاح الآن";
+          ref.line.textContent = "باقي على النهاية " + ar(fmtLeft(new Date(exam.ends_at).getTime() - t));
+        }
+      }
 
-  (async function init() {
-    let session = null;
-    try {
-      const r = await sb.auth.getSession();
-      session = r.data && r.data.session;
-    } catch (e) {}
-    if (!session) { goLogin(); return; }
+      function showEmpty() {
+        const t = now();
+        const missed = state.exams.some((e) => {
+          const att = state.attempts[e.id];
+          return new Date(e.ends_at).getTime() <= t && !(att && att.submitted_at);
+        });
+        $("examEmptyText").textContent = missed
+          ? "تم انتهاء الامتحان، استنى الامتحان القادم."
+          : "مفيش امتحانات دلوقتي.";
+        $("examEmpty").hidden = false;
+      }
 
-    // بنجيب بيانات الطالب من Supabase قبل ما ندخّله
-    let user = null, err = null;
-    try {
-      const ur = await sb.auth.getUser();
-      user = ur.data && ur.data.user;
-      err = ur.error;
-    } catch (e) {}
+      function renderExams() {
+        const list = $("examList");
+        list.innerHTML = "";
+        state.cards = {};
+        $("examEmpty").hidden = true;
 
-    if (!user) {
-      const expired = err && (err.status === 401 || err.status === 403 || err.name === "AuthSessionMissingError");
-      if (expired) {
+        const shown = state.exams.filter((e) => new Date(e.ends_at).getTime() > now());
+        if (!shown.length) { showEmpty(); return; }
+
+        shown.forEach((exam) => {
+          const card = h("button", "exam");
+          card.type = "button";
+          const head = h("div", "exam-head");
+          head.appendChild(h("span", "exam-title", exam.subject));
+          const chip = h("span", "chip");
+          head.appendChild(chip);
+          card.appendChild(head);
+          card.appendChild(infoRows(exam));
+          const line = h("div", "exam-line");
+          card.appendChild(line);
+          card.addEventListener("click", () => showExamModal(exam));
+          list.appendChild(card);
+          const ref = { exam, card, chip, line, status: "" };
+          state.cards[exam.id] = ref;
+          updateCard(ref);
+        });
+      }
+
+      async function loadExams() {
+        let exams = [];
+        const attempts = {};
+        try {
+          const since = new Date(now() - 24 * 3600 * 1000).toISOString();
+          const r = await sb.from("exams").select("*").gt("ends_at", since).order("starts_at", { ascending: true });
+          if (!r.error && r.data) exams = r.data;
+        } catch (e) {}
+        try {
+          const a = await sb.from("attempts").select("exam_id, submitted_at, score, total, passed").eq("user_id", me.id);
+          if (!a.error && a.data) a.data.forEach((x) => { attempts[x.exam_id] = x; });
+        } catch (e) {}
+        state.exams = exams;
+        state.attempts = attempts;
+        renderExams();
+      }
+
+      // كل ثانية: نحدّث العدّاد، ولو الامتحان خلص من غير ما أدخله يتشال من الصفحة
+      setInterval(() => {
+        if (state.page !== "home") return;
+        let removed = false;
+        Object.keys(state.cards).forEach((id) => {
+          const ref = state.cards[id];
+          updateCard(ref);
+          if (ref.status === "ended") {
+            ref.card.remove();
+            delete state.cards[id];
+            removed = true;
+          }
+        });
+        if (removed && !Object.keys(state.cards).length) showEmpty();
+      }, 1000);
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden || !me.id) return;
+        loadNotifs();
+        if (state.page === "home" && $("examScreen").hidden) loadExams();
+      });
+      setInterval(() => { if (me.id && !document.hidden) loadNotifs(); }, 60000);
+
+      const START_ERRORS = {
+        exam_not_started: "الامتحان لسه ما بدأش.",
+        exam_ended: "تم انتهاء الامتحان.",
+        already_submitted: "أنت سلّمت الامتحان ده قبل كده.",
+        exam_not_found: "الامتحان ده مش موجود."
+      };
+      function errText(err, map, fallback) {
+        const msg = (err && err.message) || "";
+        for (const k in map) if (msg.indexOf(k) !== -1) return map[k];
+        return fallback;
+      }
+
+      function showExamModal(exam) {
+        const st = examStatus(exam);
+        if (st === "ended") { loadExams(); return; }
+        const att = state.attempts[exam.id];
+
+        openModal((box) => {
+          if (st === "done") {
+            box.appendChild(h("h2", null, "تم تسليم الامتحان"));
+            box.appendChild(h("p", "sub", exam.subject));
+            box.appendChild(h("div", "result-score", ar(att.score) + " / " + ar(att.total)));
+            box.appendChild(h("div", "result-note " + (att.passed ? "ok" : "no"), att.passed ? "ناجح" : "لم تنجح"));
+            const actions = h("div", "actions");
+            actions.appendChild(modalBtn("تمام", "btn-ghost", closeModal));
+            box.appendChild(actions);
+            return;
+          }
+
+          box.appendChild(h("h2", null, "ابدأ الامتحان"));
+          box.appendChild(infoRows(exam));
+          box.appendChild(h("p", "sub", "كل سؤال ليه ١٠ ثواني. لو الوقت خلص من غير إجابة هيتحسب بنص درجة."));
+
+          const actions = h("div", "actions");
+          const enter = h("button", "btn-primary", "ادخل");
+          enter.type = "button";
+          if (st === "soon") { enter.disabled = true; enter.textContent = "لسه ما بدأش"; }
+          enter.addEventListener("click", async () => {
+            enter.disabled = true;
+            enter.textContent = "ثانية واحدة...";
+            let res = null;
+            try { res = await sb.rpc("start_exam", { p_exam_id: exam.id }); } catch (e) { res = { error: e }; }
+            if (res.error) {
+              toast(errText(res.error, START_ERRORS, "ماقدرناش نفتح الامتحان، جرّب تاني."), true);
+              closeModal();
+              loadExams();
+              return;
+            }
+            closeModal();
+            openExam(exam, res.data);
+          });
+          actions.appendChild(enter);
+          actions.appendChild(modalBtn("إلغاء", "btn-ghost", closeModal));
+          box.appendChild(actions);
+        });
+      }
+
+      /* ============ شاشة الامتحان (سؤال بسؤال، ١٠ ثواني) ============ */
+      const QSEC = 10, CIRC = 2 * Math.PI * 45;
+      const cur = { exam: null, qs: [], i: 0, res: [], endsAt: 0, timer: null, locked: false, finishing: false, mode: "next", optEls: [] };
+
+      function setFoot(label, disabled) {
+        const b = $("exSubmit");
+        b.textContent = label;
+        b.disabled = !!disabled;
+      }
+
+      function openExam(exam, data) {
+        cur.exam = exam;
+        cur.qs = (data && data.questions) || [];
+        cur.i = 0; cur.res = []; cur.finishing = false; cur.mode = "next";
+        cur.endsAt = new Date((data && data.ends_at) || exam.ends_at).getTime();
+        $("exSubject").textContent = exam.subject;
+        $("examScreen").hidden = false;
+        document.body.style.overflow = "hidden";
+        if (!cur.qs.length) {
+          const body = $("exBody");
+          body.innerHTML = "";
+          const empty = h("div", "empty");
+          empty.appendChild(h("p", null, "الامتحان لسه مفيهوش أسئلة."));
+          body.appendChild(empty);
+          $("exProgress").textContent = "";
+          cur.mode = "close";
+          setFoot("رجوع", false);
+          return;
+        }
+        showQ();
+      }
+
+      function showQ() {
+        const q = cur.qs[cur.i];
+        cur.locked = false;
+        $("exProgress").textContent = "سؤال " + ar(cur.i + 1) + " من " + ar(cur.qs.length);
+        const body = $("exBody");
+        body.innerHTML = "";
+        body.parentNode.scrollTop = 0;
+
+        const card = h("div", "q");
+        const ring = h("div", "ring");
+        ring.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" id="ringFg" cx="50" cy="50" r="45"/></svg><span id="ringNum"></span>';
+        card.appendChild(ring);
+        card.appendChild(h("span", "chip qtype", q.kind === "tf" ? "صح وغلط" : "اختيار من متعدد"));
+        card.appendChild(h("p", "q-body", q.body));
+
+        const opts = h("div", "opts");
+        const list = (q.options && q.options.length) ? q.options : ["صح", "غلط"];
+        cur.optEls = list.map((txt, idx) => {
+          const o = h("button", "opt");
+          o.type = "button";
+          o.appendChild(h("span", "dot"));
+          o.appendChild(h("span", null, String(txt)));
+          o.setAttribute("aria-pressed", "false");
+          o.addEventListener("click", () => reveal(idx));
+          opts.appendChild(o);
+          return o;
+        });
+        card.appendChild(opts);
+
+        const fb = h("div", "fb");
+        fb.id = "fb";
+        fb.hidden = true;
+        card.appendChild(fb);
+        body.appendChild(card);
+        setFoot("اختار إجابة", true);
+
+        const fg = $("ringFg"), num = $("ringNum"), t0 = now();
+        fg.style.strokeDasharray = CIRC;
+        clearInterval(cur.timer);
+        const tick = () => {
+          const el = now() - t0, left = Math.max(0, QSEC * 1000 - el);
+          fg.style.strokeDashoffset = CIRC * Math.min(1, el / (QSEC * 1000));
+          num.textContent = ar(Math.ceil(left / 1000));
+          ring.classList.toggle("low", left <= 3000);
+          if (left <= 0 || now() >= cur.endsAt) reveal(null);
+        };
+        tick();
+        cur.timer = setInterval(tick, 100);
+      }
+
+      async function reveal(choice) {
+        if (cur.locked) return;
+        cur.locked = true;
+        clearInterval(cur.timer);
+        const q = cur.qs[cur.i];
+        cur.optEls.forEach((o) => { o.disabled = true; });
+        if (choice != null) cur.optEls[choice].setAttribute("aria-pressed", "true");
+        setFoot("ثانية واحدة...", true);
+
+        let r = null;
+        try {
+          const x = await sb.rpc("check_answer", { p_exam_id: cur.exam.id, p_question_id: q.id, p_choice: choice == null ? -1 : choice });
+          if (!x.error) r = x.data;
+        } catch (e) {}
+
+        const status = choice == null ? "skip" : (r && r.is_correct ? "right" : "wrong");
+        cur.res[cur.i] = { id: q.id, choice: choice, status: status };
+        const good = r ? cur.optEls[r.correct_index] : null;
+        if (good) good.classList.add("right");
+        if (status === "wrong") cur.optEls[choice].classList.add("wrong");
+
+        const fb = $("fb");
+        fb.className = "fb " + status;
+        fb.innerHTML = "";
+        fb.appendChild(h("strong", null, status === "right" ? "✔ إجابة صحيحة" : status === "wrong" ? "✘ إجابة خاطئة" : "⏰ انتهى الوقت (بنص درجة)"));
+        if (good && status !== "right") fb.appendChild(h("div", null, "الإجابة الصحيحة: " + good.textContent));
+        if (r && r.explanation) fb.appendChild(h("div", "fb-ex", "الدليل: " + r.explanation));
+        if (!r) fb.appendChild(h("div", null, "ماقدرناش نجيب الإجابة الصحيحة."));
+        fb.hidden = false;
+        fb.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        setFoot(cur.i + 1 >= cur.qs.length ? "عرض النتيجة" : "السؤال التالي", false);
+      }
+
+      function nextQ() {
+        if (!cur.locked || cur.finishing) return;
+        cur.i++;
+        if (cur.i >= cur.qs.length || now() >= cur.endsAt) {
+          for (let k = cur.i; k < cur.qs.length; k++) cur.res[k] = { id: cur.qs[k].id, choice: null, status: "skip" };
+          finish();
+        } else {
+          showQ();
+        }
+      }
+
+      function closeExamScreen() {
+        clearInterval(cur.timer);
+        $("examScreen").hidden = true;
+        document.body.style.overflow = "";
+      }
+
+      async function finish() {
+        cur.finishing = true;
+        setFoot("بنسلّم...", true);
+        const answers = {};
+        cur.res.forEach((x) => { answers[x.id] = x.choice == null ? -1 : x.choice; });
+        let sr = null;
+        try {
+          const r = await sb.rpc("submit_exam", { p_exam_id: cur.exam.id, p_answers: answers });
+          if (!r.error) sr = r.data;
+        } catch (e) {}
+        closeExamScreen();
+
+        const c = { right: 0, wrong: 0, skip: 0 };
+        cur.res.forEach((x) => { c[x.status]++; });
+        const total = cur.qs.length, score = c.right + c.skip * 0.5;
+        const pp = (sr && sr.pass_percent) || 50;
+        const passed = total > 0 && (score / total) * 100 >= pp;
+
+        await loadExams();
+        openModal((box) => {
+          box.appendChild(h("h2", null, "تم تسليم الامتحان"));
+          box.appendChild(h("p", "sub", cur.exam.subject));
+          box.appendChild(h("div", "result-score", ar(String(score).replace(".", "٫")) + " / " + ar(total)));
+          box.appendChild(h("div", "result-note " + (passed ? "ok" : "no"), passed ? "ناجح" : "لم تنجح (المطلوب " + ar(pp) + "٪)"));
+          const st = h("div", "stats");
+          [["ok", c.right, "صح"], ["no", c.wrong, "خطأ"], ["", c.skip, "لم تجاوب"]].forEach((s) => {
+            const d = h("div", "stat " + s[0]);
+            d.appendChild(h("strong", null, ar(s[1])));
+            d.appendChild(h("span", null, s[2]));
+            st.appendChild(d);
+          });
+          box.appendChild(st);
+          const actions = h("div", "actions");
+          actions.appendChild(modalBtn("تمام", "btn-primary", closeModal));
+          box.appendChild(actions);
+        }, true);
+      }
+
+      $("exSubmit").addEventListener("click", () => {
+        if (cur.mode === "close") { closeExamScreen(); loadExams(); return; }
+        nextQ();
+      });
+
+      /* ============ الأوائل ============ */
+      const CROWN = '<svg class="crown" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"/></svg>';
+      const shortName = (n) => (n || "طالب").trim().split(/\s+/).slice(0, 2).join(" ");
+
+      function podiumSlot(row, cls) {
+        const d = h("div", "pod " + cls + (row ? "" : " ghost"));
+        if (!row) { d.appendChild(h("div", "pod-block")); return d; }
+        if (cls === "p1") { const c = h("span"); c.innerHTML = CROWN; d.appendChild(c.firstChild); }
+        d.appendChild(avatarEl(row.avatar_url, row.full_name));
+        d.appendChild(h("div", "pod-name", shortName(row.full_name)));
+        d.appendChild(h("div", "pod-pts", ar(row.points) + " نقطة"));
+        d.appendChild(h("div", "pod-block", ar(row.place)));
+        return d;
+      }
+
+      function lbRow(row) {
+        const r = h("div", "lb-row" + (row.user_id === me.id ? " me" : ""));
+        r.appendChild(h("span", "lb-rank", "#" + ar(row.place)));
+        r.appendChild(avatarEl(row.avatar_url, row.full_name));
+        r.appendChild(h("span", "lb-name", row.full_name || "طالب"));
+        const pts = h("span", "lb-pts", ar(row.points));
+        pts.appendChild(h("small", null, "نقطة"));
+        r.appendChild(pts);
+        return r;
+      }
+
+      function renderLeaders(rows) {
+        const body = $("lbBody");
+        body.innerHTML = "";
+        $("lbUpdated").textContent = "آخر تحديث للقائمة: " + fStamp.format(new Date(now()));
+
+        if (!rows.length) {
+          const empty = h("div", "empty");
+          empty.style.marginTop = "16px";
+          empty.appendChild(h("p", null, "لسه محدش سلّم امتحان. الترتيب هيظهر هنا بعد أول تسليم."));
+          body.appendChild(empty);
+          return;
+        }
+
+        const meta = h("div", "lb-meta");
+        // ترتيبك أنت (بيختلف من طالب للتاني)
+        const mine = rows.find((x) => x.user_id === me.id);
+        meta.appendChild(h("span", "chip mine", mine ? "ترتيبك: #" + ar(mine.place) : "ترتيبك: لسه مفيش"));
+        if (state.studentsCount != null) {
+          meta.appendChild(h("span", "chip total", ar(state.studentsCount) + " طالب على المنصة"));
+        }
+        body.appendChild(meta);
+
+        const podium = h("div", "podium");
+        podium.appendChild(podiumSlot(rows[1] || null, "p2"));
+        podium.appendChild(podiumSlot(rows[0] || null, "p1"));
+        podium.appendChild(podiumSlot(rows[2] || null, "p3"));
+        body.appendChild(podium);
+
+        const list = h("div", "lb-list");
+        rows.slice(3).forEach((row) => list.appendChild(lbRow(row)));
+        body.appendChild(list);
+      }
+
+      async function loadLeaders() {
+        $("perMonth").setAttribute("aria-pressed", state.period === "month" ? "true" : "false");
+        $("perAll").setAttribute("aria-pressed", state.period === "all" ? "true" : "false");
+        let rows = [];
+        try {
+          const c = await sb.rpc("get_students_count");
+          if (!c.error && c.data != null) state.studentsCount = Number(c.data);
+        } catch (e) {}
+        try {
+          const r = await sb.rpc("get_leaderboard", { p_period: state.period });
+          if (!r.error && r.data) rows = r.data.map((x) => ({
+            place: Number(x.place), user_id: x.user_id, full_name: x.full_name,
+            avatar_url: x.avatar_url, points: Number(x.points)
+          }));
+        } catch (e) {}
+        renderLeaders(rows);
+      }
+      $("perMonth").addEventListener("click", () => { state.period = "month"; loadLeaders(); });
+      $("perAll").addEventListener("click", () => { state.period = "all"; loadLeaders(); });
+
+      /* ============ درجات الطالب ============ */
+      // المواد: [مفتاح ثابت، الاسم]. الترم التاني ضيف مواده هنا لما تحددها (٦ مواد)
+      const TERM_SUBJECTS = {
+        1: [
+          ["prog", "برمجة هيكلية"],
+          ["db1", "قواعد البيانات (1)"],
+          ["mgmt", "إدارة وإنتاج"],
+          ["econ", "دراسات اقتصادية بلغة إنجليزية"],
+          ["corp", "محاسبة شركات"]
+        ],
+        2: []
+      };
+      const gstate = { term: 1, rows: {} };
+      const fmtNum = (n) => ar(String(Math.round(Number(n) * 10) / 10).replace(".", "٫"));
+      function gradeOf(p) {
+        if (p >= 85) return ["ممتاز", "a"];
+        if (p >= 75) return ["جيد جداً", "b"];
+        if (p >= 65) return ["جيد", "b"];
+        if (p >= 50) return ["مقبول", "c"];
+        return ["راسب", "f"];
+      }
+
+      function renderGrades() {
+        const av = $("gAvatar");
+        av.innerHTML = "";
+        av.appendChild(avatarEl(me.avatar, me.fullName));
+        $("gName").textContent = me.fullName || "حسابك";
+        $("gMail").textContent = (me.user && me.user.email) || "";
+        $("term1").setAttribute("aria-pressed", gstate.term === 1 ? "true" : "false");
+        $("term2").setAttribute("aria-pressed", gstate.term === 2 ? "true" : "false");
+
+        const body = $("gBody");
+        body.innerHTML = "";
+        const subs = TERM_SUBJECTS[gstate.term];
+        if (!subs.length) {
+          const empty = h("div", "empty");
+          empty.style.marginTop = "14px";
+          empty.appendChild(h("p", null, "مواد الترم التاني هتتضاف قريباً."));
+          body.appendChild(empty);
+          return;
+        }
+
+        const t = h("table", "g-table");
+        const head = h("tr");
+        ["المادة", "الدرجة", "التقدير"].forEach((x) => head.appendChild(h("th", null, x)));
+        const thead = h("thead");
+        thead.appendChild(head);
+        t.appendChild(thead);
+        const tb = h("tbody");
+        subs.forEach((s) => {
+          const g = gstate.rows[gstate.term + "|" + s[0]];
+          const tr = h("tr");
+          tr.appendChild(h("td", null, s[1]));
+          const has = g && g.score != null;
+          const max = has ? (Number(g.max_score) || 100) : 100;
+          tr.appendChild(h("td", "g-score", has ? fmtNum(g.score) + " / " + fmtNum(max) : "—"));
+          const td = h("td");
+          if (has) {
+            const gr = gradeOf((Number(g.score) / max) * 100);
+            td.appendChild(h("span", "g-grade " + gr[1], gr[0]));
+          } else {
+            td.appendChild(h("span", "g-grade", "لسه"));
+          }
+          tr.appendChild(td);
+          tb.appendChild(tr);
+        });
+        t.appendChild(tb);
+        body.appendChild(t);
+      }
+
+      async function loadGrades() {
+        renderGrades();
+        const rows = {};
+        try {
+          const r = await sb.from("grades").select("term, subject_key, score, max_score").eq("user_id", me.id);
+          if (!r.error && r.data) r.data.forEach((x) => { rows[x.term + "|" + x.subject_key] = x; });
+        } catch (e) {}
+        gstate.rows = rows;
+        renderGrades();
+      }
+      $("term1").addEventListener("click", () => { gstate.term = 1; renderGrades(); });
+      $("term2").addEventListener("click", () => { gstate.term = 2; renderGrades(); });
+
+      /* ============ الإعدادات: الصورة والحساب ============ */
+      function paintAvatars() {
+        const a1 = $("setAvatar"), a2 = $("accAvatar"), a3 = $("navAvatar");
+        a1.innerHTML = ""; a2.innerHTML = ""; a3.innerHTML = "";
+        a1.appendChild(avatarEl(me.avatar, me.fullName, "lg"));
+        a2.appendChild(avatarEl(me.avatar, me.fullName));
+        a3.appendChild(avatarEl(me.avatar, me.fullName, "sm"));
+        $("setName").textContent = me.fullName || "حسابك";
+        $("accName").textContent = me.fullName || "حسابك";
+        $("accEmail").textContent = (me.user && me.user.email) || "";
+        $("accGender").textContent = me.gender === "female" ? "أنثى" : me.gender === "male" ? "ذكر" : "";
+      }
+
+      function paintGender() {
+        Array.prototype.forEach.call($("genderSeg").children, (b) => {
+          b.setAttribute("aria-pressed", b.dataset.g === me.gender ? "true" : "false");
+        });
+      }
+
+      function paintSwatches() {
+        const box = $("swatches");
+        box.innerHTML = "";
+        const current = window.QB.currentAccent().id;
+        const dark = window.QB.isDark();
+        window.QB.ACCENTS.forEach((a) => {
+          const b = h("button", "swatch");
+          b.type = "button";
+          b.title = a.name;
+          b.setAttribute("aria-label", a.name);
+          b.style.background = dark ? a.dark : a.light;
+          b.setAttribute("aria-pressed", a.id === current ? "true" : "false");
+          b.innerHTML = ICON.check;
+          b.addEventListener("click", () => {
+            try { localStorage.setItem("qb-accent", a.id); } catch (e) {}
+            window.QB.applyAccent();
+            paintSwatches();
+          });
+          box.appendChild(b);
+        });
+      }
+
+      function renderSettings() {
+        paintAvatars();
+        paintGender();
+        paintSwatches();
+        paintTheme();
+        paintInstall();
+        if (document.activeElement !== $("phone")) $("phone").value = me.phone || "";
+      }
+
+      async function saveAvatar(value) {
+        let res = null;
+        try { res = await sb.from("profiles").update({ avatar_url: value }).eq("id", me.id); } catch (e) { res = { error: e }; }
+        if (res.error) return false;
+        me.avatar = value;
+        paintAvatars();
+        return true;
+      }
+
+      function openAvatarMenu() {
+        openModal((box) => {
+          box.appendChild(h("h2", null, "صورة الحساب"));
+          const menu = h("div", "menu");
+          const item = (icon, label, fn, cls, disabled) => {
+            const b = h("button", "menu-item" + (cls ? " " + cls : ""));
+            b.type = "button";
+            b.innerHTML = icon;
+            b.appendChild(h("span", null, label));
+            if (disabled) b.disabled = true;
+            b.addEventListener("click", fn);
+            menu.appendChild(b);
+          };
+          item(ICON.eye, "عرض الصورة", openViewer);
+          item(ICON.image, "تغيير الصورة", () => { closeModal(); $("avatarFile").click(); });
+          item(ICON.user, "اختيار أفاتار", openPresetPicker);
+          item(ICON.trash, "حذف الصورة", openDeleteConfirm, "danger", !me.avatar);
+          box.appendChild(menu);
+          const actions = h("div", "actions");
+          actions.appendChild(modalBtn("إلغاء", "btn-ghost", closeModal));
+          box.appendChild(actions);
+        });
+      }
+
+      function openViewer() {
+        openModal((box) => {
+          const v = h("div", "viewer");
+          v.appendChild(avatarEl(bigUrl(me.avatar), me.fullName, "xl"));
+          v.appendChild(h("div", "profile-name", me.fullName || "حسابك"));
+          box.appendChild(v);
+          const actions = h("div", "actions");
+          actions.appendChild(modalBtn("إغلاق", "btn-ghost", closeModal));
+          box.appendChild(actions);
+        });
+      }
+
+      function openPresetPicker() {
+        openModal((box) => {
+          box.appendChild(h("h2", null, "اختار أفاتار"));
+          const grid = h("div", "presets");
+          [["boy", "ولد"], ["girl", "بنت"]].forEach((p) => {
+            const b = h("button", "preset");
+            b.type = "button";
+            b.setAttribute("aria-pressed", presetKey(me.avatar) === p[0] ? "true" : "false");
+            b.appendChild(avatarEl("preset:" + p[0], me.fullName, "md"));
+            b.appendChild(h("span", null, p[1]));
+            b.addEventListener("click", async () => {
+              const ok = await saveAvatar("preset:" + p[0]);
+              if (ok) { closeModal(); toast("اتغيّر الأفاتار"); }
+              else toast("ماقدرناش نغيّر الأفاتار، جرّب تاني.", true);
+            });
+            grid.appendChild(b);
+          });
+          box.appendChild(grid);
+          const actions = h("div", "actions");
+          actions.appendChild(modalBtn("رجوع", "btn-ghost", openAvatarMenu));
+          box.appendChild(actions);
+        });
+      }
+
+      function openDeleteConfirm() {
+        openModal((box) => {
+          box.appendChild(h("h2", null, "حذف الصورة؟"));
+          box.appendChild(h("p", "sub", "هيظهر بدالها أول حرف من اسمك."));
+          const actions = h("div", "actions");
+          const del = h("button", "btn-danger", "احذف");
+          del.type = "button";
+          del.addEventListener("click", async () => {
+            del.disabled = true;
+            const ok = await saveAvatar(null);
+            if (ok) {
+              closeModal();
+              toast("اتحذفت الصورة");
+              try { sb.storage.from("avatars").remove([me.id + "/avatar.jpg"]); } catch (e) {}
+            } else {
+              del.disabled = false;
+              toast("ماقدرناش نحذف الصورة، جرّب تاني.", true);
+            }
+          });
+          actions.appendChild(del);
+          actions.appendChild(modalBtn("إلغاء", "btn-ghost", closeModal));
+          box.appendChild(actions);
+        });
+      }
+
+      $("avatarEdit").addEventListener("click", openAvatarMenu);
+
+      async function resizeToBlob(file, size) {
+        let bmp = null;
+        try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); }
+        catch (e) { bmp = await createImageBitmap(file); }
+        const s = Math.min(bmp.width, bmp.height);
+        const c = document.createElement("canvas");
+        c.width = c.height = size;
+        c.getContext("2d").drawImage(bmp, (bmp.width - s) / 2, (bmp.height - s) / 2, s, s, 0, 0, size, size);
+        return await new Promise((resolve) => c.toBlob(resolve, "image/jpeg", 0.85));
+      }
+
+      $("avatarFile").addEventListener("change", async (e) => {
+        const file = e.target.files && e.target.files[0];
+        e.target.value = "";
+        if (!file) return;
+        if (!/^image\//.test(file.type)) { toast("اختار صورة من فضلك.", true); return; }
+
+        toast("بنرفع الصورة...", false, true);
+        try {
+          const blob = await resizeToBlob(file, 512);
+          if (!blob) throw new Error("resize");
+          const path = me.id + "/avatar.jpg";
+          const up = await sb.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" });
+          if (up.error) throw up.error;
+          const url = sb.storage.from("avatars").getPublicUrl(path).data.publicUrl + "?v=" + Date.now();
+          const ok = await saveAvatar(url);
+          if (!ok) throw new Error("save");
+          toast("اتغيّرت الصورة");
+        } catch (err) {
+          toast("ماقدرناش نغيّر الصورة، جرّب تاني.", true);
+        }
+      });
+
+      /* ============ الإعدادات: النوع ورقم التليفون ============ */
+      async function saveGender(g) {
+        let res = null;
+        try { res = await sb.from("profiles").update({ gender: g }).eq("id", me.id); } catch (e) { res = { error: e }; }
+        if (res.error) return false;
+        me.gender = g;
+        return true;
+      }
+      Array.prototype.forEach.call($("genderSeg").children, (b) => {
+        b.addEventListener("click", async () => {
+          const g = b.dataset.g;
+          if (g === me.gender) return;
+          const ok = await saveGender(g);
+          paintGender(); paintAvatars();
+          if (ok) toast("اتحفظ النوع"); else toast("ماقدرناش نحفظ النوع، جرّب تاني.", true);
+        });
+      });
+
+      function cleanPhone(raw) {
+        return (raw || "").replace(/[\s-]/g, "").replace(/[٠-٩]/g, (d) => AR_DIGITS.indexOf(d));
+      }
+      const PHONE_RE = /^01[0125][0-9]{8}$/;
+      async function savePhone(value) {
+        let res = null;
+        try {
+          res = await sb.from("profile_private").upsert({ user_id: me.id, phone: value, updated_at: new Date().toISOString() });
+        } catch (e) { res = { error: e }; }
+        if (res.error) return false;
+        me.phone = value;
+        return true;
+      }
+
+      const phoneMsg = $("phoneMsg");
+      $("phoneSave").addEventListener("click", async () => {
+        const raw = cleanPhone($("phone").value);
+        if (!PHONE_RE.test(raw)) {
+          phoneMsg.className = "field-msg err";
+          phoneMsg.textContent = raw ? "اكتب رقم موبايل مصري صحيح من ١١ رقم، يبدأ بـ ٠١." : "رقم التليفون مطلوب.";
+          return;
+        }
+        const btn = $("phoneSave");
+        btn.disabled = true;
+        phoneMsg.className = "field-msg";
+        phoneMsg.textContent = "";
+        const ok = await savePhone(raw);
+        btn.disabled = false;
+        if (!ok) {
+          phoneMsg.className = "field-msg err";
+          phoneMsg.textContent = "ماقدرناش نحفظ الرقم، جرّب تاني.";
+          return;
+        }
+        $("phone").value = raw;
+        toast("اتحفظ رقم التليفون");
+      });
+
+      $("logoutBtn").addEventListener("click", async () => {
         try { await sb.auth.signOut(); } catch (e) {}
         goLogin();
-        return;
+      });
+
+      /* ============ تثبيت التطبيق والإصدار ============ */
+      $("appVer").textContent = ar(APP_VERSION);
+      const isStandalone = () => (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+      const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      function paintInstall() {
+        if (isStandalone()) {
+          $("installBtn").disabled = true;
+          $("installBtn").textContent = "التطبيق مثبّت ✔";
+          $("installMsg").textContent = "";
+        }
       }
-      user = session.user; // مفيش نت: نكمل بالبيانات المحفوظة
-    }
+      window.addEventListener("appinstalled", () => { window.__qbPrompt = null; paintInstall(); toast("اتثبّت التطبيق"); });
+      $("installBtn").addEventListener("click", async () => {
+        const msg = $("installMsg"), p = window.__qbPrompt;
+        if (p) {
+          // نافذة التثبيت الرسمية: بتثبّت التطبيق نفسه مش اختصار
+          p.prompt();
+          let c = null;
+          try { c = await p.userChoice; } catch (e) {}
+          window.__qbPrompt = null;
+          msg.textContent = c && c.outcome === "accepted" ? "جاري تثبيت التطبيق..." : "";
+          return;
+        }
+        if (isIOS()) {
+          msg.textContent = "على الآيفون: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».";
+          return;
+        }
+        msg.textContent = "التثبيت مش جاهز دلوقتي، حدّث الصفحة واستنى ثواني وجرّب تاني.";
+      });
+      paintInstall();
+      if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
-    me.user = user;
-    me.id = user.id;
-    try { notif.seenAt = Number(localStorage.getItem(seenKey())) || 0; } catch (e) {}
-    await Promise.all([loadProfile(), loadPhone(), syncClock()]);
-    notif.login = loginStamp();
-    mergeNotifs();
-    showApp();
-    updateBadge();
-    loadNotifs();
-    ensureProfile();
-  })();
+      /* ============ إكمال البيانات الإجباري (النوع والتليفون) ============ */
+      function openGate(needG, needP) {
+        let g = null;
+        openModal((box) => {
+          box.appendChild(h("h2", null, "كمّل بياناتك"));
+          box.appendChild(h("p", "sub", "محتاجين بيانات بسيطة قبل ما تكمّل."));
 
-  sb.auth.onAuthStateChange((evt) => {
-    if (evt === "SIGNED_OUT") goLogin();
-  });
-})();
+          let segEl = null, phoneEl = null;
+          if (needG) {
+            const f = h("div", "field");
+            f.appendChild(h("span", "label", "النوع"));
+            segEl = h("div", "seg");
+            [["male", "ذكر"], ["female", "أنثى"]].forEach((o) => {
+              const b = h("button", null, o[1]);
+              b.type = "button";
+              b.dataset.g = o[0];
+              b.setAttribute("aria-pressed", "false");
+              b.addEventListener("click", () => {
+                g = o[0];
+                Array.prototype.forEach.call(segEl.children, (c) => c.setAttribute("aria-pressed", c.dataset.g === g ? "true" : "false"));
+                check();
+              });
+              segEl.appendChild(b);
+            });
+            f.appendChild(segEl);
+            box.appendChild(f);
+          }
+          if (needP) {
+            const f = h("div", "field");
+            const lab = h("label", null, "رقم التليفون");
+            lab.htmlFor = "gatePhone";
+            f.appendChild(lab);
+            phoneEl = h("input", "input");
+            phoneEl.id = "gatePhone";
+            phoneEl.type = "tel";
+            phoneEl.inputMode = "numeric";
+            phoneEl.autocomplete = "tel";
+            phoneEl.placeholder = "01xxxxxxxxx";
+            phoneEl.maxLength = 11;
+            phoneEl.addEventListener("input", check);
+            f.appendChild(phoneEl);
+            box.appendChild(f);
+          }
+          const msg = h("p", "field-msg");
+          box.appendChild(msg);
 
+          const actions = h("div", "actions");
+          const save = h("button", "btn-primary", "حفظ ومتابعة");
+          save.type = "button";
+          save.disabled = true;
+          function check() {
+            const okG = !needG || !!g;
+            const okP = !needP || PHONE_RE.test(cleanPhone(phoneEl.value));
+            save.disabled = !(okG && okP);
+          }
+          save.addEventListener("click", async () => {
+            save.disabled = true;
+            msg.className = "field-msg";
+            msg.textContent = "";
+            let ok = true;
+            if (needG) ok = await saveGender(g);
+            if (ok && needP) ok = await savePhone(cleanPhone(phoneEl.value));
+            if (!ok) {
+              msg.className = "field-msg err";
+              msg.textContent = "ماقدرناش نحفظ البيانات، جرّب تاني.";
+              check();
+              return;
+            }
+            closeModal();
+            renderSettings();
+            toast("اتحفظت بياناتك");
+          });
+          actions.appendChild(save);
+          box.appendChild(actions);
+        }, true);
+      }
 
+      async function ensureProfile() {
+        if (me.profileKnown && !me.gender) {
+          const guess = guessGender(me.fullName);
+          if (guess) await saveGender(guess);          // لو الاسم واضح بنحدد النوع لوحدنا
+        }
+        const needG = me.profileKnown && !me.gender;
+        const needP = me.phoneKnown && !me.phone;
+        if (needG || needP) openGate(needG, needP);
+      }
+
+      /* ============ تشغيل الصفحة ============ */
+      function showApp() {
+        $("bootView").hidden = true;
+        $("appView").hidden = false;
+        $("greet").textContent = me.fullName ? "أهلاً يا " + me.fullName : "أهلاً بيك";
+        paintAvatars();
+
+        // لو لسه راجع من جوجل نبدأ من الرئيسية، غير كده نرجع لآخر صفحة كنت فيها
+        const hash = window.location.hash.replace("#", "");
+        go(pages[hash] && !AUTH_REDIRECT ? hash : "home", true);
+      }
+
+      (async function init() {
+        let session = null;
+        try {
+          const r = await sb.auth.getSession();
+          session = r.data && r.data.session;
+        } catch (e) {}
+        if (!session) { goLogin(); return; }
+
+        // بنجيب بيانات الطالب من Supabase قبل ما ندخّله
+        let user = null, err = null;
+        try {
+          const ur = await sb.auth.getUser();
+          user = ur.data && ur.data.user;
+          err = ur.error;
+        } catch (e) {}
+
+        if (!user) {
+          const expired = err && (err.status === 401 || err.status === 403 || err.name === "AuthSessionMissingError");
+          if (expired) {
+            try { await sb.auth.signOut(); } catch (e) {}
+            goLogin();
+            return;
+          }
+          user = session.user; // مفيش نت: نكمل بالبيانات المحفوظة
+        }
+
+        me.user = user;
+        me.id = user.id;
+        try { notif.seenAt = Number(localStorage.getItem(seenKey())) || 0; } catch (e) {}
+        await Promise.all([loadProfile(), loadPhone(), syncClock()]);
+        notif.login = loginStamp();
+        mergeNotifs();
+        showApp();
+        updateBadge();
+        loadNotifs();
+        ensureProfile();
+      })();
+
+      sb.auth.onAuthStateChange((evt) => {
+        if (evt === "SIGNED_OUT") goLogin();
+      });
+    })();
   </script>
 </body>
 </html>

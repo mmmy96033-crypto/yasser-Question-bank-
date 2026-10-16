@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover">
   <title>بنك الأسئلة</title>
 
-  <!-- التثبيت كتطبيق + أيقونة الموقع + معاينة اللينك -->
   <meta name="theme-color" content="#0969da">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" href="https://i.supaimg.com/965e0c3e-50d9-4ba0-97dc-487d00fde583/ef7c87c4-67fe-4ba2-b901-69ca8ee7225d.png">
@@ -20,7 +19,6 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://i.supaimg.com/965e0c3e-50d9-4ba0-97dc-487d00fde583/faf60b45-1154-40bd-b7c6-c8d1b6e57ad1.png">
 
-  <!-- بنمسك حدث التثبيت بدري عشان زر التثبيت يشتغل -->
   <script>
     window.__qbPrompt = null;
     window.addEventListener("beforeinstallprompt", function (e) {
@@ -75,7 +73,6 @@
     button { font: inherit; color: inherit; }
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-    /* ---------- تحميل ---------- */
     .boot { min-height: 100vh; display: grid; place-items: center; padding: 32px 16px; }
     .loading { display: grid; justify-items: center; gap: 16px; color: var(--muted); font-size: 15px; text-align: center; }
     .loading p { margin: 0; }
@@ -87,7 +84,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ---------- الشريط العلوي (ثابت) ---------- */
     .topbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 40;
       padding-top: env(safe-area-inset-top, 0px);
@@ -122,7 +118,6 @@
       border: 2px solid var(--surface); box-sizing: content-box;
     }
 
-    /* ---------- الإشعارات ---------- */
     .notif-panel {
       position: absolute; top: calc(100% + 8px); left: 12px;
       width: min(360px, calc(100vw - 24px));
@@ -149,7 +144,6 @@
     }
     .notif-more:hover { filter: brightness(.97); }
 
-    /* ---------- المحتوى ---------- */
     .main {
       max-width: var(--maxw); margin: 0 auto;
       padding: calc(var(--topbar-h) + env(safe-area-inset-top, 0px) + 22px) 16px calc(100px + env(safe-area-inset-bottom, 0px));
@@ -166,7 +160,6 @@
     }
     .empty p { margin: 0; }
 
-    /* ---------- الأزرار ---------- */
     .btn-primary, .btn-ghost, .btn-danger {
       border-radius: 10px; padding: 11px 18px; font-weight: 600; font-size: 15px; cursor: pointer;
       border: 1px solid transparent; max-width: 100%;
@@ -179,7 +172,6 @@
     .btn-danger:hover { background: var(--danger); color: #fff; }
     button[disabled] { opacity: .55; cursor: not-allowed; }
 
-    /* ---------- كروت الامتحانات ---------- */
     .exam-list { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
     .exam {
       width: 100%; min-width: 0; text-align: start; cursor: pointer;
@@ -205,7 +197,6 @@
       font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums;
     }
 
-    /* ---------- نافذة في نص الشاشة ---------- */
     .modal-back {
       position: fixed; inset: 0; z-index: 80; background: rgba(0, 0, 0, .55);
       display: grid; place-items: center; padding: 16px; overflow: auto;
@@ -224,7 +215,6 @@
     .result-note.ok { color: var(--ok); }
     .result-note.no { color: var(--danger); }
 
-    /* عدّادات النتيجة */
     .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .stat { text-align: center; padding: 10px 4px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2); }
     .stat strong { display: block; font-size: 24px; line-height: 1.3; }
@@ -232,7 +222,6 @@
     .stat.ok strong { color: var(--ok); }
     .stat.no strong { color: var(--danger); }
 
-    /* قايمة الصورة */
     .menu { display: grid; gap: 8px; }
     .menu-item {
       display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 14px;
@@ -253,7 +242,6 @@
     .viewer { display: grid; justify-items: center; gap: 12px; }
     .viewer .profile-name { text-align: center; }
 
-    /* ---------- شاشة الامتحان ---------- */
     .exam-screen { position: fixed; inset: 0; z-index: 70; background: var(--bg); display: flex; flex-direction: column; }
     .exam-top {
       padding: env(safe-area-inset-top, 0px) 16px 0;
@@ -292,7 +280,6 @@
     }
     .exam-foot .btn-primary { width: 100%; max-width: 720px; display: block; margin: 0 auto; }
 
-    /* دايرة العدّ التنازلي (١٠ ثواني) */
     .ring { position: relative; width: 120px; height: 120px; margin: 4px auto 0; }
     .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
     .ring circle { fill: none; stroke-width: 8; }
@@ -308,7 +295,6 @@
     .fb.skip { border-color: var(--muted); }
     .fb-ex { color: var(--muted); }
 
-    /* ---------- الأوائل ---------- */
     .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
     .seg button { border: none; background: transparent; padding: 9px; border-radius: 9px; font-weight: 600; font-size: 14.5px; cursor: pointer; color: var(--muted); }
     .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
@@ -346,7 +332,6 @@
     .lb-pts { flex: none; font-weight: 600; font-variant-numeric: tabular-nums; }
     .lb-pts small { color: var(--muted); font-weight: 500; margin-inline-start: 4px; }
 
-    /* ---------- درجات الطالب ---------- */
     .g-hero {
       display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
       background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px;
@@ -375,7 +360,6 @@
     .g-grade.c { color: #d29922; border-color: #d29922; }
     .g-grade.f { color: var(--danger); border-color: var(--danger); }
 
-    /* ---------- الصور ---------- */
     .avatar {
       --av: 40px;
       display: grid; place-items: center; flex: none; overflow: hidden;
@@ -391,7 +375,6 @@
     .avatar.lg { --av: 104px; }
     .avatar.xl { --av: min(72vw, 300px); border-radius: 28px; border-width: 3px; }
 
-    /* ---------- الإعدادات ---------- */
     .settings-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
     .col { display: grid; gap: 14px; align-content: start; min-width: 0; grid-template-columns: minmax(0, 1fr); }
     .set-card {
@@ -466,7 +449,6 @@
     .logout-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
     .logout-btn svg { width: 18px; height: 18px; }
 
-    /* ---------- الشريط السفلي (ثابت) ---------- */
     .bottom-nav {
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
       display: flex; justify-content: space-around; align-items: center; gap: 4px;
@@ -486,7 +468,6 @@
     .nav-label { display: none; font-size: 12px; font-weight: 600; line-height: 1.2; white-space: nowrap; }
     .nav-btn.active .nav-label { display: block; }
 
-    /* ---------- رسالة سريعة ---------- */
     .toast {
       position: fixed; left: 50%; transform: translateX(-50%); z-index: 90;
       bottom: calc(96px + env(safe-area-inset-bottom, 0px));
@@ -495,7 +476,6 @@
     }
     .toast.err { background: var(--danger); color: #fff; }
 
-    /* ---------- تابلت ---------- */
     @media (min-width: 768px) {
       :root { --maxw: 920px; }
       .main { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
@@ -527,43 +507,38 @@
       .loader { animation-duration: 2s; }
       * { transition: none !important; }
     }
-    
+
     .q { position: relative; }
-.q .ring { position: absolute; top: 12px; left: 12px; width: 56px; height: 56px; margin: 0; }
-.q .ring circle { stroke-width: 10; }
-.q .ring span { font-size: 20px; }
-.ring.mid .fg { stroke: #d29922; }
-.ring.mid span { color: #d29922; }
-.q-img { width: 100%; max-height: 320px; object-fit: contain; background: #fff; border-radius: 12px; border: 1px solid var(--border); }
-.fb strong { display: flex; align-items: center; gap: 6px; }
-.fb strong svg { width: 20px; height: 20px; flex: none; }
-.fb.skip { border-color: #d29922; } .fb.skip strong { color: #d29922; }
-.stat.half { border-color: #d29922; } .stat.half strong { color: #d29922; }
-.half-note { text-align: center; font-size: 14.5px; font-weight: 600; color: #d29922; border: 1px solid #d29922; border-radius: 12px; padding: 8px 12px; background: color-mix(in srgb, #d29922 12%, var(--surface)); }
-.g-cap { margin: 18px 0 0; font-size: 16px; } 
-    .q .ring {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 42px;   /* صغرنا حجم الدايرة */
-  height: 42px;
-  margin: 0;
-}
-.q .ring circle {
-  stroke-width: 8;
-}
-.q .ring span {
-  font-size: 15px; /* صغرنا رقم الثواني جواها عشان يناسب الحجم الجديد */
-}
-/* وزودنا مسافة من الشمال في نص السؤال عشان الكلام مايدخلش في الدايرة */
-.q-body, .q .qtype, .q .q-img, .q .opts {
-  padding-inline-start: 48px; 
-}
- 
+    .q .ring { position: absolute; top: 10px; left: 10px; width: 42px; height: 42px; margin: 0; }
+    .q .ring circle { stroke-width: 8; }
+    .q .ring span { font-size: 15px; }
+    .q .ring.long span { font-size: 11px; }
+    .q-body, .q .qtype, .q .q-img, .q .opts, .q .solve { padding-inline-start: 48px; }
+    .ring.mid .fg { stroke: #d29922; }
+    .ring.mid span { color: #d29922; }
+    .q-img { width: 100%; max-height: 320px; object-fit: contain; background: #fff; border-radius: 12px; border: 1px solid var(--border); }
+    .fb strong { display: flex; align-items: center; gap: 6px; }
+    .fb strong svg { width: 20px; height: 20px; flex: none; }
+    .fb.skip { border-color: #d29922; } .fb.skip strong { color: #d29922; }
+    .fb.pending { border-color: var(--accent); } .fb.pending strong { color: var(--accent); }
+    .stat.half { border-color: #d29922; } .stat.half strong { color: #d29922; }
+    .half-note { text-align: center; font-size: 14.5px; font-weight: 600; color: #d29922; border: 1px solid #d29922; border-radius: 12px; padding: 8px 12px; background: color-mix(in srgb, #d29922 12%, var(--surface)); }
+    .pend-note { text-align: center; font-size: 14.5px; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 12px; padding: 8px 12px; background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+    .g-cap { margin: 18px 0 0; font-size: 16px; }
+
+    /* مسألة بحل بالصورة */
+    .solve { display: grid; gap: 10px; }
+    .tips { margin: 0; padding: 10px 14px; padding-inline-start: 30px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); font-size: 14px; color: var(--muted); display: grid; gap: 2px; }
+    .tips li strong { color: var(--fg); }
+    .sol-pick { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+    .sol-pick svg { width: 20px; height: 20px; }
+    .sol-img { width: 100%; max-height: 360px; object-fit: contain; background: #fff; border-radius: 12px; border: 1px solid var(--border); }
+    .sol-msg { margin: 0; font-size: 13.5px; color: var(--muted); min-height: 1.3em; }
+    .sol-msg.err { color: var(--danger); }
+    .sol-msg.ok { color: var(--ok); font-weight: 600; }
   </style>
 
   <script>
-    // الوضع الفاتح / الداكن ولون الأزرار (بيتطبقوا بدري عشان مفيش وميض)
     (function () {
       var ACCENTS = [
         { id: "blue",   name: "أزرق",    light: "#0969da", dark: "#4493f8" },
@@ -606,7 +581,6 @@
 </head>
 <body>
 
-  <!-- تحميل: بنجيب بيانات الطالب من Supabase قبل ما ندخّله -->
   <div class="boot" id="bootView">
     <div class="loading">
       <div class="loader" aria-hidden="true"></div>
@@ -639,14 +613,12 @@
     </header>
 
     <main class="main">
-      <!-- الرئيسية -->
       <section id="pageHome">
         <h1 class="greet" id="greet"></h1>
         <div class="exam-list" id="examList"></div>
         <div class="empty" id="examEmpty" hidden><p id="examEmptyText"></p></div>
       </section>
 
-      <!-- الأوائل -->
       <section id="pageLeaders" hidden>
         <div class="narrow">
           <h1 class="page-title">
@@ -662,7 +634,6 @@
         </div>
       </section>
 
-      <!-- درجات الطالب -->
       <section id="pageGrades" hidden>
         <div class="narrow">
           <h1 class="page-title">
@@ -684,7 +655,6 @@
         </div>
       </section>
 
-      <!-- الإعدادات -->
       <section id="pageSettings" hidden>
         <h1 class="page-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h8M18 6h2"/><circle cx="15" cy="6" r="2.5"/><path d="M4 12h2M12 12h8"/><circle cx="9" cy="12" r="2.5"/><path d="M4 18h9M19 18h1"/><circle cx="16" cy="18" r="2.5"/></svg>
@@ -739,7 +709,6 @@
               </label>
             </div>
 
-            <!-- تثبيت التطبيق -->
             <div class="set-card">
               <h2 class="set-title">تثبيت التطبيق</h2>
               <div class="install-row">
@@ -750,7 +719,6 @@
               <p class="field-msg" id="installMsg"></p>
             </div>
 
-            <!-- عن التطبيق -->
             <div class="set-card">
               <h2 class="set-title">عن التطبيق</h2>
               <div class="info">
@@ -795,7 +763,6 @@
     </nav>
   </div>
 
-  <!-- شاشة الامتحان -->
   <div class="exam-screen" id="examScreen" hidden>
     <div class="exam-top">
       <div class="exam-top-in">
@@ -811,27 +778,23 @@
     </div>
   </div>
 
-  <!-- نافذة في نص الشاشة -->
   <div class="modal-back" id="modal" hidden>
     <div class="modal" id="modalBox" role="dialog" aria-modal="true"></div>
   </div>
 
   <div class="toast" id="toast" hidden></div>
-<script src="home-admin.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
     var SUPABASE_URL = "https://gcumvhqxcbgtedqnuzvr.supabase.co";
-var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
-
-// اسم صفحة تسجيل الدخول (الملف التاني)
-var LOGIN_PAGE = "index.html";
+    var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
+    var LOGIN_PAGE = "index.html";
 
 (function () {
   "use strict";
 
-  var APP_VERSION = "2.1.0";
+  var APP_VERSION = "2.2.0";
 
-  // هل رجعنا لسه من تسجيل الدخول بجوجل؟ (لازم نعرفها قبل ما supabase ينضّف الرابط)
   const AUTH_REDIRECT = window.location.search.indexOf("code=") !== -1 || window.location.hash.indexOf("access_token") !== -1;
 
   /* ============ أدوات صغيرة ============ */
@@ -844,7 +807,7 @@ var LOGIN_PAGE = "index.html";
   };
   const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
   const ar = (v) => String(v).replace(/\d/g, (d) => AR_DIGITS[d]);
-  const arNum = (v) => ar(String(v).replace(".", "٫"));
+  const arNum = (v) => ar(String(Math.round(Number(v) * 10) / 10).replace(".", "٫"));
   const TZ = "Africa/Cairo";
   const fDate = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const fTime = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, hour: "numeric", minute: "2-digit" });
@@ -894,20 +857,19 @@ var LOGIN_PAGE = "index.html";
     sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>'),
     moon: svg('<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'),
     check: svg('<path d="M20 6 9 17l-5-5"/>', ' stroke-width="3"'),
-    // أيقونات نتيجة السؤال (بدل الإيموجي)
     right: svg('<path d="M20 6 9 17l-5-5"/>', ' stroke-width="3"'),
     wrong: svg('<path d="M18 6 6 18M6 6l12 12"/>', ' stroke-width="3"'),
-    skip: svg('<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>')
+    skip: svg('<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>'),
+    pending: svg('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'),
+    camera: svg('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>')
   };
 
-  // أفاتار ولد وبنت (رسومات بسيطة)
   const PRESETS = {
     boy: '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#cfe3ff"/><path d="M16 100c0-20 15-32 34-32s34 12 34 32z" fill="#2f6fd6"/><path d="M41 68l9 9 9-9z" fill="#fff" opacity=".9"/><rect x="43" y="55" width="14" height="16" rx="6" fill="#e3a982"/><circle cx="50" cy="42" r="18" fill="#f2c29c"/><path d="M31.5 41c-2-15 7-24 18.500-24s20.500 8 18.500 24c-3-8-8-11-18.500-11s-15.500 3-18.500 11z" fill="#2b2118"/><circle cx="43" cy="45" r="2" fill="#2b2118"/><circle cx="57" cy="45" r="2" fill="#2b2118"/><path d="M44 52c3.500 3 8.500 3 12 0" stroke="#a65a3a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
     girl: '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#ffd9e8"/><path d="M25 58c-4-24 6-42 25-42s29 18 25 42c-1 8-3 14-3 22H28c0-8-2-14-3-22z" fill="#3a2418"/><path d="M16 100c0-20 15-32 34-32s34 12 34 32z" fill="#c2417d"/><rect x="43" y="55" width="14" height="16" rx="6" fill="#e3a982"/><circle cx="50" cy="42" r="18" fill="#f2c29c"/><path d="M31 43c-2-16 8-26 19-26s21 10 19 26c-4-10-9-15-19-15s-15 5-19 15z" fill="#3a2418"/><circle cx="43" cy="45" r="2" fill="#2b2118"/><circle cx="57" cy="45" r="2" fill="#2b2118"/><path d="M44 52c3.500 3 8.500 3 12 0" stroke="#b5483a" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="38" cy="50" r="3" fill="#f59aa8" opacity=".5"/><circle cx="62" cy="50" r="3" fill="#f59aa8" opacity=".5"/></svg>'
   };
   const presetKey = (url) => (typeof url === "string" && url.indexOf("preset:") === 0) ? url.slice(7) : null;
 
-  // أول حرف من الاسم الأول + أول حرف من الاسم التاني
   function initials(name) {
     const parts = (name || "").trim().split(/\s+/).filter(Boolean);
     if (!parts.length) return "؟";
@@ -987,7 +949,7 @@ var LOGIN_PAGE = "index.html";
     id: "", user: null, fullName: "", avatar: null, role: "student", gender: null, phone: "",
     profileKnown: false, phoneKnown: false
   };
-  let offset = 0;                                   // فرق الساعة بين السيرفر والتليفون
+  let offset = 0;
   const now = () => Date.now() + offset;
   const state = { exams: [], attempts: {}, period: "month", studentsCount: null, page: "home", cards: {} };
 
@@ -1001,7 +963,7 @@ var LOGIN_PAGE = "index.html";
       if (!r.error && r.data) {
         me.profileKnown = true;
         if (r.data.full_name) me.fullName = r.data.full_name;
-        me.avatar = r.data.avatar_url || null;      // فاضي يعني من غير صورة
+        me.avatar = r.data.avatar_url || null;
         me.role = r.data.role || "student";
         me.gender = r.data.gender || null;
       }
@@ -1031,7 +993,7 @@ var LOGIN_PAGE = "index.html";
   const darkSwitch = $("darkSwitch");
   function paintTheme() {
     const dark = window.QB.isDark();
-    themeBtn.innerHTML = dark ? ICON.moon : ICON.sun;   // الأيقونة بتوضّح الوضع الحالي
+    themeBtn.innerHTML = dark ? ICON.moon : ICON.sun;
     darkSwitch.checked = dark;
   }
   function setTheme(next) {
@@ -1068,7 +1030,7 @@ var LOGIN_PAGE = "index.html";
     return b;
   }
 
-  /* ============ التنقل (الشريط السفلي) ============ */
+  /* ============ التنقل ============ */
   const pages = { home: $("pageHome"), leaders: $("pageLeaders"), grades: $("pageGrades"), settings: $("pageSettings") };
   const navBtns = Array.prototype.slice.call(document.querySelectorAll(".nav-btn"));
 
@@ -1090,14 +1052,7 @@ var LOGIN_PAGE = "index.html";
     if (page === "settings") renderSettings();
   }
   navBtns.forEach((b) => {
-    let tipTimer = null;
-    b.addEventListener("click", () => {
-      b.classList.add("tip-on");
-      clearTimeout(tipTimer);
-      tipTimer = setTimeout(() => b.classList.remove("tip-on"), 1300);
-      go(b.dataset.page);
-    });
-    b.addEventListener("blur", () => { clearTimeout(tipTimer); b.classList.remove("tip-on"); });
+    b.addEventListener("click", () => { go(b.dataset.page); });
   });
 
   /* ============ الإشعارات ============ */
@@ -1106,7 +1061,6 @@ var LOGIN_PAGE = "index.html";
   const loginKey = () => "qb-login-" + me.id;
   const NOTIF_VISIBLE = 2;
 
-  // إشعار "تم تسجيل الدخول بنجاح": ثابت وبيتجدّد مع كل تسجيل دخول جديد
   function loginStamp() {
     let t = null;
     try { t = localStorage.getItem(loginKey()); } catch (e) {}
@@ -1229,7 +1183,7 @@ var LOGIN_PAGE = "index.html";
     if (st === "done") {
       const a = state.attempts[exam.id];
       ref.chip.textContent = "تم التسليم";
-      ref.line.textContent = "درجتك: " + arNum(a.score) + " من " + ar(a.total) + (a.passed ? " · ناجح" : " · لم تنجح");
+      ref.line.textContent = "درجتك: " + arNum(a.score) + " من " + arNum(a.total) + (a.passed ? " · ناجح" : " · لم تنجح");
     } else if (st === "soon") {
       ref.chip.textContent = "قريباً";
       ref.line.textContent = "يبدأ بعد " + ar(fmtLeft(new Date(exam.starts_at).getTime() - t));
@@ -1289,14 +1243,13 @@ var LOGIN_PAGE = "index.html";
     } catch (e) {}
     try {
       const a = await sb.from("attempts").select("exam_id, submitted_at, score, total, passed").eq("user_id", me.id);
-      if (!a.error && a.data) a.data.forEach((x) => { attempts[x.exam_id] = x; });
+      if (!a.error && a.data) a.data.forEach((x) => { if (x.exam_id) attempts[x.exam_id] = x; });
     } catch (e) {}
     state.exams = exams;
     state.attempts = attempts;
     renderExams();
   }
 
-  // كل ثانية: نحدّث العدّاد، ولو الامتحان خلص من غير ما أدخله يتشال من الصفحة
   setInterval(() => {
     if (state.page !== "home") return;
     let removed = false;
@@ -1340,7 +1293,7 @@ var LOGIN_PAGE = "index.html";
       if (st === "done") {
         box.appendChild(h("h2", null, "تم تسليم الامتحان"));
         box.appendChild(h("p", "sub", exam.subject));
-        box.appendChild(h("div", "result-score", arNum(att.score) + " / " + ar(att.total)));
+        box.appendChild(h("div", "result-score", arNum(att.score) + " / " + arNum(att.total)));
         box.appendChild(h("div", "result-note " + (att.passed ? "ok" : "no"), att.passed ? "ناجح" : "لم تنجح"));
         const actions = h("div", "actions");
         actions.appendChild(modalBtn("تمام", "btn-ghost", closeModal));
@@ -1350,7 +1303,7 @@ var LOGIN_PAGE = "index.html";
 
       box.appendChild(h("h2", null, "ابدأ الامتحان"));
       box.appendChild(infoRows(exam));
-      box.appendChild(h("p", "sub", "كل سؤال ليه ١٠ ثواني. لو الوقت خلص من غير إجابة هيتحسب بنص درجة."));
+      box.appendChild(h("p", "sub", "كل سؤال ليه ١٠ ثواني. لو الوقت خلص من غير إجابة هيتحسب بنص درجة. المسائل بتتحل بالصورة ولها وقت أطول."));
 
       const actions = h("div", "actions");
       const enter = h("button", "btn-primary", "ادخل");
@@ -1367,7 +1320,6 @@ var LOGIN_PAGE = "index.html";
           loadExams();
           return;
         }
-        // صور الأسئلة (من دالة get_question_images)
         try {
           const im = await sb.rpc("get_question_images", { p_exam_id: exam.id });
           if (!im.error && im.data && res.data && res.data.questions) {
@@ -1383,9 +1335,9 @@ var LOGIN_PAGE = "index.html";
     });
   }
 
-  /* ============ شاشة الامتحان (سؤال بسؤال، ١٠ ثواني) ============ */
-  const QSEC = 10, CIRC = 2 * Math.PI * 45;
-  const cur = { exam: null, qs: [], i: 0, res: [], endsAt: 0, timer: null, locked: false, finishing: false, mode: "next", optEls: [] };
+  /* ============ شاشة الامتحان (سؤال بسؤال) ============ */
+  const QSEC = 10, SOLVE_SEC = 300, CIRC = 2 * Math.PI * 45;
+  const cur = { exam: null, qs: [], i: 0, res: [], endsAt: 0, timer: null, locked: false, finishing: false, mode: "next", optEls: [], sol: null };
 
   function setFoot(label, disabled) {
     const b = $("exSubmit");
@@ -1396,7 +1348,7 @@ var LOGIN_PAGE = "index.html";
   function openExam(exam, data) {
     cur.exam = exam;
     cur.qs = (data && data.questions) || [];
-    cur.i = 0; cur.res = []; cur.finishing = false; cur.mode = "next";
+    cur.i = 0; cur.res = []; cur.finishing = false; cur.mode = "next"; cur.sol = null;
     cur.endsAt = new Date((data && data.ends_at) || exam.ends_at).getTime();
     $("exSubject").textContent = exam.subject;
     $("examScreen").hidden = false;
@@ -1415,22 +1367,96 @@ var LOGIN_PAGE = "index.html";
     showQ();
   }
 
+  async function resizeToBlob(file, max) {
+    let bmp = null;
+    try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); }
+    catch (e) { bmp = await createImageBitmap(file); }
+    const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * k);
+    c.height = Math.round(bmp.height * k);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    return await new Promise((resolve) => c.toBlob(resolve, "image/jpeg", 0.85));
+  }
+
+  function buildSolveUI(card, q) {
+    const box = h("div", "solve");
+    const tips = h("ul", "tips");
+    [["صوّر الورقة كلها", " وخلّي الصورة واضحة ومش مهزوزة."],
+     ["اكتب بخط منسق وواضح", " ورتّب خطوات الحل."],
+     ["إضاءة كويسة", " من غير ضل على الورقة."],
+     ["اكتب الناتج النهائي", " ورسم تحته خط."]].forEach((t) => {
+      const li = document.createElement("li");
+      const s = document.createElement("strong"); s.textContent = t[0];
+      li.appendChild(s); li.appendChild(document.createTextNode(t[1]));
+      tips.appendChild(li);
+    });
+    box.appendChild(tips);
+
+    const file = document.createElement("input");
+    file.type = "file"; file.accept = "image/*"; file.hidden = true;
+    const pick = h("button", "btn-ghost sol-pick");
+    pick.type = "button";
+    pick.innerHTML = ICON.camera + "<span>اختار صورة الحل من موبايلك</span>";
+    pick.addEventListener("click", () => file.click());
+    const prev = h("img", "sol-img"); prev.alt = ""; prev.hidden = true;
+    const msg = h("p", "sol-msg");
+    box.appendChild(file); box.appendChild(pick); box.appendChild(prev); box.appendChild(msg);
+    card.appendChild(box);
+
+    cur.sol = { url: null, uploading: false, q: q, pick: pick, msg: msg };
+    file.addEventListener("change", async () => {
+      const f = file.files && file.files[0];
+      file.value = "";
+      if (!f || cur.locked) return;
+      if (!/^image\//.test(f.type)) { msg.className = "sol-msg err"; msg.textContent = "اختار صورة من فضلك."; return; }
+      cur.sol.uploading = true;
+      cur.sol.url = null;
+      pick.disabled = true;
+      setFoot("بنرفع الصورة...", true);
+      msg.className = "sol-msg"; msg.textContent = "بنرفع الصورة...";
+      try {
+        const blob = await resizeToBlob(f, 1600);
+        if (!blob) throw new Error("resize");
+        const path = me.id + "/" + cur.exam.id + "/" + q.id + ".jpg";
+        const up = await sb.storage.from("solutions").upload(path, blob, { upsert: true, contentType: "image/jpeg", cacheControl: "60" });
+        if (up.error) throw up.error;
+        const url = sb.storage.from("solutions").getPublicUrl(path).data.publicUrl + "?v=" + Date.now();
+        if (cur.locked) return;
+        cur.sol.url = url;
+        prev.src = url; prev.hidden = false;
+        msg.className = "sol-msg ok"; msg.textContent = "الصورة اترفعت. لو مش واضحة اختار غيرها.";
+        pick.querySelector("span").textContent = "تغيير الصورة";
+        cur.mode = "solve";
+        setFoot("تسليم الحل", false);
+      } catch (err) {
+        msg.className = "sol-msg err"; msg.textContent = "ماقدرناش نرفع الصورة، جرّب تاني.";
+        setFoot("ارفع صورة الحل", true);
+      }
+      cur.sol.uploading = false;
+      pick.disabled = false;
+    });
+  }
+
   function showQ() {
     const q = cur.qs[cur.i];
+    const isSolve = q.kind === "solve";
+    const secs = isSolve ? SOLVE_SEC : QSEC;
     cur.locked = false;
+    cur.mode = "next";
+    cur.sol = null;
     $("exProgress").textContent = "سؤال " + ar(cur.i + 1) + " من " + ar(cur.qs.length);
     const body = $("exBody");
     body.innerHTML = "";
     body.parentNode.scrollTop = 0;
 
     const card = h("div", "q");
-    const ring = h("div", "ring");
+    const ring = h("div", "ring" + (isSolve ? " long" : ""));
     ring.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" id="ringFg" cx="50" cy="50" r="45"/></svg><span id="ringNum"></span>';
     card.appendChild(ring);
-    card.appendChild(h("span", "chip qtype", q.kind === "tf" ? "صح وغلط" : "اختيار من متعدد"));
+    card.appendChild(h("span", "chip qtype", isSolve ? "مسألة (حل بالصورة)" : q.kind === "tf" ? "صح وغلط" : "اختيار من متعدد"));
     card.appendChild(h("p", "q-body", q.body));
 
-    // صورة السؤال (مسألة)
     if (q.image_url) {
       const im = document.createElement("img");
       im.className = "q-img";
@@ -1439,41 +1465,87 @@ var LOGIN_PAGE = "index.html";
       card.appendChild(im);
     }
 
-    const opts = h("div", "opts");
-    const list = (q.options && q.options.length) ? q.options : ["صح", "غلط"];
-    cur.optEls = list.map((txt, idx) => {
-      const o = h("button", "opt");
-      o.type = "button";
-      o.appendChild(h("span", "dot"));
-      o.appendChild(h("span", null, String(txt)));
-      o.setAttribute("aria-pressed", "false");
-      o.addEventListener("click", () => reveal(idx));
-      opts.appendChild(o);
-      return o;
-    });
-    card.appendChild(opts);
+    cur.optEls = [];
+    if (isSolve) {
+      buildSolveUI(card, q);
+      setFoot("ارفع صورة الحل", true);
+    } else {
+      const opts = h("div", "opts");
+      const list = (q.options && q.options.length) ? q.options : ["صح", "غلط"];
+      cur.optEls = list.map((txt, idx) => {
+        const o = h("button", "opt");
+        o.type = "button";
+        o.appendChild(h("span", "dot"));
+        o.appendChild(h("span", null, String(txt)));
+        o.setAttribute("aria-pressed", "false");
+        o.addEventListener("click", () => reveal(idx));
+        opts.appendChild(o);
+        return o;
+      });
+      card.appendChild(opts);
+      setFoot("اختار إجابة", true);
+    }
 
     const fb = h("div", "fb");
     fb.id = "fb";
     fb.hidden = true;
     card.appendChild(fb);
     body.appendChild(card);
-    setFoot("اختار إجابة", true);
 
     const fg = $("ringFg"), num = $("ringNum"), t0 = now();
     fg.style.strokeDasharray = CIRC;
     clearInterval(cur.timer);
     const tick = () => {
-      const el = now() - t0, left = Math.max(0, QSEC * 1000 - el);
-      fg.style.strokeDashoffset = CIRC * Math.min(1, el / (QSEC * 1000));
-      num.textContent = ar(Math.ceil(left / 1000));
-      // أزرق ← أصفر ← أحمر
-      ring.classList.toggle("mid", left <= 6000 && left > 3000);
-      ring.classList.toggle("low", left <= 3000);
-      if (left <= 0 || now() >= cur.endsAt) reveal(null);
+      const el = now() - t0, left = Math.max(0, secs * 1000 - el);
+      fg.style.strokeDashoffset = CIRC * Math.min(1, el / (secs * 1000));
+      num.textContent = isSolve ? ar(fmtLeft(left)) : ar(Math.ceil(left / 1000));
+      const midAt = secs * 600, lowAt = secs * 300;
+      ring.classList.toggle("mid", left <= midAt && left > lowAt);
+      ring.classList.toggle("low", left <= lowAt);
+      if (left <= 0 || now() >= cur.endsAt) {
+        if (isSolve) solveTimeout(); else reveal(null);
+      }
     };
     tick();
-    cur.timer = setInterval(tick, 100);
+    cur.timer = setInterval(tick, 250);
+  }
+
+  function showFb(status, title, lines) {
+    const fb = $("fb");
+    fb.className = "fb " + status;
+    fb.innerHTML = "";
+    const stg = h("strong");
+    stg.innerHTML = (ICON[status] || ICON.skip) + "<span></span>";
+    stg.lastChild.textContent = title;
+    fb.appendChild(stg);
+    lines.forEach((l) => fb.appendChild(h("div", l[0], l[1])));
+    fb.hidden = false;
+    fb.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  function submitSolve() {
+    if (cur.locked || !cur.sol || !cur.sol.url) return;
+    cur.locked = true;
+    clearInterval(cur.timer);
+    const q = cur.qs[cur.i];
+    cur.res[cur.i] = { id: q.id, choice: null, status: "pending", url: cur.sol.url, solve: true };
+    cur.sol.pick.disabled = true;
+    showFb("pending", "اتسجّل حلّك", [["fb-ex", "هيتراجع من المدرّس وهتظهر درجتك بعد المراجعة."]]);
+    cur.mode = "next";
+    setFoot(cur.i + 1 >= cur.qs.length ? "عرض النتيجة" : "السؤال التالي", false);
+  }
+
+  function solveTimeout() {
+    if (cur.locked) return;
+    if (cur.sol && cur.sol.url) { submitSolve(); return; }
+    cur.locked = true;
+    clearInterval(cur.timer);
+    const q = cur.qs[cur.i];
+    cur.res[cur.i] = { id: q.id, choice: null, status: "skip", solve: true };
+    if (cur.sol && cur.sol.pick) cur.sol.pick.disabled = true;
+    showFb("skip", "انتهى الوقت من غير حل", [["fb-ex", "المسألة دي محسوبة صفر."]]);
+    cur.mode = "next";
+    setFoot(cur.i + 1 >= cur.qs.length ? "عرض النتيجة" : "السؤال التالي", false);
   }
 
   async function reveal(choice) {
@@ -1497,21 +1569,14 @@ var LOGIN_PAGE = "index.html";
     if (good) good.classList.add("right");
     if (status === "wrong") cur.optEls[choice].classList.add("wrong");
 
-    const fb = $("fb");
-    fb.className = "fb " + status;
-    fb.innerHTML = "";
-    const stg = h("strong");
-    stg.innerHTML = ICON[status] + "<span></span>";
-    stg.lastChild.textContent = status === "right" ? "إجابة صحيحة" : status === "wrong" ? "إجابة خاطئة" : "انتهى الوقت (بنص درجة)";
-    fb.appendChild(stg);
     const ex = (r && r.explanation) || "";
-    if (good && status !== "right") fb.appendChild(h("div", null, "الإجابة الصحيحة: " + good.textContent));
-    if (status === "right") fb.appendChild(h("div", "fb-ex", "ليه صح: " + (ex || "إجابتك مطابقة للإجابة الصحيحة.")));
-    else if (status === "wrong") fb.appendChild(h("div", "fb-ex", "ليه إجابتك غلط: " + (ex || "مش مطابقة للإجابة الصحيحة.")));
-    else fb.appendChild(h("div", "fb-ex", "ليه دي الإجابة الصح: " + (ex || "دي الإجابة الصحيحة للسؤال.")));
-    if (!r) fb.appendChild(h("div", null, "ماقدرناش نجيب الإجابة الصحيحة."));
-    fb.hidden = false;
-    fb.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    const lines = [];
+    if (good && status !== "right") lines.push([null, "الإجابة الصحيحة: " + good.textContent]);
+    if (status === "right") lines.push(["fb-ex", "ليه صح: " + (ex || "إجابتك مطابقة للإجابة الصحيحة.")]);
+    else if (status === "wrong") lines.push(["fb-ex", "ليه إجابتك غلط: " + (ex || "مش مطابقة للإجابة الصحيحة.")]);
+    else lines.push(["fb-ex", "ليه دي الإجابة الصح: " + (ex || "دي الإجابة الصحيحة للسؤال.")]);
+    if (!r) lines.push([null, "ماقدرناش نجيب الإجابة الصحيحة."]);
+    showFb(status, status === "right" ? "إجابة صحيحة" : status === "wrong" ? "إجابة خاطئة" : "انتهى الوقت (بنص درجة)", lines);
     setFoot(cur.i + 1 >= cur.qs.length ? "عرض النتيجة" : "السؤال التالي", false);
   }
 
@@ -1519,7 +1584,7 @@ var LOGIN_PAGE = "index.html";
     if (!cur.locked || cur.finishing) return;
     cur.i++;
     if (cur.i >= cur.qs.length || now() >= cur.endsAt) {
-      for (let k = cur.i; k < cur.qs.length; k++) cur.res[k] = { id: cur.qs[k].id, choice: null, status: "skip" };
+      for (let k = cur.i; k < cur.qs.length; k++) cur.res[k] = { id: cur.qs[k].id, choice: null, status: "skip", solve: cur.qs[k].kind === "solve" };
       finish();
     } else {
       showQ();
@@ -1536,7 +1601,10 @@ var LOGIN_PAGE = "index.html";
     cur.finishing = true;
     setFoot("بنسلّم...", true);
     const answers = {};
-    cur.res.forEach((x) => { answers[x.id] = x.choice == null ? -1 : x.choice; });
+    cur.res.forEach((x) => {
+      if (x.status === "pending" && x.url) answers[x.id] = x.url;
+      else answers[x.id] = x.choice == null ? -1 : x.choice;
+    });
     let sr = null;
     try {
       const r = await sb.rpc("submit_exam", { p_exam_id: cur.exam.id, p_answers: answers });
@@ -1544,17 +1612,22 @@ var LOGIN_PAGE = "index.html";
     } catch (e) {}
     closeExamScreen();
 
-    const c = { right: 0, wrong: 0, skip: 0 };
-    cur.res.forEach((x) => { c[x.status]++; });
-    const total = cur.qs.length, score = c.right + c.skip * 0.5;
+    const c = { right: 0, wrong: 0, skip: 0, pending: 0, miss: 0 };
+    cur.res.forEach((x) => {
+      if (x.status === "pending") c.pending++;
+      else if (x.status === "skip" && x.solve) c.miss++;
+      else c[x.status]++;
+    });
+    const total = sr && sr.total != null ? Number(sr.total) : cur.qs.length;
+    const score = sr && sr.score != null ? Number(sr.score) : c.right + c.skip * 0.5;
     const pp = (sr && sr.pass_percent) || 50;
-    const passed = total > 0 && (score / total) * 100 >= pp;
+    const passed = sr && sr.passed != null ? !!sr.passed : (total > 0 && (score / total) * 100 >= pp);
 
     await loadExams();
     openModal((box) => {
       box.appendChild(h("h2", null, "تم تسليم الامتحان"));
       box.appendChild(h("p", "sub", cur.exam.subject));
-      box.appendChild(h("div", "result-score", arNum(score) + " / " + ar(total)));
+      box.appendChild(h("div", "result-score", arNum(score) + " / " + arNum(total)));
       box.appendChild(h("div", "result-note " + (passed ? "ok" : "no"), passed ? "ناجح" : "لم تنجح (المطلوب " + ar(pp) + "٪)"));
       const st = h("div", "stats");
       [["ok", c.right, "صح"], ["no", c.wrong, "خطأ"], ["half", c.skip, "لم تجاوب"]].forEach((s) => {
@@ -1564,8 +1637,9 @@ var LOGIN_PAGE = "index.html";
         st.appendChild(d);
       });
       box.appendChild(st);
-      // نص الدرجة بتبان بوضوح
-      if (c.skip) box.appendChild(h("div", "half-note", "اتحسب لك نص درجة على " + ar(c.skip) + " سؤال ما جاوبتش = " + arNum(c.skip * 0.5) + " درجة"));
+      if (c.skip) box.appendChild(h("div", "half-note", "اتحسب لك نص درجة على " + ar(c.skip) + " سؤال ما جاوبتش"));
+      if (c.pending) box.appendChild(h("div", "pend-note", ar(c.pending) + " مسألة محتاجة مراجعة من المدرّس، ودرجتها هتتضاف بعد المراجعة."));
+      if (c.miss) box.appendChild(h("div", "half-note", ar(c.miss) + " مسألة ما اتحلّتش (صفر)"));
       const actions = h("div", "actions");
       actions.appendChild(modalBtn("تمام", "btn-primary", closeModal));
       box.appendChild(actions);
@@ -1574,6 +1648,7 @@ var LOGIN_PAGE = "index.html";
 
   $("exSubmit").addEventListener("click", () => {
     if (cur.mode === "close") { closeExamScreen(); loadExams(); return; }
+    if (cur.mode === "solve") { submitSolve(); return; }
     nextQ();
   });
 
@@ -1617,7 +1692,6 @@ var LOGIN_PAGE = "index.html";
     }
 
     const meta = h("div", "lb-meta");
-    // ترتيبك أنت (بيختلف من طالب للتاني)
     const mine = rows.find((x) => x.user_id === me.id);
     meta.appendChild(h("span", "chip mine", mine ? "ترتيبك: #" + ar(mine.place) : "ترتيبك: لسه مفيش"));
     if (state.studentsCount != null) {
@@ -1656,7 +1730,7 @@ var LOGIN_PAGE = "index.html";
   $("perMonth").addEventListener("click", () => { state.period = "month"; loadLeaders(); });
   $("perAll").addEventListener("click", () => { state.period = "all"; loadLeaders(); });
 
-  /* ============ درجات الطالب: جدول لكل جولة امتحانات ============ */
+  /* ============ درجات الطالب ============ */
   const gstate = { exams: [], att: {} };
   const fmtNum = (n) => ar(String(Math.round(Number(n) * 10) / 10).replace(".", "٫"));
   function gradeOf(p) {
@@ -1713,7 +1787,6 @@ var LOGIN_PAGE = "index.html";
     let shown = 0;
     rounds.forEach((r, i) => {
       const list = gstate.exams.filter((e) => (e.round_no || 1) === r);
-      // الجدول التاني يظهر بس لما الجولة اللي قبله تخلص
       if (i > 0) {
         const prev = gstate.exams.filter((e) => (e.round_no || 1) === rounds[i - 1]);
         if (!prev.every(gDone)) return;
@@ -1738,15 +1811,23 @@ var LOGIN_PAGE = "index.html";
       if (!r.error && r.data) exams = r.data;
     } catch (e) {}
     try {
-      const a = await sb.from("attempts").select("exam_id, submitted_at, score, total").eq("user_id", me.id);
-      if (!a.error && a.data) a.data.forEach((x) => { att[x.exam_id] = x; });
+      const a = await sb.from("attempts").select("exam_id, submitted_at, score, total, exam_subject, round_no").eq("user_id", me.id);
+      if (!a.error && a.data) a.data.forEach((x) => {
+        if (x.exam_id) { att[x.exam_id] = x; return; }
+        if (!x.submitted_at) return;
+        // امتحان اتحذف لكن نتيجتك محفوظة
+        const id = "x|" + (x.exam_subject || "") + "|" + (x.round_no || 1);
+        att[id] = x;
+        exams.push({ id: id, subject: x.exam_subject || "امتحان محذوف", round_no: x.round_no || 1, starts_at: x.submitted_at, ends_at: x.submitted_at });
+      });
     } catch (e) {}
+    exams.sort((p, q) => new Date(p.starts_at) - new Date(q.starts_at));
     gstate.exams = exams;
     gstate.att = att;
     renderGrades();
   }
 
-  /* ============ الإعدادات: الصورة والحساب ============ */
+/* ============ الإعدادات: الصورة والحساب ============ */
   function paintAvatars() {
     const a1 = $("setAvatar"), a2 = $("accAvatar"), a3 = $("navAvatar");
     a1.innerHTML = ""; a2.innerHTML = ""; a3.innerHTML = "";
@@ -1892,7 +1973,7 @@ var LOGIN_PAGE = "index.html";
 
   $("avatarEdit").addEventListener("click", openAvatarMenu);
 
-  async function resizeToBlob(file, size) {
+  async function resizeSquare(file, size) {
     let bmp = null;
     try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); }
     catch (e) { bmp = await createImageBitmap(file); }
@@ -1911,7 +1992,7 @@ var LOGIN_PAGE = "index.html";
 
     toast("بنرفع الصورة...", false, true);
     try {
-      const blob = await resizeToBlob(file, 512);
+      const blob = await resizeSquare(file, 512);
       if (!blob) throw new Error("resize");
       const path = me.id + "/avatar.jpg";
       const up = await sb.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" });
@@ -2000,7 +2081,6 @@ var LOGIN_PAGE = "index.html";
   $("installBtn").addEventListener("click", async () => {
     const msg = $("installMsg"), p = window.__qbPrompt;
     if (p) {
-      // نافذة التثبيت الرسمية: بتثبّت التطبيق نفسه مش اختصار
       p.prompt();
       let c = null;
       try { c = await p.userChoice; } catch (e) {}
@@ -2097,7 +2177,7 @@ var LOGIN_PAGE = "index.html";
   async function ensureProfile() {
     if (me.profileKnown && !me.gender) {
       const guess = guessGender(me.fullName);
-      if (guess) await saveGender(guess);          // لو الاسم واضح بنحدد النوع لوحدنا
+      if (guess) await saveGender(guess);
     }
     const needG = me.profileKnown && !me.gender;
     const needP = me.phoneKnown && !me.phone;
@@ -2111,7 +2191,6 @@ var LOGIN_PAGE = "index.html";
     $("greet").textContent = me.fullName ? "أهلاً يا " + me.fullName : "أهلاً بيك";
     paintAvatars();
 
-    // لو لسه راجع من جوجل نبدأ من الرئيسية، غير كده نرجع لآخر صفحة كنت فيها
     const hash = window.location.hash.replace("#", "");
     go(pages[hash] && !AUTH_REDIRECT ? hash : "home", true);
   }
@@ -2124,7 +2203,6 @@ var LOGIN_PAGE = "index.html";
     } catch (e) {}
     if (!session) { goLogin(); return; }
 
-    // بنجيب بيانات الطالب من Supabase قبل ما ندخّله
     let user = null, err = null;
     try {
       const ur = await sb.auth.getUser();
@@ -2139,7 +2217,7 @@ var LOGIN_PAGE = "index.html";
         goLogin();
         return;
       }
-      user = session.user; // مفيش نت: نكمل بالبيانات المحفوظة
+      user = session.user;
     }
 
     me.user = user;
@@ -2158,8 +2236,7 @@ var LOGIN_PAGE = "index.html";
     if (evt === "SIGNED_OUT") goLogin();
   });
 })();
-
-
   </script>
+  <script src="home-admin.js"></script>
 </body>
 </html>

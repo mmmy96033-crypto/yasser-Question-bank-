@@ -541,6 +541,25 @@
 .stat.half { border-color: #d29922; } .stat.half strong { color: #d29922; }
 .half-note { text-align: center; font-size: 14.5px; font-weight: 600; color: #d29922; border: 1px solid #d29922; border-radius: 12px; padding: 8px 12px; background: color-mix(in srgb, #d29922 12%, var(--surface)); }
 .g-cap { margin: 18px 0 0; font-size: 16px; } 
+    .q .ring {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 42px;   /* صغرنا حجم الدايرة */
+  height: 42px;
+  margin: 0;
+}
+.q .ring circle {
+  stroke-width: 8;
+}
+.q .ring span {
+  font-size: 15px; /* صغرنا رقم الثواني جواها عشان يناسب الحجم الجديد */
+}
+/* وزودنا مسافة من الشمال في نص السؤال عشان الكلام مايدخلش في الدايرة */
+.q-body, .q .qtype, .q .q-img, .q .opts {
+  padding-inline-start: 48px; 
+}
+ 
   </style>
 
   <script>

@@ -1,7 +1,7 @@
 // بيضيف: زر لوحة التحكم (للأدمن بس) + صندوق تأكيد تسجيل الخروج
-// ضيف السطر ده في home.html قبل </body> :  <script src="home-admin.js"></script>
+// السطر ده موجود في آخر home.html :  <script src="home-admin.js"></script>
 (function () {
-  var ADMIN_EMAIL = "yasser242006@gmail.com";
+  var ADMIN_EMAILS = ["yasser242006@gmail.com", "yousefeeldeeb@gmail.com"];
   var ADMIN_PAGE = "admin.html";
 
   function sessionEmail() {
@@ -29,7 +29,7 @@
   }
 
   /* ---------- زر لوحة التحكم (للأدمن بس) ---------- */
-  if (sessionEmail() === ADMIN_EMAIL) {
+  if (ADMIN_EMAILS.indexOf(sessionEmail()) !== -1) {
     var cols = document.querySelectorAll("#pageSettings .col");
     var col = cols[cols.length - 1];
     if (col && !document.getElementById("adminCard")) {

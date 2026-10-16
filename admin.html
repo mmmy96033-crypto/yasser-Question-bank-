@@ -37,7 +37,6 @@
     .loader { width:34px; height:34px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin .8s linear infinite; margin:0 auto 12px; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
-    /* ---------- الهيكل ---------- */
     .top { position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:10px; padding:calc(10px + env(safe-area-inset-top)) 16px 10px; background:var(--surface); border-bottom:1px solid var(--border); }
     .brand { display:flex; align-items:center; gap:10px; font-weight:600; font-size:18px; }
     .brand svg { width:26px; height:26px; color:var(--accent); }
@@ -62,8 +61,9 @@
       h1.title { font-size:26px; }
     }
 
-    /* ---------- عناصر عامة ---------- */
     .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 2px 8px var(--shadow); }
+    .card.click { cursor:pointer; }
+    .card.click:hover { border-color:var(--accent); }
     .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fill, minmax(min(100%,340px),1fr)); }
     .stats4 { display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); margin-bottom:18px; }
     .stat { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; }
@@ -86,7 +86,8 @@
     .kv span:first-child { color:var(--muted); }
 
     .av { width:38px; height:38px; flex:none; border-radius:50%; overflow:hidden; display:grid; place-items:center; background:var(--surface-2); border:1px solid var(--border); font-weight:600; font-size:13px; }
-    .av img { width:100%; height:100%; object-fit:cover; display:block; }
+    .av img, .av svg { width:100%; height:100%; display:block; }
+    .av img { object-fit:cover; }
     .who { display:flex; align-items:center; gap:10px; min-width:0; }
     .who div { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
@@ -97,6 +98,8 @@
     th:first-child, td:first-child { position:sticky; inset-inline-start:0; text-align:start; background:var(--surface); z-index:1; min-width:190px; }
     th:first-child { background:var(--surface-2); z-index:3; }
     tr:last-child td { border-bottom:0; }
+    td.cell { cursor:pointer; }
+    td.cell:hover { background:var(--surface-2); }
     .good { color:var(--ok); font-weight:600; } .bad { color:var(--danger); font-weight:600; }
 
     .inp, .sel { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface-2); }
@@ -112,6 +115,7 @@
 
     .q-item { display:grid; gap:6px; padding:14px; }
     .q-item .t { font-weight:600; overflow-wrap:anywhere; }
+    .q-img { width:100%; max-height:260px; object-fit:contain; background:#fff; border-radius:12px; border:1px solid var(--border); }
 
     .search { max-width:420px; }
     .sw { display:flex; flex-wrap:wrap; gap:10px; }
@@ -133,6 +137,15 @@
     .toast { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(92px + env(safe-area-inset-bottom)); z-index:90; background:var(--fg); color:var(--bg); padding:10px 16px; border-radius:12px; max-width:calc(100vw - 32px); text-align:center; font-size:14.5px; }
     .toast.e { background:var(--danger); color:#fff; }
     @media (min-width:1024px) { .toast { bottom:28px; } }
+
+    /* مراجعة التسليم */
+    .rv-q { border:1px solid var(--border); border-radius:14px; padding:12px; display:grid; gap:8px; background:var(--surface-2); }
+    .rv-q .t { font-weight:600; overflow-wrap:anywhere; }
+    .rv-o { padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--surface); overflow-wrap:anywhere; font-size:14.5px; }
+    .rv-o.right { border-color:var(--ok); background:color-mix(in srgb, var(--ok) 14%, var(--surface)); }
+    .rv-o.wrong { border-color:var(--danger); background:color-mix(in srgb, var(--danger) 14%, var(--surface)); }
+    .rv-tag { font-size:12.5px; font-weight:600; margin-inline-start:6px; }
+    .upl { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   </style>
   <script>
     (function () {
@@ -189,6 +202,10 @@
         set: svg('<path d="M4 6h8M18 6h2"/><circle cx="15" cy="6" r="2.5"/><path d="M4 12h2M12 12h8"/><circle cx="9" cy="12" r="2.5"/><path d="M4 18h9M19 18h1"/><circle cx="16" cy="18" r="2.5"/>'),
         back: svg('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>')
       };
+      const PRESETS = {
+        boy: '<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#cfe3ff"/><path d="M16 100c0-20 15-32 34-32s34 12 34 32z" fill="#2f6fd6"/><path d="M41 68l9 9 9-9z" fill="#fff" opacity=".9"/><rect x="43" y="55" width="14" height="16" rx="6" fill="#e3a982"/><circle cx="50" cy="42" r="18" fill="#f2c29c"/><path d="M31.5 41c-2-15 7-24 18.500-24s20.500 8 18.500 24c-3-8-8-11-18.500-11s-15.500 3-18.500 11z" fill="#2b2118"/><circle cx="43" cy="45" r="2" fill="#2b2118"/><circle cx="57" cy="45" r="2" fill="#2b2118"/><path d="M44 52c3.500 3 8.500 3 12 0" stroke="#a65a3a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
+        girl: '<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#ffd9e8"/><path d="M25 58c-4-24 6-42 25-42s29 18 25 42c-1 8-3 14-3 22H28c0-8-2-14-3-22z" fill="#3a2418"/><path d="M16 100c0-20 15-32 34-32s34 12 34 32z" fill="#c2417d"/><rect x="43" y="55" width="14" height="16" rx="6" fill="#e3a982"/><circle cx="50" cy="42" r="18" fill="#f2c29c"/><path d="M31 43c-2-16 8-26 19-26s21 10 19 26c-4-10-9-15-19-15s-15 5-19 15z" fill="#3a2418"/><circle cx="43" cy="45" r="2" fill="#2b2118"/><circle cx="57" cy="45" r="2" fill="#2b2118"/><path d="M44 52c3.500 3 8.500 3 12 0" stroke="#b5483a" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="38" cy="50" r="3" fill="#f59aa8" opacity=".5"/><circle cx="62" cy="50" r="3" fill="#f59aa8" opacity=".5"/></svg>'
+      };
 
       /* ---------- الجلسة ---------- */
       const keep = () => { try { return localStorage.getItem("qb-remember") !== "0"; } catch (e) { return true; } };
@@ -225,17 +242,19 @@
       /* ---------- البيانات ---------- */
       const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], qExam: null, search: "" };
       async function pull(p) { const r = await p; if (r.error) throw r.error; return r.data || []; }
-      async function loadAll() {
+      async function loadAll(silent) {
         try {
           const [ex, qs, st, at, nt] = await Promise.all([
             pull(sb.from("exams").select("*").order("starts_at", { ascending: false })),
             pull(sb.from("questions").select("*").order("created_at", { ascending: true })),
             pull(sb.rpc("admin_students")),
-            pull(sb.from("attempts").select("user_id, exam_id, score, total, passed, submitted_at")),
+            pull(sb.from("attempts").select("*")),
             pull(sb.from("notifications").select("id, title, body, created_at").order("created_at", { ascending: false }).limit(30))
           ]);
           S.exams = ex; S.qs = qs; S.students = st; S.atts = at; S.notifs = nt;
-        } catch (e) { toast("ماقدرناش نحمّل البيانات: " + em(e) + " (شغّل admin-setup.sql)", true); }
+        } catch (e) { if (!silent) toast("ماقدرناش نحمّل البيانات: " + em(e) + " (شغّل update-v2.sql)", true); return; }
+        // ما نعيدش الرسم لو فيه نافذة مفتوحة أو بيكتب في بحث
+        if (silent && (!$("modal").hidden || (document.activeElement && document.activeElement.tagName === "INPUT"))) return;
         render();
       }
       const examOf = (id) => S.exams.find((x) => x.id === id);
@@ -243,15 +262,60 @@
       const qOf = (eid) => S.qs.filter((q) => q.exam_id === eid);
       const isTF = (q) => q.kind === "tf" || !(q.options && q.options.length);
       const gLabel = (g) => g === "male" ? "ذكر" : g === "female" ? "أنثى" : "—";
+      const subjOf = (a) => { const e = examOf(a.exam_id); return (e && e.subject) || a.exam_subject || "امتحان محذوف"; };
 
       function av(url, name) {
         const s = h("span", "av");
         const ini = (name || "؟").trim().split(/\s+/).slice(0, 2).map((w) => Array.from(w)[0]).join(" ");
-        if (url && /^https?:/.test(url)) {
+        if (typeof url === "string" && url.indexOf("preset:") === 0 && PRESETS[url.slice(7)]) {
+          s.innerHTML = PRESETS[url.slice(7)];
+        } else if (url && /^https?:/.test(url)) {
           const i = document.createElement("img"); i.alt = ""; i.referrerPolicy = "no-referrer";
           i.onerror = () => { s.textContent = ini; }; i.src = url; s.appendChild(i);
         } else s.textContent = ini;
         return s;
+      }
+
+      /* ---------- مراجعة تسليم طالب ---------- */
+      function reviewData(a) {
+        if (Array.isArray(a.review) && a.review.length) return a.review;
+        if (a.answers && a.exam_id) {
+          const qs = qOf(a.exam_id);
+          if (qs.length) return qs.map((q) => ({ body: q.body, kind: q.kind, options: q.options, correct_index: q.correct_index, explanation: q.explanation, image_url: q.image_url, choice: a.answers[q.id] == null ? -1 : Number(a.answers[q.id]) }));
+        }
+        return null;
+      }
+      function openReview(a) {
+        const s = studOf(a.user_id) || {};
+        modal((b) => {
+          const w = h("div", "who"); w.appendChild(av(s.avatar_url, s.full_name));
+          const d = h("div"); d.appendChild(h("div", "e-title", s.full_name || "طالب")); d.appendChild(h("div", "muted", subjOf(a))); w.appendChild(d);
+          b.appendChild(w);
+          const r = h("div", "row");
+          r.appendChild(h("span", "chip a", fmtNum(a.score) + " / " + fmtNum(a.total)));
+          r.appendChild(h("span", "chip " + (a.passed ? "ok" : "w"), a.passed ? "ناجح" : "لم ينجح"));
+          if (a.submitted_at) r.appendChild(h("span", "muted", fDT.format(new Date(a.submitted_at))));
+          b.appendChild(r);
+          const rv = reviewData(a);
+          if (!rv) b.appendChild(h("div", "empty", "تفاصيل الإجابات مش محفوظة للتسليم ده (اتسلّم قبل التحديث)."));
+          else rv.forEach((q, i) => {
+            const c = h("div", "rv-q");
+            c.appendChild(h("div", "t", (i + 1 > 0 ? ar(i + 1) + ". " : "") + q.body));
+            if (q.image_url) { const im = h("img", "q-img"); im.src = q.image_url; im.alt = ""; c.appendChild(im); }
+            const opts = (q.options && q.options.length) ? q.options : ["صح", "غلط"];
+            const ch = q.choice == null ? -1 : Number(q.choice);
+            opts.forEach((o, k) => {
+              const row = h("div", "rv-o" + (k === q.correct_index ? " right" : (k === ch ? " wrong" : "")), String(o));
+              if (k === ch) row.appendChild(h("span", "rv-tag", k === q.correct_index ? "← إجابة الطالب ✔" : "← إجابة الطالب ✘"));
+              else if (k === q.correct_index) row.appendChild(h("span", "rv-tag", "الإجابة الصحيحة"));
+              c.appendChild(row);
+            });
+            if (ch < 0) c.appendChild(h("div", "muted", "الطالب ما جاوبش (نص درجة)"));
+            if (q.explanation) c.appendChild(h("div", "muted", "الشرح: " + q.explanation));
+            b.appendChild(c);
+          });
+          const act = h("div", "actions"); act.style.gridTemplateColumns = "1fr"; act.appendChild(btn("إغلاق", "g", () => closeModal())); b.appendChild(act);
+        });
       }
 
       /* ---------- التنقل ---------- */
@@ -284,19 +348,22 @@
         });
         m.appendChild(st);
         m.appendChild(h("h2", null, "آخر التسليمات"));
-        const last = S.atts.filter((a) => a.submitted_at).sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at)).slice(0, 8);
+        const last = S.atts.filter((a) => a.submitted_at).sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at)).slice(0, 12);
         if (!last.length) { m.appendChild(h("div", "empty", "لسه محدش سلّم امتحان.")); return; }
+        m.appendChild(h("p", "muted", "اضغط على أي تسليم عشان تشوف الأسئلة وإجابة الطالب."));
         const g = h("div", "grid");
         last.forEach((a) => {
-          const s = studOf(a.user_id) || {}, e = examOf(a.exam_id) || {};
-          const c = h("div", "card"); const w = h("div", "who");
+          const s = studOf(a.user_id) || {};
+          const c = h("div", "card click"); const w = h("div", "who");
           w.appendChild(av(s.avatar_url, s.full_name));
-          const d = h("div"); d.appendChild(h("div", "e-title", s.full_name || "طالب")); d.appendChild(h("div", "muted", (e.subject || "") + " · " + fDT.format(new Date(a.submitted_at)))); w.appendChild(d);
+          const d = h("div"); d.appendChild(h("div", "e-title", s.full_name || "طالب")); d.appendChild(h("div", "muted", subjOf(a) + " · " + fDT.format(new Date(a.submitted_at)))); w.appendChild(d);
           c.appendChild(w);
           const r = h("div", "row"); r.style.marginTop = "10px";
           r.appendChild(h("span", "chip a", fmtNum(a.score) + " / " + fmtNum(a.total)));
           r.appendChild(h("span", "chip " + (a.passed ? "ok" : "w"), a.passed ? "ناجح" : "لم ينجح"));
-          c.appendChild(r); g.appendChild(c);
+          c.appendChild(r);
+          c.addEventListener("click", () => openReview(a));
+          g.appendChild(c);
         });
         m.appendChild(g);
       }
@@ -325,11 +392,13 @@
         m.appendChild(g);
       }
       async function delExam(e) {
-        if (!(await ask("حذف الامتحان؟", "هيتحذف الامتحان «" + e.subject + "» وكل أسئلته ودرجات الطلاب فيه.", "احذف", true))) return;
+        if (!(await ask("حذف الامتحان؟", "هيتحذف الامتحان «" + e.subject + "» وأسئلته. درجات الطلاب ونتايجهم هتفضل زي ما هي.", "احذف", true))) return;
         try {
-          for (const t of ["questions", "attempts"]) { const r = await sb.from(t).delete().eq("exam_id", e.id); if (r.error) throw r.error; }
-          const r = await sb.from("exams").delete().eq("id", e.id); if (r.error) throw r.error;
-          toast("اتحذف الامتحان"); loadAll();
+          // نحفظ اسم المادة والجولة في النتايج قبل الحذف (احتياطي لو التريجر مش متفعّل)
+          await sb.from("attempts").update({ exam_subject: e.subject, round_no: e.round_no || 1 }).eq("exam_id", e.id).is("exam_subject", null);
+          const r1 = await sb.from("questions").delete().eq("exam_id", e.id); if (r1.error) throw r1.error;
+          const r2 = await sb.from("exams").delete().eq("id", e.id); if (r2.error) throw r2.error;
+          toast("اتحذف الامتحان والنتايج محفوظة"); loadAll();
         } catch (x) { toast(em(x), true); }
       }
       function examForm(ex) {
@@ -376,6 +445,7 @@
           const c = h("div", "card q-item");
           const hd = h("div", "row"); hd.appendChild(h("span", "chip a", "سؤال " + ar(i + 1))); hd.appendChild(h("span", "chip", isTF(q) ? "صح وغلط" : "اختيار من متعدد")); c.appendChild(hd);
           c.appendChild(h("div", "t", q.body));
+          if (q.image_url) { const im = h("img", "q-img"); im.src = q.image_url; im.alt = ""; c.appendChild(im); }
           c.appendChild(h("div", "good", "الإجابة: " + (isTF(q) ? (q.correct_index === 0 ? "صح" : "غلط") : (q.options || [])[q.correct_index])));
           if (!isTF(q)) c.appendChild(h("div", "muted", "الاختيارات: " + q.options.join(" | ")));
           if (q.explanation) c.appendChild(h("div", "muted", "الشرح: " + q.explanation));
@@ -390,10 +460,22 @@
         });
         m.appendChild(g);
       }
+
+      async function resizeToBlob(file, max) {
+        let bmp = null;
+        try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); } catch (e) { bmp = await createImageBitmap(file); }
+        const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+        c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+        return await new Promise((res) => c.toBlob(res, "image/jpeg", 0.85));
+      }
+
       function qForm(exam, qu) {
         modal((b) => {
           let kind = qu ? (isTF(qu) ? "tf" : "mcq") : "mcq";
           let correct = qu ? qu.correct_index : 0;
+          let imgUrl = (qu && qu.image_url) || null, uploading = false;
           const vals = qu && !isTF(qu) ? qu.options.map(String) : [];
           while (vals.length < 4) vals.push("");
           b.appendChild(h("h2", null, qu ? "تعديل السؤال" : "سؤال جديد"));
@@ -402,6 +484,34 @@
           b.appendChild(seg);
           const wb = h("label", "fld"); wb.appendChild(h("span", null, "نص السؤال"));
           const body = h("textarea", "inp"); body.value = qu ? qu.body : ""; wb.appendChild(body); b.appendChild(wb);
+
+          // صورة السؤال (من الموبايل)
+          const imgBox = h("div", "fld"); imgBox.appendChild(h("span", null, "صورة للسؤال (اختياري)"));
+          const file = h("input"); file.type = "file"; file.accept = "image/*"; file.hidden = true;
+          const prev = h("img", "q-img"); prev.alt = "";
+          const upl = h("div", "upl");
+          const pick = btn("اختيار صورة من الموبايل", "g s", () => file.click());
+          const rm = btn("حذف الصورة", "d s", () => { imgUrl = null; paintImg(); });
+          upl.appendChild(pick); upl.appendChild(rm);
+          imgBox.appendChild(file); imgBox.appendChild(prev); imgBox.appendChild(upl); b.appendChild(imgBox);
+          function paintImg() { prev.hidden = !imgUrl; if (imgUrl) prev.src = imgUrl; rm.hidden = !imgUrl; pick.textContent = imgUrl ? "تغيير الصورة" : "اختيار صورة من الموبايل"; }
+          paintImg();
+          file.addEventListener("change", async () => {
+            const f = file.files && file.files[0]; file.value = "";
+            if (!f) return;
+            if (!/^image\//.test(f.type)) { er.textContent = "اختار صورة من فضلك."; return; }
+            uploading = true; pick.disabled = true; er.textContent = "بنرفع الصورة...";
+            try {
+              const blob = await resizeToBlob(f, 1400);
+              const path = exam.id + "/" + Date.now() + ".jpg";
+              const up = await sb.storage.from("question-images").upload(path, blob, { contentType: "image/jpeg", upsert: true });
+              if (up.error) throw up.error;
+              imgUrl = sb.storage.from("question-images").getPublicUrl(path).data.publicUrl;
+              er.textContent = ""; paintImg();
+            } catch (x) { er.textContent = "ماقدرناش نرفع الصورة: " + em(x); }
+            uploading = false; pick.disabled = false;
+          });
+
           const box = h("div", "fld"); b.appendChild(box);
           const we = h("label", "fld"); we.appendChild(h("span", null, "الشرح / الدليل (بيظهر للطالب بعد الإجابة)"));
           const exp = h("textarea", "inp"); exp.value = (qu && qu.explanation) || ""; we.appendChild(exp); b.appendChild(we);
@@ -421,6 +531,7 @@
           paint();
           const a = h("div", "actions");
           const save = btn("حفظ", "p", async () => {
+            if (uploading) { er.textContent = "استنى لحد ما الصورة تخلص رفع."; return; }
             if (!body.value.trim()) { er.textContent = "اكتب نص السؤال."; return; }
             let options = [], ci = correct;
             if (kind === "mcq") {
@@ -430,10 +541,10 @@
               if (pos < 0) { er.textContent = "علّم على إجابة صحيحة من الاختيارات المكتوبة."; return; }
               options = fl.map((x) => x[0]); ci = pos;
             }
-            const p = { exam_id: exam.id, body: body.value.trim(), kind, options, correct_index: ci, explanation: exp.value.trim() || null };
+            const p = { exam_id: exam.id, body: body.value.trim(), kind, options, correct_index: ci, explanation: exp.value.trim() || null, image_url: imgUrl };
             save.disabled = true;
             const r = qu ? await sb.from("questions").update(p).eq("id", qu.id) : await sb.from("questions").insert(p);
-            if (r.error) { er.textContent = em(r.error); save.disabled = false; return; }
+            if (r.error) { er.textContent = em(r.error) + " (شغّل update-v2.sql)"; save.disabled = false; return; }
             closeModal(); toast("اتحفظ السؤال"); loadAll();
           });
           a.appendChild(save); a.appendChild(btn("إلغاء", "g", () => closeModal())); b.appendChild(a);
@@ -447,7 +558,17 @@
         m.appendChild(s);
         const meta = h("p", "muted"); m.appendChild(meta);
         const wrap = h("div", "tbl-wrap"); m.appendChild(wrap);
-        const exams = S.exams.slice().sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+
+        // أعمدة: الامتحانات الموجودة + امتحانات اتحذفت لكن نتايجها محفوظة
+        const cols = S.exams.slice().sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at))
+          .map((e) => ({ key: e.id, label: e.subject + " (ج" + ar(e.round_no || 1) + ")" }));
+        const seen = {};
+        S.atts.filter((a) => !a.exam_id && a.submitted_at).forEach((a) => {
+          const k = "x|" + (a.exam_subject || "") + "|" + (a.round_no || 1);
+          if (!seen[k]) { seen[k] = 1; cols.push({ key: k, label: (a.exam_subject || "امتحان محذوف") + " (ج" + ar(a.round_no || 1) + ")" }); }
+        });
+        const attKey = (a) => a.exam_id || ("x|" + (a.exam_subject || "") + "|" + (a.round_no || 1));
+
         function fill() {
           S.search = s.value; const q = s.value.trim().toLowerCase();
           const rows = S.students.filter((x) => !q || (x.full_name || "").toLowerCase().includes(q) || (x.email || "").toLowerCase().includes(q));
@@ -456,16 +577,18 @@
           if (!rows.length) { wrap.appendChild(h("div", "empty", "مفيش طلاب.")); return; }
           const t = h("table"); const hr = h("tr");
           ["الطالب", "الإيميل", "النوع"].forEach((x) => hr.appendChild(h("th", null, x)));
-          exams.forEach((e) => hr.appendChild(h("th", null, e.subject + " (ج" + ar(e.round_no || 1) + ")")));
+          cols.forEach((c) => hr.appendChild(h("th", null, c.label)));
           const th = h("thead"); th.appendChild(hr); t.appendChild(th);
           const tb = h("tbody");
           rows.forEach((x) => {
             const tr = h("tr"); const c0 = h("td"); const w = h("div", "who"); w.appendChild(av(x.avatar_url, x.full_name)); w.appendChild(h("div", null, x.full_name || "—")); c0.appendChild(w); tr.appendChild(c0);
             const em2 = h("td", null, x.email || "—"); em2.style.direction = "ltr"; tr.appendChild(em2);
             tr.appendChild(h("td", null, gLabel(x.gender)));
-            exams.forEach((e) => {
-              const a = S.atts.find((y) => y.user_id === x.id && y.exam_id === e.id && y.submitted_at);
-              const td = h("td", a ? (a.passed ? "good" : "bad") : null, a ? fmtNum(a.score) + " / " + fmtNum(a.total) : "—"); tr.appendChild(td);
+            cols.forEach((c) => {
+              const a = S.atts.find((y) => y.user_id === x.id && attKey(y) === c.key && y.submitted_at);
+              const td = h("td", a ? (a.passed ? "cell good" : "cell bad") : null, a ? fmtNum(a.score) + " / " + fmtNum(a.total) : "—");
+              if (a) td.addEventListener("click", () => openReview(a));
+              tr.appendChild(td);
             });
             tb.appendChild(tr);
           });
@@ -533,6 +656,9 @@
         $("boot").hidden = true; $("app").hidden = false;
         render();
         loadAll();
+        // تحديث تلقائي: الصور والتسليمات الجديدة تظهر من غير ريفريش
+        setInterval(() => { if (!document.hidden) loadAll(true); }, 30000);
+        document.addEventListener("visibilitychange", () => { if (!document.hidden) loadAll(true); });
       })();
       sb.auth.onAuthStateChange((e) => { if (e === "SIGNED_OUT") go(LOGIN_PAGE); });
     })();

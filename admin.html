@@ -145,6 +145,16 @@
     .rv-o.right { border-color:var(--ok); background:color-mix(in srgb, var(--ok) 14%, var(--surface)); }
     .rv-o.wrong { border-color:var(--danger); background:color-mix(in srgb, var(--danger) 14%, var(--surface)); }
     .rv-tag { font-size:12.5px; font-weight:600; margin-inline-start:6px; }
+    .seg3 { grid-template-columns:1fr 1fr 1fr; }
+    .av.click { cursor:zoom-in; }
+    .fullimg { width:100%; max-height:70vh; object-fit:contain; border-radius:14px; background:var(--surface-2); display:block; }
+    .fullav { width:min(78vw,320px); height:min(78vw,320px); margin:0 auto; border-radius:28px; overflow:hidden; border:3px solid var(--border); display:grid; place-items:center; background:var(--surface-2); font-size:80px; font-weight:600; }
+    .fullav svg, .fullav img { width:100%; height:100%; object-fit:cover; display:block; }
+    .rv-img { width:100%; max-height:300px; object-fit:contain; background:#fff; border-radius:12px; border:1px solid var(--border); cursor:zoom-in; }
+    .rv-lab { font-size:13px; font-weight:600; color:var(--muted); margin-top:4px; }
+    .rv-grade { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+    .btn.ok { background:transparent; border-color:var(--ok); color:var(--ok); }
+    .chip.pend { color:var(--accent); border-color:var(--accent); }
     .upl { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   </style>
   <script>
@@ -178,7 +188,7 @@
   <script>
     var SUPABASE_URL = "https://gcumvhqxcbgtedqnuzvr.supabase.co";
     var SUPABASE_ANON_KEY = "sb_publishable_p95Q2a4chqmwS10ht5edMg_LfTqWQwA";
-    var ADMIN_EMAIL = "yasser242006@gmail.com";
+    var ADMIN_EMAILS = ["yasser242006@gmail.com", "yousefeeldeeb@gmail.com"];
     var HOME_PAGE = "home.html";
     var LOGIN_PAGE = "index.html";
 
@@ -252,6 +262,13 @@
             pull(sb.from("notifications").select("id, title, body, created_at").order("created_at", { ascending: false }).limit(30))
           ]);
           S.exams = ex; S.qs = qs; S.students = st; S.atts = at; S.notifs = nt;
+          try {
+            const pr = await sb.from("profiles").select("id, avatar_url, full_name, gender");
+            if (!pr.error && pr.data) {
+              const pm = {}; pr.data.forEach((p) => { pm[p.id] = p; });
+              S.students.forEach((x) => { const p = pm[x.id]; if (p) { x.avatar_url = p.avatar_url || null; if (p.full_name) x.full_name = p.full_name; if (p.gender) x.gender = p.gender; } });
+            }
+          } catch (e2) {}
         } catch (e) { if (!silent) toast("ماقدرناش نحمّل البيانات: " + em(e) + " (شغّل update-v2.sql)", true); return; }
         // ما نعيدش الرسم لو فيه نافذة مفتوحة أو بيكتب في بحث
         if (silent && (!$("modal").hidden || (document.activeElement && document.activeElement.tagName === "INPUT"))) return;
@@ -264,7 +281,7 @@
       const gLabel = (g) => g === "male" ? "ذكر" : g === "female" ? "أنثى" : "—";
       const subjOf = (a) => { const e = examOf(a.exam_id); return (e && e.subject) || a.exam_subject || "امتحان محذوف"; };
 
-      function av(url, name) {
+      function av(url, name, noZoom) {
         const s = h("span", "av");
         const ini = (name || "؟").trim().split(/\s+/).slice(0, 2).map((w) => Array.from(w)[0]).join(" ");
         if (typeof url === "string" && url.indexOf("preset:") === 0 && PRESETS[url.slice(7)]) {
@@ -273,7 +290,31 @@
           const i = document.createElement("img"); i.alt = ""; i.referrerPolicy = "no-referrer";
           i.onerror = () => { s.textContent = ini; }; i.src = url; s.appendChild(i);
         } else s.textContent = ini;
+        if (!noZoom) {
+          s.classList.add("click"); s.title = "اضغط لعرض الصورة كاملة";
+          s.addEventListener("click", (ev) => { ev.stopPropagation(); openAvatarFull(url, name); });
+        }
         return s;
+      }
+      const bigUrl = (url) => (url && /googleusercontent\.com/.test(url)) ? url.replace(/=s\d+(-c)?/, "=s800-c") : url;
+      function openAvatarFull(url, name) {
+        modal((b) => {
+          b.appendChild(h("h2", null, name || "طالب"));
+          const f = h("div", "fullav");
+          if (typeof url === "string" && url.indexOf("preset:") === 0 && PRESETS[url.slice(7)]) f.innerHTML = PRESETS[url.slice(7)];
+          else if (url && /^https?:/.test(url)) { const i = document.createElement("img"); i.alt = ""; i.referrerPolicy = "no-referrer"; i.src = bigUrl(url); f.appendChild(i); }
+          else f.textContent = (name || "؟").trim().split(/\s+/).slice(0, 2).map((w) => Array.from(w)[0]).join(" ");
+          b.appendChild(f);
+          if (!url) b.appendChild(h("p", "sub", "الطالب ماحطش صورة."));
+          const a = h("div", "actions"); a.style.gridTemplateColumns = "1fr"; a.appendChild(btn("إغلاق", "g", () => closeModal())); b.appendChild(a);
+        });
+      }
+      function openImageFull(url, title, back) {
+        modal((b) => {
+          b.appendChild(h("h2", null, title || "صورة"));
+          const i = h("img", "fullimg"); i.src = url; i.alt = ""; b.appendChild(i);
+          const a = h("div", "actions"); a.style.gridTemplateColumns = "1fr"; a.appendChild(btn("رجوع", "g", () => { if (back) back(); else closeModal(); })); b.appendChild(a);
+        });
       }
 
       /* ---------- مراجعة تسليم طالب ---------- */
@@ -284,6 +325,14 @@
           if (qs.length) return qs.map((q) => ({ body: q.body, kind: q.kind, options: q.options, correct_index: q.correct_index, explanation: q.explanation, image_url: q.image_url, choice: a.answers[q.id] == null ? -1 : Number(a.answers[q.id]) }));
         }
         return null;
+      }
+      async function gradeSolution(a, idx, mark) {
+        const r = await sb.rpc("admin_grade_solution", { p_user: a.user_id, p_exam: a.exam_id, p_idx: idx, p_mark: mark });
+        if (r.error) { toast(em(r.error) + " (شغّل update-v3.sql)", true); return; }
+        a.review = r.data.review; a.score = r.data.score; a.total = r.data.total; a.passed = r.data.passed;
+        toast("اتحفظ التصحيح");
+        openReview(a);
+        loadAll(true);
       }
       function openReview(a) {
         const s = studOf(a.user_id) || {};
@@ -300,17 +349,39 @@
           if (!rv) b.appendChild(h("div", "empty", "تفاصيل الإجابات مش محفوظة للتسليم ده (اتسلّم قبل التحديث)."));
           else rv.forEach((q, i) => {
             const c = h("div", "rv-q");
-            c.appendChild(h("div", "t", (i + 1 > 0 ? ar(i + 1) + ". " : "") + q.body));
-            if (q.image_url) { const im = h("img", "q-img"); im.src = q.image_url; im.alt = ""; c.appendChild(im); }
-            const opts = (q.options && q.options.length) ? q.options : ["صح", "غلط"];
-            const ch = q.choice == null ? -1 : Number(q.choice);
-            opts.forEach((o, k) => {
-              const row = h("div", "rv-o" + (k === q.correct_index ? " right" : (k === ch ? " wrong" : "")), String(o));
-              if (k === ch) row.appendChild(h("span", "rv-tag", k === q.correct_index ? "← إجابة الطالب ✔" : "← إجابة الطالب ✘"));
-              else if (k === q.correct_index) row.appendChild(h("span", "rv-tag", "الإجابة الصحيحة"));
-              c.appendChild(row);
-            });
-            if (ch < 0) c.appendChild(h("div", "muted", "الطالب ما جاوبش (نص درجة)"));
+            const top = h("div", "row");
+            top.appendChild(h("span", "chip a", "سؤال " + ar(i + 1)));
+            if (q.points != null) top.appendChild(h("span", "chip", "الدرجة: " + fmtNum(q.earned == null ? 0 : q.earned) + " / " + fmtNum(q.points)));
+            if (q.kind === "solve") top.appendChild(h("span", "chip " + (q.graded ? "ok" : "pend"), q.graded ? "اتصحّح" : "محتاج تصحيح"));
+            c.appendChild(top);
+            c.appendChild(h("div", "t", q.body));
+            if (q.image_url) { const im = h("img", "rv-img"); im.src = q.image_url; im.alt = ""; im.addEventListener("click", () => openImageFull(q.image_url, "صورة السؤال", () => openReview(a))); c.appendChild(im); }
+            if (q.kind === "solve") {
+              c.appendChild(h("div", "rv-lab", "حل الطالب"));
+              if (q.solution_url) { const im = h("img", "rv-img"); im.src = q.solution_url; im.alt = ""; im.addEventListener("click", () => openImageFull(q.solution_url, "حل الطالب", () => openReview(a))); c.appendChild(im); }
+              else c.appendChild(h("div", "muted", "الطالب ما رفعش حل."));
+              if (q.answer_image_url) {
+                c.appendChild(h("div", "rv-lab", "الحل النموذجي"));
+                const im = h("img", "rv-img"); im.src = q.answer_image_url; im.alt = ""; im.addEventListener("click", () => openImageFull(q.answer_image_url, "الحل النموذجي", () => openReview(a))); c.appendChild(im);
+              }
+              if (q.solution_url && a.exam_id) {
+                const g = h("div", "rv-grade");
+                g.appendChild(btn("صح", "ok s", () => gradeSolution(a, i, "full")));
+                g.appendChild(btn("نص درجة", "g s", () => gradeSolution(a, i, "half")));
+                g.appendChild(btn("غلط", "d s", () => gradeSolution(a, i, "zero")));
+                c.appendChild(g);
+              }
+            } else {
+              const opts = (q.options && q.options.length) ? q.options : ["صح", "غلط"];
+              const ch = q.choice == null ? -1 : Number(q.choice);
+              opts.forEach((o, k) => {
+                const row = h("div", "rv-o" + (k === q.correct_index ? " right" : (k === ch ? " wrong" : "")), String(o));
+                if (k === ch) row.appendChild(h("span", "rv-tag", k === q.correct_index ? "← إجابة الطالب ✔" : "← إجابة الطالب ✘"));
+                else if (k === q.correct_index) row.appendChild(h("span", "rv-tag", "الإجابة الصحيحة"));
+                c.appendChild(row);
+              });
+              if (ch < 0) c.appendChild(h("div", "muted", "الطالب ما جاوبش (نص درجة)"));
+            }
             if (q.explanation) c.appendChild(h("div", "muted", "الشرح: " + q.explanation));
             b.appendChild(c);
           });
@@ -443,11 +514,12 @@
         const g = h("div", "grid");
         list.forEach((q, i) => {
           const c = h("div", "card q-item");
-          const hd = h("div", "row"); hd.appendChild(h("span", "chip a", "سؤال " + ar(i + 1))); hd.appendChild(h("span", "chip", isTF(q) ? "صح وغلط" : "اختيار من متعدد")); c.appendChild(hd);
+          const hd = h("div", "row"); hd.appendChild(h("span", "chip a", "سؤال " + ar(i + 1))); hd.appendChild(h("span", "chip", q.kind === "solve" ? "مسألة (حل بالصورة)" : isTF(q) ? "صح وغلط" : "اختيار من متعدد")); hd.appendChild(h("span", "chip", "الدرجة: " + fmtNum(q.points == null ? 1 : q.points))); c.appendChild(hd);
           c.appendChild(h("div", "t", q.body));
           if (q.image_url) { const im = h("img", "q-img"); im.src = q.image_url; im.alt = ""; c.appendChild(im); }
-          c.appendChild(h("div", "good", "الإجابة: " + (isTF(q) ? (q.correct_index === 0 ? "صح" : "غلط") : (q.options || [])[q.correct_index])));
-          if (!isTF(q)) c.appendChild(h("div", "muted", "الاختيارات: " + q.options.join(" | ")));
+          if (q.kind === "solve") { if (q.answer_image_url) { c.appendChild(h("div", "muted", "الحل النموذجي:")); const im2 = h("img", "q-img"); im2.src = q.answer_image_url; im2.alt = ""; c.appendChild(im2); } else c.appendChild(h("div", "muted", "مفيش حل نموذجي مرفوع.")); }
+          else c.appendChild(h("div", "good", "الإجابة: " + (isTF(q) ? (q.correct_index === 0 ? "صح" : "غلط") : (q.options || [])[q.correct_index])));
+          if (q.kind !== "solve" && !isTF(q)) c.appendChild(h("div", "muted", "الاختيارات: " + q.options.join(" | ")));
           if (q.explanation) c.appendChild(h("div", "muted", "الشرح: " + q.explanation));
           const a = h("div", "row");
           a.appendChild(btn("تعديل", "g s", () => qForm(e, q)));
@@ -471,54 +543,69 @@
         return await new Promise((res) => c.toBlob(res, "image/jpeg", 0.85));
       }
 
+      function imgPicker(parent, label, initial, er, folder) {
+        const st = { url: initial || null, busy: false };
+        const box = h("div", "fld"); box.appendChild(h("span", null, label));
+        const file = h("input"); file.type = "file"; file.accept = "image/*"; file.hidden = true;
+        const prev = h("img", "q-img"); prev.alt = "";
+        const upl = h("div", "upl");
+        const pick = btn("اختيار صورة من الموبايل", "g s", () => file.click());
+        const rm = btn("حذف الصورة", "d s", () => { st.url = null; paintImg(); });
+        upl.appendChild(pick); upl.appendChild(rm);
+        box.appendChild(file); box.appendChild(prev); box.appendChild(upl); parent.appendChild(box);
+        function paintImg() { prev.hidden = !st.url; if (st.url) prev.src = st.url; rm.hidden = !st.url; pick.textContent = st.url ? "تغيير الصورة" : "اختيار صورة من الموبايل"; }
+        paintImg();
+        file.addEventListener("change", async () => {
+          const f = file.files && file.files[0]; file.value = "";
+          if (!f) return;
+          if (!/^image\//.test(f.type)) { er.textContent = "اختار صورة من فضلك."; return; }
+          st.busy = true; pick.disabled = true; er.textContent = "بنرفع الصورة...";
+          try {
+            const blob = await resizeToBlob(f, 1600);
+            const path = folder + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 7) + ".jpg";
+            const up = await sb.storage.from("question-images").upload(path, blob, { contentType: "image/jpeg", upsert: true });
+            if (up.error) throw up.error;
+            st.url = sb.storage.from("question-images").getPublicUrl(path).data.publicUrl;
+            er.textContent = ""; paintImg();
+          } catch (x) { er.textContent = "ماقدرناش نرفع الصورة: " + em(x); }
+          st.busy = false; pick.disabled = false;
+        });
+        return st;
+      }
+
       function qForm(exam, qu) {
         modal((b) => {
-          let kind = qu ? (isTF(qu) ? "tf" : "mcq") : "mcq";
+          let kind = qu ? (qu.kind === "solve" ? "solve" : (isTF(qu) ? "tf" : "mcq")) : "mcq";
           let correct = qu ? qu.correct_index : 0;
-          let imgUrl = (qu && qu.image_url) || null, uploading = false;
-          const vals = qu && !isTF(qu) ? qu.options.map(String) : [];
+          const vals = qu && kind === "mcq" ? qu.options.map(String) : [];
           while (vals.length < 4) vals.push("");
           b.appendChild(h("h2", null, qu ? "تعديل السؤال" : "سؤال جديد"));
-          const seg = h("div", "seg");
-          [["mcq", "اختيار من متعدد"], ["tf", "صح وغلط"]].forEach((k) => { const s = h("button", null, k[1]); s.type = "button"; s.dataset.k = k[0]; s.addEventListener("click", () => { kind = k[0]; correct = 0; paint(); }); seg.appendChild(s); });
+          const seg = h("div", "seg seg3");
+          [["mcq", "اختيار من متعدد"], ["tf", "صح وغلط"], ["solve", "مسألة (حل بالصورة)"]].forEach((k) => { const s = h("button", null, k[1]); s.type = "button"; s.dataset.k = k[0]; s.style.fontSize = "13px"; s.addEventListener("click", () => { kind = k[0]; correct = 0; paint(); }); seg.appendChild(s); });
           b.appendChild(seg);
           const wb = h("label", "fld"); wb.appendChild(h("span", null, "نص السؤال"));
           const body = h("textarea", "inp"); body.value = qu ? qu.body : ""; wb.appendChild(body); b.appendChild(wb);
 
-          // صورة السؤال (من الموبايل)
-          const imgBox = h("div", "fld"); imgBox.appendChild(h("span", null, "صورة للسؤال (اختياري)"));
-          const file = h("input"); file.type = "file"; file.accept = "image/*"; file.hidden = true;
-          const prev = h("img", "q-img"); prev.alt = "";
-          const upl = h("div", "upl");
-          const pick = btn("اختيار صورة من الموبايل", "g s", () => file.click());
-          const rm = btn("حذف الصورة", "d s", () => { imgUrl = null; paintImg(); });
-          upl.appendChild(pick); upl.appendChild(rm);
-          imgBox.appendChild(file); imgBox.appendChild(prev); imgBox.appendChild(upl); b.appendChild(imgBox);
-          function paintImg() { prev.hidden = !imgUrl; if (imgUrl) prev.src = imgUrl; rm.hidden = !imgUrl; pick.textContent = imgUrl ? "تغيير الصورة" : "اختيار صورة من الموبايل"; }
-          paintImg();
-          file.addEventListener("change", async () => {
-            const f = file.files && file.files[0]; file.value = "";
-            if (!f) return;
-            if (!/^image\//.test(f.type)) { er.textContent = "اختار صورة من فضلك."; return; }
-            uploading = true; pick.disabled = true; er.textContent = "بنرفع الصورة...";
-            try {
-              const blob = await resizeToBlob(f, 1400);
-              const path = exam.id + "/" + Date.now() + ".jpg";
-              const up = await sb.storage.from("question-images").upload(path, blob, { contentType: "image/jpeg", upsert: true });
-              if (up.error) throw up.error;
-              imgUrl = sb.storage.from("question-images").getPublicUrl(path).data.publicUrl;
-              er.textContent = ""; paintImg();
-            } catch (x) { er.textContent = "ماقدرناش نرفع الصورة: " + em(x); }
-            uploading = false; pick.disabled = false;
-          });
+          const er = h("p", "err");
+          const qImg = imgPicker(b, "صورة للسؤال (اختياري)", qu && qu.image_url, er, exam.id);
+
+          const wp = h("label", "fld"); wp.appendChild(h("span", null, "درجة السؤال (من كام؟)"));
+          const pts = h("input", "inp"); pts.type = "number"; pts.min = "0.5"; pts.step = "0.5"; pts.value = qu && qu.points != null ? qu.points : 1; wp.appendChild(pts); b.appendChild(wp);
 
           const box = h("div", "fld"); b.appendChild(box);
+          const solveBox = h("div", "fld");
+          solveBox.appendChild(h("p", "muted", "الطالب هيحل المسألة على ورقة ويصوّر الحل ويرفعه. بعدها هتشوف حله جنب الحل النموذجي وتصححه (صح / نص درجة / غلط)."));
+          b.appendChild(solveBox);
+          const aImg = imgPicker(solveBox, "صورة الحل النموذجي (الإجابة الصح)", qu && qu.answer_image_url, er, exam.id + "/answers");
+
           const we = h("label", "fld"); we.appendChild(h("span", null, "الشرح / الدليل (بيظهر للطالب بعد الإجابة)"));
           const exp = h("textarea", "inp"); exp.value = (qu && qu.explanation) || ""; we.appendChild(exp); b.appendChild(we);
-          const er = h("p", "err"); b.appendChild(er);
+          b.appendChild(er);
           function paint() {
             Array.prototype.forEach.call(seg.children, (s) => s.setAttribute("aria-pressed", s.dataset.k === kind ? "true" : "false"));
-            box.innerHTML = ""; box.appendChild(h("span", null, kind === "tf" ? "اختار الإجابة الصحيحة" : "الاختيارات (علّم على الإجابة الصحيحة)"));
+            box.hidden = kind === "solve"; solveBox.hidden = kind !== "solve"; we.hidden = kind === "solve";
+            box.innerHTML = ""; if (kind === "solve") return;
+            box.appendChild(h("span", null, kind === "tf" ? "اختار الإجابة الصحيحة" : "الاختيارات (علّم على الإجابة الصحيحة)"));
             const rows = kind === "tf" ? ["صح", "غلط"] : vals;
             rows.forEach((v, i) => {
               const r = h("div", "optrow"); const rd = h("input"); rd.type = "radio"; rd.name = "c"; rd.checked = i === correct;
@@ -531,20 +618,23 @@
           paint();
           const a = h("div", "actions");
           const save = btn("حفظ", "p", async () => {
-            if (uploading) { er.textContent = "استنى لحد ما الصورة تخلص رفع."; return; }
+            if (qImg.busy || aImg.busy) { er.textContent = "استنى لحد ما الصورة تخلص رفع."; return; }
             if (!body.value.trim()) { er.textContent = "اكتب نص السؤال."; return; }
+            const pv = parseFloat(pts.value);
+            if (!(pv > 0)) { er.textContent = "اكتب درجة صحيحة للسؤال."; return; }
             let options = [], ci = correct;
-            if (kind === "mcq") {
+            if (kind === "solve") { ci = 0; }
+            else if (kind === "mcq") {
               const fl = []; vals.forEach((t, i) => { if (t.trim()) fl.push([t.trim(), i]); });
               if (fl.length < 2) { er.textContent = "اكتب اختيارين على الأقل."; return; }
               const pos = fl.findIndex((x) => x[1] === correct);
               if (pos < 0) { er.textContent = "علّم على إجابة صحيحة من الاختيارات المكتوبة."; return; }
               options = fl.map((x) => x[0]); ci = pos;
             }
-            const p = { exam_id: exam.id, body: body.value.trim(), kind, options, correct_index: ci, explanation: exp.value.trim() || null, image_url: imgUrl };
+            const p = { exam_id: exam.id, body: body.value.trim(), kind, options, correct_index: ci, explanation: kind === "solve" ? null : (exp.value.trim() || null), image_url: qImg.url, answer_image_url: kind === "solve" ? aImg.url : null, points: pv };
             save.disabled = true;
             const r = qu ? await sb.from("questions").update(p).eq("id", qu.id) : await sb.from("questions").insert(p);
-            if (r.error) { er.textContent = em(r.error) + " (شغّل update-v2.sql)"; save.disabled = false; return; }
+            if (r.error) { er.textContent = em(r.error) + " (شغّل update-v3.sql)"; save.disabled = false; return; }
             closeModal(); toast("اتحفظ السؤال"); loadAll();
           });
           a.appendChild(save); a.appendChild(btn("إلغاء", "g", () => closeModal())); b.appendChild(a);
@@ -651,7 +741,7 @@
         let s = null;
         try { s = (await sb.auth.getSession()).data.session; } catch (e) {}
         if (!s) { go(LOGIN_PAGE); return; }
-        if ((s.user.email || "").toLowerCase() !== ADMIN_EMAIL) { go(HOME_PAGE); return; }
+        if (ADMIN_EMAILS.indexOf((s.user.email || "").toLowerCase()) === -1) { go(HOME_PAGE); return; }
         buildNav();
         $("boot").hidden = true; $("app").hidden = false;
         render();

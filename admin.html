@@ -155,6 +155,10 @@
     .rv-grade { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
     .btn.ok { background:transparent; border-color:var(--ok); color:var(--ok); }
     .chip.pend { color:var(--accent); border-color:var(--accent); }
+    .ph { display:flex; align-items:center; gap:6px; justify-content:center; direction:ltr; }
+    .ph a { text-decoration:none; }
+    .ph .btn { padding:4px 10px; font-size:12.5px; }
+    .btn.wa { background:transparent; border-color:#25d366; color:#25d366; }
     .upl { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   </style>
   <script>
@@ -269,7 +273,7 @@
               S.students.forEach((x) => { const p = pm[x.id]; if (p) { x.avatar_url = p.avatar_url || null; if (p.full_name) x.full_name = p.full_name; if (p.gender) x.gender = p.gender; } });
             }
           } catch (e2) {}
-        } catch (e) { if (!silent) toast("ماقدرناش نحمّل البيانات: " + em(e) + " (شغّل update-v2.sql)", true); return; }
+        } catch (e) { if (!silent) toast("ماقدرناش نحمّل البيانات: " + em(e) + " (شغّل update-v3.sql و update-v4.sql)", true); return; }
         // ما نعيدش الرسم لو فيه نافذة مفتوحة أو بيكتب في بحث
         if (silent && (!$("modal").hidden || (document.activeElement && document.activeElement.tagName === "INPUT"))) return;
         render();
@@ -278,6 +282,19 @@
       const studOf = (id) => S.students.find((x) => x.id === id);
       const qOf = (eid) => S.qs.filter((q) => q.exam_id === eid);
       const isTF = (q) => q.kind === "tf" || !(q.options && q.options.length);
+      const phoneClean = (p) => String(p || "").replace(/[^\d]/g, "");
+      const waNum = (p) => { const d = phoneClean(p); return d.indexOf("0") === 0 ? "20" + d.slice(1) : d; };
+      function phoneCell(p) {
+        const td = h("td");
+        if (!p) { td.textContent = "—"; return td; }
+        const w = h("div", "ph");
+        w.appendChild(h("span", null, p));
+        const call = h("a", "btn g s", "اتصل"); call.href = "tel:" + phoneClean(p);
+        const wa = h("a", "btn wa s", "واتساب"); wa.href = "https://wa.me/" + waNum(p); wa.target = "_blank"; wa.rel = "noopener";
+        call.addEventListener("click", (e) => e.stopPropagation()); wa.addEventListener("click", (e) => e.stopPropagation());
+        w.appendChild(call); w.appendChild(wa); td.appendChild(w);
+        return td;
+      }
       const gLabel = (g) => g === "male" ? "ذكر" : g === "female" ? "أنثى" : "—";
       const subjOf = (a) => { const e = examOf(a.exam_id); return (e && e.subject) || a.exam_subject || "امتحان محذوف"; };
 
@@ -340,6 +357,13 @@
           const w = h("div", "who"); w.appendChild(av(s.avatar_url, s.full_name));
           const d = h("div"); d.appendChild(h("div", "e-title", s.full_name || "طالب")); d.appendChild(h("div", "muted", subjOf(a))); w.appendChild(d);
           b.appendChild(w);
+          if (s.phone) {
+            const pr = h("div", "row");
+            pr.appendChild(h("span", "muted", "التليفون: " + s.phone));
+            const c1 = h("a", "btn g s", "اتصل"); c1.href = "tel:" + phoneClean(s.phone);
+            const c2 = h("a", "btn wa s", "واتساب"); c2.href = "https://wa.me/" + waNum(s.phone); c2.target = "_blank"; c2.rel = "noopener";
+            pr.appendChild(c1); pr.appendChild(c2); b.appendChild(pr);
+          }
           const r = h("div", "row");
           r.appendChild(h("span", "chip a", fmtNum(a.score) + " / " + fmtNum(a.total)));
           r.appendChild(h("span", "chip " + (a.passed ? "ok" : "w"), a.passed ? "ناجح" : "لم ينجح"));
@@ -644,7 +668,7 @@
       /* ---------- الطلاب والدرجات ---------- */
       function rStudents(m) {
         title(m, "الطلاب والدرجات");
-        const s = h("input", "inp search"); s.type = "search"; s.placeholder = "ابحث بالاسم أو الإيميل"; s.value = S.search;
+        const s = h("input", "inp search"); s.type = "search"; s.placeholder = "ابحث بالاسم أو الإيميل أو التليفون"; s.value = S.search;
         m.appendChild(s);
         const meta = h("p", "muted"); m.appendChild(meta);
         const wrap = h("div", "tbl-wrap"); m.appendChild(wrap);
@@ -661,18 +685,19 @@
 
         function fill() {
           S.search = s.value; const q = s.value.trim().toLowerCase();
-          const rows = S.students.filter((x) => !q || (x.full_name || "").toLowerCase().includes(q) || (x.email || "").toLowerCase().includes(q));
+          const rows = S.students.filter((x) => !q || (x.full_name || "").toLowerCase().includes(q) || (x.email || "").toLowerCase().includes(q) || phoneClean(x.phone).includes(phoneClean(q) || "§"));
           meta.textContent = ar(rows.length) + " طالب";
           wrap.innerHTML = "";
           if (!rows.length) { wrap.appendChild(h("div", "empty", "مفيش طلاب.")); return; }
           const t = h("table"); const hr = h("tr");
-          ["الطالب", "الإيميل", "النوع"].forEach((x) => hr.appendChild(h("th", null, x)));
+          ["الطالب", "الإيميل", "التليفون", "النوع"].forEach((x) => hr.appendChild(h("th", null, x)));
           cols.forEach((c) => hr.appendChild(h("th", null, c.label)));
           const th = h("thead"); th.appendChild(hr); t.appendChild(th);
           const tb = h("tbody");
           rows.forEach((x) => {
             const tr = h("tr"); const c0 = h("td"); const w = h("div", "who"); w.appendChild(av(x.avatar_url, x.full_name)); w.appendChild(h("div", null, x.full_name || "—")); c0.appendChild(w); tr.appendChild(c0);
             const em2 = h("td", null, x.email || "—"); em2.style.direction = "ltr"; tr.appendChild(em2);
+            tr.appendChild(phoneCell(x.phone));
             tr.appendChild(h("td", null, gLabel(x.gender)));
             cols.forEach((c) => {
               const a = S.atts.find((y) => y.user_id === x.id && attKey(y) === c.key && y.submitted_at);

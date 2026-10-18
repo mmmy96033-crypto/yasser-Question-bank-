@@ -156,7 +156,8 @@
     .btn.ok { background:transparent; border-color:var(--ok); color:var(--ok); }
     .chip.pend { color:var(--accent); border-color:var(--accent); }
     .ph { display:flex; align-items:center; gap:6px; justify-content:center; direction:ltr; }
-    .ph a { text-decoration:none; }
+    .ph a, .row a.btn { text-decoration:none; }
+    .ph a.btn.g, .row a.btn.g { color:var(--fg); }
     .ph .btn { padding:4px 10px; font-size:12.5px; }
     .btn.wa { background:transparent; border-color:#25d366; color:#25d366; }
     .upl { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
@@ -214,6 +215,7 @@
         users: svg('<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'),
         bell: svg('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>'),
         set: svg('<path d="M4 6h8M18 6h2"/><circle cx="15" cy="6" r="2.5"/><path d="M4 12h2M12 12h8"/><circle cx="9" cy="12" r="2.5"/><path d="M4 18h9M19 18h1"/><circle cx="16" cy="18" r="2.5"/>'),
+        out: svg('<path d="M9 21H5V3h4"/><path d="M16 17l5-5-5-5M21 12H9"/>'),
         back: svg('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>')
       };
       const PRESETS = {
@@ -254,7 +256,7 @@
       }
 
       /* ---------- البيانات ---------- */
-      const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], qExam: null, search: "" };
+      const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], events: [], qExam: null, search: "" };
       async function pull(p) { const r = await p; if (r.error) throw r.error; return r.data || []; }
       async function loadAll(silent) {
         try {
@@ -273,7 +275,8 @@
               S.students.forEach((x) => { const p = pm[x.id]; if (p) { x.avatar_url = p.avatar_url || null; if (p.full_name) x.full_name = p.full_name; if (p.gender) x.gender = p.gender; } });
             }
           } catch (e2) {}
-        } catch (e) { if (!silent) toast("ماقدرناش نحمّل البيانات: " + em(e) + " (شغّل update-v3.sql و update-v4.sql)", true); return; }
+        } catch (e) { if (!silent) toast("ماقدرناش نحمّل البيانات: " + em(e) + " (شغّل update-v3.sql و update-v4.sql و update-v5.sql)", true); return; }
+        try { const ev = await sb.from("user_events").select("*").order("created_at", { ascending: false }).limit(300); S.events = ev.error ? [] : (ev.data || []); } catch (e3) { S.events = []; }
         // ما نعيدش الرسم لو فيه نافذة مفتوحة أو بيكتب في بحث
         if (silent && (!$("modal").hidden || (document.activeElement && document.activeElement.tagName === "INPUT"))) return;
         render();
@@ -414,7 +417,7 @@
       }
 
       /* ---------- التنقل ---------- */
-      const TABS = [["overview", "الرئيسية", IC.home], ["exams", "الامتحانات", IC.exams], ["students", "الطلاب والدرجات", IC.users], ["notifs", "الإشعارات", IC.bell], ["settings", "الإعدادات", IC.set]];
+      const TABS = [["overview", "الرئيسية", IC.home], ["exams", "الامتحانات", IC.exams], ["students", "الطلاب والدرجات", IC.users], ["notifs", "الإشعارات", IC.bell], ["logouts", "الخروج", IC.out], ["settings", "الإعدادات", IC.set]];
       function buildNav() {
         const side = $("side");
         TABS.forEach((t) => {
@@ -430,7 +433,7 @@
       function render() {
         document.querySelectorAll(".nav[data-t]").forEach((b) => b.classList.toggle("on", b.dataset.t === S.tab));
         const m = $("main"); m.innerHTML = "";
-        ({ overview: rOverview, exams: rExams, students: rStudents, notifs: rNotifs, settings: rSettings })[S.tab](m);
+        ({ overview: rOverview, exams: rExams, students: rStudents, notifs: rNotifs, logouts: rLogouts, settings: rSettings })[S.tab](m);
       }
       const title = (m, text, extra) => { const t = h("h1", "title", text); t.appendChild(h("span", "sp")); if (extra) t.appendChild(extra); m.appendChild(t); };
 
@@ -509,6 +512,10 @@
             end: mk("نهاية الامتحان", "datetime-local", toInput(ex ? ex.ends_at : later))
           };
           f.round.min = 1;
+          const fFull = new Intl.DateTimeFormat("ar-EG", { timeZone: "Africa/Cairo", weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" });
+          const pv = h("p", "muted"); pv.style.margin = "0"; pv.style.whiteSpace = "pre-line";
+          const upd = () => { pv.textContent = (f.start.value && f.end.value) ? "يبدأ: " + fFull.format(new Date(f.start.value)) + "\nينتهي: " + fFull.format(new Date(f.end.value)) : ""; };
+          [f.start, f.end].forEach((i) => i.addEventListener("input", upd)); upd(); b.appendChild(pv);
           const er = h("p", "err"); b.appendChild(er);
           const a = h("div", "actions");
           const save = btn("حفظ", "p", async () => {
@@ -712,6 +719,34 @@
         s.addEventListener("input", fill); fill();
       }
 
+      /* ---------- سجل الخروج ---------- */
+      const fWeek = new Intl.DateTimeFormat("ar-EG", { timeZone: "Africa/Cairo", weekday: "long" });
+      const fFullDT = new Intl.DateTimeFormat("ar-EG", { timeZone: "Africa/Cairo", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" });
+      const dtCell = (iso) => h("td", null, iso ? fFullDT.format(new Date(iso)) : "—");
+      function rLogouts(m) {
+        title(m, "سجل الخروج");
+        m.appendChild(h("p", "muted", "كل مرة طالب يضغط «تسجيل الخروج» بتتسجل هنا (آخر ٣٠٠ مرة). لو قفل المتصفح من غير ما يضغط خروج مش بيتسجل."));
+        if (!S.events.length) { m.appendChild(h("div", "empty", "لسه محدش سجّل خروج. (لازم تشغّل update-v5.sql الأول)")); return; }
+        const wrap = h("div", "tbl-wrap"); m.appendChild(wrap);
+        const t = h("table"); const hr = h("tr");
+        ["الطالب", "الإيميل", "التليفون", "تاريخ التسجيل", "آخر دخول", "اليوم", "وقت الخروج"].forEach((x) => hr.appendChild(h("th", null, x)));
+        const th = h("thead"); th.appendChild(hr); t.appendChild(th);
+        const tb = h("tbody");
+        S.events.forEach((ev) => {
+          const x = studOf(ev.user_id) || {};
+          const tr = h("tr"); const c0 = h("td"); const w = h("div", "who");
+          w.appendChild(av(x.avatar_url, x.full_name)); w.appendChild(h("div", null, x.full_name || "حساب محذوف")); c0.appendChild(w); tr.appendChild(c0);
+          const em2 = h("td", null, x.email || "—"); em2.style.direction = "ltr"; tr.appendChild(em2);
+          tr.appendChild(phoneCell(x.phone));
+          tr.appendChild(dtCell(x.registered_at));
+          tr.appendChild(dtCell(x.last_login));
+          tr.appendChild(h("td", null, fWeek.format(new Date(ev.created_at))));
+          tr.appendChild(dtCell(ev.created_at));
+          tb.appendChild(tr);
+        });
+        t.appendChild(tb); wrap.appendChild(t);
+      }
+
       /* ---------- الإشعارات ---------- */
       function rNotifs(m) {
         title(m, "الإشعارات");
@@ -757,7 +792,7 @@
         });
         c2.appendChild(sw); st.appendChild(c2);
         const c3 = h("div", "card stack"); c3.appendChild(btn("الرجوع للموقع", "g", () => go(HOME_PAGE)));
-        c3.appendChild(btn("تسجيل الخروج", "d", async () => { if (await ask("تسجيل الخروج", "متأكد إنك عايز تسجّل خروج؟", "تأكيد", true)) { try { await sb.auth.signOut(); } catch (e) {} go(LOGIN_PAGE); } }));
+        c3.appendChild(btn("تسجيل الخروج", "d", async () => { if (await ask("تسجيل الخروج", "متأكد إنك عايز تسجّل خروج؟", "تأكيد", true)) { try { const ss = (await sb.auth.getSession()).data.session; if (ss) await sb.from("user_events").insert({ user_id: ss.user.id, kind: "logout" }); } catch (e) {} try { await sb.auth.signOut(); } catch (e) {} go(LOGIN_PAGE); } }));
         st.appendChild(c3); m.appendChild(st);
       }
 

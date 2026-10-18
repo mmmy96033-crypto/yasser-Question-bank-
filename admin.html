@@ -26,6 +26,9 @@
       --bg:#0d1117; --surface:#151b23; --surface-2:#0d1117; --fg:#e6edf3; --muted:#9198a1; --border:#3d444d;
       --accent:#4493f8; --accent-fg:#0d1117; --danger:#f85149; --ok:#3fb950; --shadow:rgba(0,0,0,.45); color-scheme:dark;
     }
+    :root { --c-blue:#0a8fd8; --c-green:#1a7f37; --c-red:#d1495b; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --c-blue:#4bb4f1; --c-green:#3fb950; --c-red:#ff7b88; } }
+    :root[data-theme="dark"] { --c-blue:#4bb4f1; --c-green:#3fb950; --c-red:#ff7b88; }
     * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html { overflow-x:hidden; -webkit-text-size-adjust:100%; }
     body { margin:0; background:var(--bg); color:var(--fg); font-family:var(--font); font-size:16px; line-height:1.7; overflow-x:clip; }
@@ -37,26 +40,30 @@
     .loader { width:34px; height:34px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin .8s linear infinite; margin:0 auto 12px; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
-    .top { position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:10px; padding:calc(10px + env(safe-area-inset-top)) 16px 10px; background:var(--surface); border-bottom:1px solid var(--border); }
-    .brand { display:flex; align-items:center; gap:10px; font-weight:600; font-size:18px; }
-    .brand svg { width:26px; height:26px; color:var(--accent); }
-    .side { position:fixed; left:0; right:0; bottom:0; z-index:30; display:flex; gap:2px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--border); box-shadow:0 -6px 18px var(--shadow); }
-    .side .brand { display:none; }
-    .nav { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 2px; border:0; border-radius:12px; background:none; color:var(--muted); cursor:pointer; font-size:11.5px; font-weight:600; }
-    .nav svg { width:22px; height:22px; }
+    .top { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:64px; padding:calc(8px + env(safe-area-inset-top)) 14px 8px 14px; background:var(--surface); border-bottom:1px solid var(--border); border-radius:0 0 24px 24px; box-shadow:0 8px 20px var(--shadow); }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:600; font-size:18px; min-width:0; }
+    .brand svg { width:26px; height:26px; color:var(--accent); flex:none; }
+    .menu-btn { width:44px; height:44px; flex:none; display:grid; place-items:center; border-radius:12px; border:1px solid transparent; background:transparent; color:var(--fg); cursor:pointer; }
+    .menu-btn:hover, .menu-btn[aria-expanded="true"] { background:var(--surface-2); border-color:var(--border); }
+    .menu-btn svg { width:24px; height:24px; }
+
+    .scrim { position:fixed; inset:0; z-index:60; background:rgba(0,0,0,.5); opacity:0; visibility:hidden; transition:opacity .2s ease, visibility .2s ease; }
+    .scrim.open { opacity:1; visibility:visible; }
+    .drawer { position:fixed; top:0; bottom:0; left:0; z-index:70; width:min(310px,86vw); display:flex; flex-direction:column; gap:8px; padding:calc(14px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom)); background:var(--surface); border-right:1px solid var(--border); border-radius:0 24px 24px 0; box-shadow:0 0 40px var(--shadow); transform:translateX(-105%); visibility:hidden; transition:transform .25s ease, visibility .25s ease; }
+    .drawer.open { transform:none; visibility:visible; }
+    .drawer-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 12px; border-bottom:1px solid var(--border); margin-bottom:4px; }
+    .drawer-nav { flex:1; min-height:0; overflow:auto; display:flex; flex-direction:column; gap:6px; }
+    .nav { flex:none; width:100%; display:flex; align-items:center; gap:14px; padding:13px 14px; border:0; border-radius:14px; background:none; color:var(--muted); cursor:pointer; font-size:16px; font-weight:600; text-align:start; }
+    .nav svg { width:22px; height:22px; flex:none; }
+    .nav:hover:not(.on) { background:var(--surface-2); color:var(--fg); }
     .nav.on { color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, transparent); }
-    .back { display:none; }
-    .main { max-width:1240px; margin:0 auto; padding:18px 16px calc(96px + env(safe-area-inset-bottom)); }
+    .nav.back { margin-top:auto; border-top:1px solid var(--border); border-radius:0 0 14px 14px; padding-top:16px; }
+    .main { max-width:1240px; margin:0 auto; padding:18px 16px calc(40px + env(safe-area-inset-bottom)); }
     h1.title { margin:0 0 16px; font-size:22px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
     h1.title .sp { flex:1; }
 
     @media (min-width:1024px) {
-      .layout { display:grid; grid-template-columns:var(--side) minmax(0,1fr); }
-      .top { display:none; }
-      .side { position:sticky; top:0; height:100vh; align-self:start; flex-direction:column; gap:6px; padding:20px 12px; border-top:0; border-inline-end:1px solid var(--border); box-shadow:none; }
-      .side .brand { display:flex; padding:4px 10px 16px; }
-      .nav { flex:none; flex-direction:row; justify-content:flex-start; gap:12px; padding:11px 14px; font-size:15px; }
-      .back { display:flex; margin-top:auto; }
+      .top { padding-inline:28px; }
       .main { padding:30px 36px 48px; }
       h1.title { font-size:26px; }
     }
@@ -134,7 +141,7 @@
     .modal h2 { margin:0; font-size:20px; text-align:center; }
     .modal .sub { margin:0; text-align:center; color:var(--muted); }
     .actions { display:grid; gap:8px; grid-template-columns:1fr 1fr; margin-top:4px; }
-    .toast { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(92px + env(safe-area-inset-bottom)); z-index:90; background:var(--fg); color:var(--bg); padding:10px 16px; border-radius:12px; max-width:calc(100vw - 32px); text-align:center; font-size:14.5px; }
+    .toast { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(24px + env(safe-area-inset-bottom)); z-index:90; background:var(--fg); color:var(--bg); padding:10px 16px; border-radius:12px; max-width:calc(100vw - 32px); text-align:center; font-size:14.5px; }
     .toast.e { background:var(--danger); color:#fff; }
     @media (min-width:1024px) { .toast { bottom:28px; } }
 
@@ -160,6 +167,34 @@
     .ph a.btn.g, .row a.btn.g { color:var(--fg); }
     .ph .btn { padding:4px 10px; font-size:12.5px; }
     .btn.wa { background:transparent; border-color:#25d366; color:#25d366; }
+    .chip.red { color:var(--danger); border-color:var(--danger); }
+    .ins { margin-bottom:20px; padding:0; overflow:hidden; }
+    .ins-top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:14px 16px; border-bottom:1px solid var(--border); }
+    .ins-range { display:flex; align-items:center; gap:12px; min-width:0; }
+    .ins-range svg { width:28px; height:28px; flex:none; }
+    .ins-range b { display:block; font-size:17px; line-height:1.4; }
+    .ins-range span { display:block; color:var(--muted); font-size:14px; line-height:1.4; }
+    .ins-seg { width:178px; }
+    .ins-body { padding:16px; }
+    .ins-h { margin:0 0 8px; font-size:19px; display:flex; align-items:center; gap:8px; }
+    .ins-row { max-width:520px; display:flex; align-items:center; gap:10px; padding:6px 0; font-size:16px; }
+    .ins-row .dot { width:10px; height:10px; border-radius:50%; flex:none; }
+    .ins-row .lbl { flex:1; color:var(--muted); }
+    .ins-row b { font-size:17px; font-variant-numeric:tabular-nums; }
+    .dot.blue { background:var(--c-blue); } .dot.green { background:var(--c-green); } .dot.red { background:var(--c-red); }
+    .chart { direction:ltr; margin-top:14px; }
+    .chart svg { width:100%; height:auto; max-height:300px; display:block; touch-action:pan-y; }
+    .chart .gl { stroke:var(--border); stroke-width:1; }
+    .chart text { fill:var(--muted); font-size:11px; font-family:inherit; }
+    .chart .ln { fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+    .chart .ln.blue { stroke:var(--c-blue); } .chart .ln.green { stroke:var(--c-green); } .chart .ln.red { stroke:var(--c-red); }
+    .chart .mk { stroke:var(--muted); stroke-width:1; stroke-dasharray:3 3; }
+    .chart .hit { fill:transparent; cursor:pointer; }
+    .readout { min-height:1.7em; margin:6px 0 0; text-align:center; font-size:13.5px; color:var(--muted); }
+    .act-h { margin:18px 0 4px; font-size:17px; }
+    .act-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--border); }
+    .act-row .who { flex:1; }
+    .act-row .who small { display:block; color:var(--muted); font-size:12.5px; overflow:hidden; text-overflow:ellipsis; }
     .upl { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   </style>
   <script>
@@ -176,15 +211,26 @@
 <body>
   <div class="boot" id="boot"><div><div class="loader"></div>بنتأكد من الصلاحية...</div></div>
 
-  <div class="layout" id="app" hidden>
-    <aside class="side" id="side">
-      <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5"/><path d="M9 8.5h7M9 12h5"/></svg>لوحة التحكم</div>
-    </aside>
-    <div>
-      <header class="top"><div class="brand"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5"/><path d="M9 8.5h7M9 12h5"/></svg>لوحة التحكم</div></header>
-      <main class="main" id="main"></main>
-    </div>
+  <div id="app" hidden>
+    <header class="top">
+      <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5"/><path d="M9 8.5h7M9 12h5"/></svg>لوحة التحكم</div>
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="القائمة" aria-expanded="false" aria-controls="drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </header>
+    <main class="main" id="main"></main>
   </div>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="القائمة">
+    <div class="drawer-head">
+      <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5"/><path d="M9 8.5h7M9 12h5"/></svg>لوحة التحكم</div>
+      <button class="menu-btn" id="menuClose" type="button" aria-label="إغلاق القائمة">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <nav class="drawer-nav" id="side"></nav>
+  </aside>
 
   <div class="mb" id="modal" hidden><div class="modal" id="mbox" role="dialog" aria-modal="true"></div></div>
   <div class="toast" id="toast" hidden></div>
@@ -215,6 +261,8 @@
         users: svg('<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'),
         bell: svg('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>'),
         set: svg('<path d="M4 6h8M18 6h2"/><circle cx="15" cy="6" r="2.5"/><path d="M4 12h2M12 12h8"/><circle cx="9" cy="12" r="2.5"/><path d="M4 18h9M19 18h1"/><circle cx="16" cy="18" r="2.5"/>'),
+        enter: svg('<path d="M15 3h4v18h-4"/><path d="M10 17l5-5-5-5M15 12H3"/>'),
+        cal: svg('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'),
         out: svg('<path d="M9 21H5V3h4"/><path d="M16 17l5-5-5-5M21 12H9"/>'),
         back: svg('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>')
       };
@@ -256,7 +304,7 @@
       }
 
       /* ---------- البيانات ---------- */
-      const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], events: [], qExam: null, search: "" };
+      const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], events: [], range: 30, showAll: false, qExam: null, search: "" };
       async function pull(p) { const r = await p; if (r.error) throw r.error; return r.data || []; }
       async function loadAll(silent) {
         try {
@@ -276,7 +324,15 @@
             }
           } catch (e2) {}
         } catch (e) { if (!silent) toast("ماقدرناش نحمّل البيانات: " + em(e) + " (شغّل update-v3.sql و update-v4.sql و update-v5.sql)", true); return; }
-        try { const ev = await sb.from("user_events").select("*").order("created_at", { ascending: false }).limit(300); S.events = ev.error ? [] : (ev.data || []); } catch (e3) { S.events = []; }
+        try {
+          const since = new Date(Date.now() - 31 * 86400e3).toISOString(); let all = [];
+          for (let pg = 0; pg < 10; pg++) {
+            const ev = await sb.from("user_events").select("*").gte("created_at", since).order("created_at", { ascending: false }).range(pg * 1000, pg * 1000 + 999);
+            if (ev.error) { all = []; break; }
+            all = all.concat(ev.data || []); if ((ev.data || []).length < 1000) break;
+          }
+          S.events = all;
+        } catch (e3) { S.events = []; }
         // ما نعيدش الرسم لو فيه نافذة مفتوحة أو بيكتب في بحث
         if (silent && (!$("modal").hidden || (document.activeElement && document.activeElement.tagName === "INPUT"))) return;
         render();
@@ -358,7 +414,7 @@
         const s = studOf(a.user_id) || {};
         modal((b) => {
           const w = h("div", "who"); w.appendChild(av(s.avatar_url, s.full_name));
-          const d = h("div"); d.appendChild(h("div", "e-title", s.full_name || "طالب")); d.appendChild(h("div", "muted", subjOf(a))); w.appendChild(d);
+          const d = h("div"); d.appendChild(h("div", "e-title", s.full_name || "حساب غير معروف")); d.appendChild(h("div", "muted", subjOf(a))); w.appendChild(d);
           b.appendChild(w);
           if (s.phone) {
             const pr = h("div", "row");
@@ -417,23 +473,29 @@
       }
 
       /* ---------- التنقل ---------- */
-      const TABS = [["overview", "الرئيسية", IC.home], ["exams", "الامتحانات", IC.exams], ["students", "الطلاب والدرجات", IC.users], ["notifs", "الإشعارات", IC.bell], ["logouts", "الخروج", IC.out], ["settings", "الإعدادات", IC.set]];
+      const TABS = [["overview", "الرئيسية", IC.home], ["exams", "الامتحانات", IC.exams], ["students", "الطلاب والدرجات", IC.users], ["notifs", "الإشعارات", IC.bell], ["logins", "الدخول", IC.enter], ["logouts", "الخروج", IC.out], ["settings", "الإعدادات", IC.set]];
+      function openMenu() { $("drawer").classList.add("open"); $("scrim").classList.add("open"); $("drawer").setAttribute("aria-hidden", "false"); $("menuBtn").setAttribute("aria-expanded", "true"); }
+      function closeMenu() { $("drawer").classList.remove("open"); $("scrim").classList.remove("open"); $("drawer").setAttribute("aria-hidden", "true"); $("menuBtn").setAttribute("aria-expanded", "false"); }
       function buildNav() {
         const side = $("side");
         TABS.forEach((t) => {
           const b = h("button", "nav"); b.type = "button"; b.dataset.t = t[0];
           b.innerHTML = t[2] + "<span>" + t[1] + "</span>";
-          b.addEventListener("click", () => { S.tab = t[0]; S.qExam = null; render(); window.scrollTo(0, 0); });
+          b.addEventListener("click", () => { S.tab = t[0]; S.qExam = null; closeMenu(); render(); window.scrollTo(0, 0); });
           side.appendChild(b);
         });
         const back = h("button", "nav back"); back.type = "button"; back.innerHTML = IC.back + "<span>الرجوع للموقع</span>";
         back.addEventListener("click", () => go(HOME_PAGE));
         side.appendChild(back);
+        $("menuBtn").addEventListener("click", openMenu);
+        $("menuClose").addEventListener("click", closeMenu);
+        $("scrim").addEventListener("click", closeMenu);
+        document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
       }
       function render() {
         document.querySelectorAll(".nav[data-t]").forEach((b) => b.classList.toggle("on", b.dataset.t === S.tab));
         const m = $("main"); m.innerHTML = "";
-        ({ overview: rOverview, exams: rExams, students: rStudents, notifs: rNotifs, logouts: rLogouts, settings: rSettings })[S.tab](m);
+        ({ overview: rOverview, exams: rExams, students: rStudents, notifs: rNotifs, logins: rLogins, logouts: rLogouts, settings: rSettings })[S.tab](m);
       }
       const title = (m, text, extra) => { const t = h("h1", "title", text); t.appendChild(h("span", "sp")); if (extra) t.appendChild(extra); m.appendChild(t); };
 
@@ -445,6 +507,7 @@
           const d = h("div", "stat"); d.appendChild(h("b", null, ar(x[0]))); d.appendChild(h("span", null, x[1])); st.appendChild(d);
         });
         m.appendChild(st);
+        insightsCard(m);
         m.appendChild(h("h2", null, "آخر التسليمات"));
         const last = S.atts.filter((a) => a.submitted_at).sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at)).slice(0, 12);
         if (!last.length) { m.appendChild(h("div", "empty", "لسه محدش سلّم امتحان.")); return; }
@@ -454,7 +517,7 @@
           const s = studOf(a.user_id) || {};
           const c = h("div", "card click"); const w = h("div", "who");
           w.appendChild(av(s.avatar_url, s.full_name));
-          const d = h("div"); d.appendChild(h("div", "e-title", s.full_name || "طالب")); d.appendChild(h("div", "muted", subjOf(a) + " · " + fDT.format(new Date(a.submitted_at)))); w.appendChild(d);
+          const d = h("div"); d.appendChild(h("div", "e-title", s.full_name || "حساب غير معروف")); d.appendChild(h("div", "muted", subjOf(a) + " · " + fDT.format(new Date(a.submitted_at)))); w.appendChild(d);
           c.appendChild(w);
           const r = h("div", "row"); r.style.marginTop = "10px";
           r.appendChild(h("span", "chip a", fmtNum(a.score) + " / " + fmtNum(a.total)));
@@ -723,28 +786,109 @@
       const fWeek = new Intl.DateTimeFormat("ar-EG", { timeZone: "Africa/Cairo", weekday: "long" });
       const fFullDT = new Intl.DateTimeFormat("ar-EG", { timeZone: "Africa/Cairo", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" });
       const dtCell = (iso) => h("td", null, iso ? fFullDT.format(new Date(iso)) : "—");
-      function rLogouts(m) {
-        title(m, "سجل الخروج");
-        m.appendChild(h("p", "muted", "كل مرة طالب يضغط «تسجيل الخروج» بتتسجل هنا (آخر ٣٠٠ مرة). لو قفل المتصفح من غير ما يضغط خروج مش بيتسجل."));
-        if (!S.events.length) { m.appendChild(h("div", "empty", "لسه محدش سجّل خروج. (لازم تشغّل update-v5.sql الأول)")); return; }
+      function evTable(m, kind, ttl, note, emptyMsg, withLast, lastLabel) {
+        title(m, ttl);
+        m.appendChild(h("p", "muted", note));
+        const list = S.events.filter((e) => e.kind === kind).slice(0, 300);
+        if (!list.length) { m.appendChild(h("div", "empty", emptyMsg)); return; }
         const wrap = h("div", "tbl-wrap"); m.appendChild(wrap);
         const t = h("table"); const hr = h("tr");
-        ["الطالب", "الإيميل", "التليفون", "تاريخ التسجيل", "آخر دخول", "اليوم", "وقت الخروج"].forEach((x) => hr.appendChild(h("th", null, x)));
+        ["الطالب", "الإيميل", "التليفون", "تاريخ التسجيل"].concat(withLast ? ["آخر دخول"] : []).concat(["اليوم", lastLabel]).forEach((x) => hr.appendChild(h("th", null, x)));
         const th = h("thead"); th.appendChild(hr); t.appendChild(th);
         const tb = h("tbody");
-        S.events.forEach((ev) => {
+        list.forEach((ev) => {
           const x = studOf(ev.user_id) || {};
           const tr = h("tr"); const c0 = h("td"); const w = h("div", "who");
-          w.appendChild(av(x.avatar_url, x.full_name)); w.appendChild(h("div", null, x.full_name || "حساب محذوف")); c0.appendChild(w); tr.appendChild(c0);
+          w.appendChild(av(x.avatar_url, x.full_name)); w.appendChild(h("div", null, x.full_name || "حساب غير معروف")); c0.appendChild(w); tr.appendChild(c0);
           const em2 = h("td", null, x.email || "—"); em2.style.direction = "ltr"; tr.appendChild(em2);
           tr.appendChild(phoneCell(x.phone));
           tr.appendChild(dtCell(x.registered_at));
-          tr.appendChild(dtCell(x.last_login));
+          if (withLast) tr.appendChild(dtCell(x.last_login));
           tr.appendChild(h("td", null, fWeek.format(new Date(ev.created_at))));
           tr.appendChild(dtCell(ev.created_at));
           tb.appendChild(tr);
         });
         t.appendChild(tb); wrap.appendChild(t);
+      }
+      function rLogins(m) {
+        evTable(m, "login", "سجل الدخول", "كل مرة طالب يدخل الموقع بجلسة جديدة بتتسجل هنا بالتاريخ والوقت (آخر ٣٠ يوم، وبحد أقصى ٣٠٠ سطر).", "لسه مفيش دخول مسجّل. لازم ترفع home.html الجديد وتشغّل update-v5.sql.", false, "وقت الدخول");
+      }
+      function rLogouts(m) {
+        evTable(m, "logout", "سجل الخروج", "كل مرة طالب يضغط «تسجيل الخروج» بتتسجل هنا (آخر ٣٠ يوم، وبحد أقصى ٣٠٠ سطر). لو قفل المتصفح من غير ما يضغط خروج مش بيتسجل.", "لسه محدش سجّل خروج. (لازم تشغّل update-v5.sql الأول)", true, "وقت الخروج");
+      }
+
+      /* ---------- إحصائيات الدخول والخروج (الرئيسية) ---------- */
+      const fDayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" });
+      const fChartDay = new Intl.DateTimeFormat("ar-EG", { timeZone: "Africa/Cairo", day: "numeric", month: "long" });
+      const fSmallDT = new Intl.DateTimeFormat("ar-EG", { timeZone: "Africa/Cairo", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+      function activityStats(n) {
+        const days = [], seen = {}, now0 = Date.now();
+        for (let i = n - 1; i >= 0; i--) { const d = new Date(now0 - i * 86400e3), k = fDayKey.format(d); if (!seen[k]) { seen[k] = days.length; days.push({ key: k, date: d }); } }
+        const login = days.map(() => 0), logout = days.map(() => 0), uniq = days.map(() => ({})), per = {}, everyone = {};
+        S.events.forEach((ev) => {
+          const i = seen[fDayKey.format(new Date(ev.created_at))];
+          if (i == null || (ev.kind !== "login" && ev.kind !== "logout")) return;
+          const p = per[ev.user_id] || (per[ev.user_id] = { id: ev.user_id, nin: 0, nout: 0, last: ev.created_at });
+          if (ev.kind === "login") { login[i]++; uniq[i][ev.user_id] = 1; everyone[ev.user_id] = 1; p.nin++; } else { logout[i]++; p.nout++; }
+          if (new Date(ev.created_at) > new Date(p.last)) p.last = ev.created_at;
+        });
+        const sum = (a) => a.reduce((x, y) => x + y, 0);
+        return { days: days, login: login, logout: logout, uniq: uniq.map((o) => Object.keys(o).length), per: Object.keys(per).map((k) => per[k]), totalIn: sum(login), totalOut: sum(logout), people: Object.keys(everyone).length };
+      }
+      function insightsCard(m) {
+        const st = activityStats(S.range);
+        const card = h("div", "card ins");
+        const top = h("div", "ins-top");
+        const rg = h("div", "ins-range");
+        rg.insertAdjacentHTML("beforeend", IC.cal);
+        const rt = h("div"); rt.appendChild(h("b", null, "آخر " + ar(S.range) + (S.range === 7 ? " أيام" : " يوم")));
+        rt.appendChild(h("span", null, fChartDay.format(st.days[0].date) + " - " + fChartDay.format(st.days[st.days.length - 1].date)));
+        rg.appendChild(rt); top.appendChild(rg);
+        const seg = h("div", "seg ins-seg");
+        [[7, "٧ أيام"], [30, "٣٠ يوم"]].forEach((o) => {
+          const b = h("button", null, o[1]); b.type = "button"; b.setAttribute("aria-pressed", S.range === o[0] ? "true" : "false");
+          b.addEventListener("click", () => { S.range = o[0]; S.showAll = false; render(); });
+          seg.appendChild(b);
+        });
+        top.appendChild(seg); card.appendChild(top);
+
+        const body = h("div", "ins-body");
+        const hh = h("h2", "ins-h", "الدخول والخروج"); body.appendChild(hh);
+        [["blue", "طلاب دخلوا (من غير تكرار)", st.people], ["green", "مرات الدخول", st.totalIn], ["red", "مرات الخروج", st.totalOut]].forEach((r) => {
+          const row = h("div", "ins-row"); row.appendChild(h("span", "dot " + r[0])); row.appendChild(h("span", "lbl", r[1])); row.appendChild(h("b", null, ar(r[2]))); body.appendChild(row);
+        });
+
+        /* الرسم البياني */
+        const NS = "http://www.w3.org/2000/svg", W = 360, HT = 210, L = 30, R = 10, T = 10, B = 26, pw = W - L - R, ph = HT - T - B, n = st.days.length;
+        const mx = Math.max.apply(null, st.uniq.concat(st.login, st.logout, [0]));
+        const ymax = Math.max(4, Math.ceil(mx / 4) * 4);
+        const X = (i) => L + (n === 1 ? pw / 2 : (i * pw) / (n - 1)), Y = (v) => T + ph * (1 - v / ymax);
+        const el = (tag, at, tx) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (tx != null) e.textContent = tx; return e; };
+        const svgEl = el("svg", { viewBox: "0 0 " + W + " " + HT, role: "img", "aria-label": "رسم بياني للدخول والخروج" });
+        for (let g = 0; g <= 4; g++) { const y = Y((ymax * g) / 4); svgEl.appendChild(el("line", { x1: L, x2: W - R, y1: y, y2: y, class: "gl" })); svgEl.appendChild(el("text", { x: L - 6, y: y + 4, "text-anchor": "end" }, ar((ymax * g) / 4))); }
+        [[0, "start"], [Math.floor((n - 1) / 2), "middle"], [n - 1, "end"]].forEach((q) => { if (n > 1 || q[0] === 0) svgEl.appendChild(el("text", { x: X(q[0]), y: HT - 6, "text-anchor": q[1] }, fChartDay.format(st.days[q[0]].date))); });
+        const mk = el("line", { class: "mk", y1: T, y2: T + ph, x1: 0, x2: 0, visibility: "hidden" }); svgEl.appendChild(mk);
+        [["blue", st.uniq], ["green", st.login], ["red", st.logout]].forEach((sr) => {
+          svgEl.appendChild(el("path", { class: "ln " + sr[0], d: sr[1].map((v, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1)).join(" ") }));
+        });
+        const readout = h("p", "readout", "اضغط على أي يوم في الرسم لتفاصيله.");
+        const show = (i) => { mk.setAttribute("x1", X(i)); mk.setAttribute("x2", X(i)); mk.setAttribute("visibility", "visible"); readout.textContent = fChartDay.format(st.days[i].date) + " — دخول: " + ar(st.login[i]) + " · خروج: " + ar(st.logout[i]) + " · طلاب مختلفين: " + ar(st.uniq[i]); };
+        const cw = n > 1 ? pw / (n - 1) : pw;
+        for (let i = 0; i < n; i++) { const r = el("rect", { class: "hit", x: X(i) - cw / 2, y: T, width: cw, height: ph }); r.addEventListener("pointerenter", () => show(i)); r.addEventListener("click", () => show(i)); svgEl.appendChild(r); }
+        const ch = h("div", "chart"); ch.appendChild(svgEl); body.appendChild(ch); body.appendChild(readout);
+        if (!S.events.length) body.appendChild(h("p", "muted", "لسه مفيش نشاط مسجّل. ارفع home.html الجديد وشغّل update-v5.sql وبعدها هتظهر الأرقام هنا."));
+
+        /* قايمة الطلاب */
+        body.appendChild(h("h3", "act-h", "الطلاب: دخول وخروج"));
+        const rows = st.per.slice().sort((a, b) => (b.nin + b.nout) - (a.nin + a.nout) || new Date(b.last) - new Date(a.last));
+        if (!rows.length) body.appendChild(h("div", "muted", "مفيش دخول أو خروج في الفترة دي."));
+        (S.showAll ? rows : rows.slice(0, 8)).forEach((p) => {
+          const s = studOf(p.id) || {}; const row = h("div", "act-row"); const w = h("div", "who"); w.appendChild(av(s.avatar_url, s.full_name));
+          const d = h("div"); d.appendChild(h("div", null, s.full_name || "حساب غير معروف")); d.appendChild(h("small", null, "آخر نشاط: " + fSmallDT.format(new Date(p.last)))); w.appendChild(d);
+          row.appendChild(w); row.appendChild(h("span", "chip ok", "دخول " + ar(p.nin))); row.appendChild(h("span", "chip red", "خروج " + ar(p.nout))); body.appendChild(row);
+        });
+        if (rows.length > 8) { const more = btn(S.showAll ? "عرض أقل" : "عرض الكل (" + ar(rows.length) + ")", "g s", () => { S.showAll = !S.showAll; render(); }); more.style.marginTop = "8px"; body.appendChild(more); }
+        card.appendChild(body); m.appendChild(card);
       }
 
       /* ---------- الإشعارات ---------- */
@@ -792,7 +936,7 @@
         });
         c2.appendChild(sw); st.appendChild(c2);
         const c3 = h("div", "card stack"); c3.appendChild(btn("الرجوع للموقع", "g", () => go(HOME_PAGE)));
-        c3.appendChild(btn("تسجيل الخروج", "d", async () => { if (await ask("تسجيل الخروج", "متأكد إنك عايز تسجّل خروج؟", "تأكيد", true)) { try { const ss = (await sb.auth.getSession()).data.session; if (ss) await sb.from("user_events").insert({ user_id: ss.user.id, kind: "logout" }); } catch (e) {} try { await sb.auth.signOut(); } catch (e) {} go(LOGIN_PAGE); } }));
+        c3.appendChild(btn("تسجيل الخروج", "d", async () => { if (await ask("تسجيل الخروج", "متأكد إنك عايز تسجّل خروج؟", "تأكيد", true)) { try { const ss = (await sb.auth.getSession()).data.session; if (ss) { try { sessionStorage.removeItem("qb-logged-" + ss.user.id); } catch (e2) {} await sb.from("user_events").insert({ user_id: ss.user.id, kind: "logout" }); } } catch (e) {} try { await sb.auth.signOut(); } catch (e) {} go(LOGIN_PAGE); } }));
         st.appendChild(c3); m.appendChild(st);
       }
 

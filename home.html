@@ -2104,6 +2104,7 @@
   });
 
   $("logoutBtn").addEventListener("click", async () => {
+    try { sessionStorage.removeItem("qb-logged-" + me.id); } catch (e) {}
     try { await sb.from("user_events").insert({ user_id: me.id, kind: "logout" }); } catch (e) {}
     try { await sb.auth.signOut(); } catch (e) {}
     goLogin();
@@ -2238,6 +2239,15 @@
     go(pages[hash] && !AUTH_REDIRECT ? hash : "home", true);
   }
 
+  function logLogin() {
+    const k = "qb-logged-" + me.id;
+    let done = false;
+    try { done = sessionStorage.getItem(k) === "1"; } catch (e) {}
+    if (done) return;
+    try { sessionStorage.setItem(k, "1"); } catch (e) {}
+    try { sb.from("user_events").insert({ user_id: me.id, kind: "login" }).then(function () {}, function () {}); } catch (e) {}
+  }
+
   (async function init() {
     let session = null;
     try {
@@ -2273,6 +2283,7 @@
     updateBadge();
     loadNotifs();
     ensureProfile();
+    logLogin();
   })();
 
   sb.auth.onAuthStateChange((evt) => {

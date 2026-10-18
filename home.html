@@ -172,7 +172,7 @@
     .btn-danger:hover { background: var(--danger); color: #fff; }
     button[disabled] { opacity: .55; cursor: not-allowed; }
 
-    .exam-list { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+    .exam-list { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 520px)); justify-content: center; }
     .exam {
       width: 100%; min-width: 0; text-align: start; cursor: pointer;
       background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
@@ -503,6 +503,46 @@
       :root { --maxw: 1040px; }
       .exam-body { padding-block: 24px; }
     }
+    /* تابلت */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      :root { --maxw: 900px; }
+      .exam-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+      .exam-list:has(.exam:only-child) { grid-template-columns: minmax(0, 480px); justify-content: center; }
+      .greet { text-align: center; font-size: 26px; }
+      .page-title { justify-content: center; }
+      .narrow { max-width: 720px; }
+    }
+    /* لابتوب وديسكتوب: قايمة جانبية بدل الشريط السفلي */
+    @media (min-width: 1024px) {
+      :root { --maxw: 1240px; --topbar-h: 72px; --side-w: 250px; }
+      body { font-size: 17px; }
+      #appView { padding-inline-start: var(--side-w); }
+      .topbar { right: var(--side-w); left: 0; }
+      .bottom-nav {
+        top: 0; bottom: 0; right: 0; left: auto; transform: none; width: var(--side-w);
+        flex-direction: column; justify-content: flex-start; align-items: stretch; gap: 6px;
+        padding: calc(var(--topbar-h) + 28px) 14px 24px;
+        border: 0; border-inline-start: 1px solid var(--border); border-radius: 0; box-shadow: none;
+      }
+      .nav-btn { flex: none; max-width: none; width: 100%; flex-direction: row; justify-content: flex-start; gap: 14px; padding: 12px 16px; min-height: 50px; border-radius: 14px; }
+      .nav-btn:hover:not(.active) { background: var(--surface-2); color: var(--fg); }
+      .nav-btn .nav-label, .nav-btn.active .nav-label { display: block; font-size: 15.5px; }
+      .nav-btn > svg { width: 24px; height: 24px; }
+      .main { padding-bottom: 48px; }
+      .greet { text-align: center; font-size: 30px; margin-bottom: 28px; }
+      .page-title { justify-content: center; font-size: 26px; }
+      .exam-list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 380px)); gap: 22px; }
+      .exam { padding: 22px; gap: 16px; border-radius: 20px; transition: transform .15s ease, box-shadow .15s ease; }
+      .exam:hover { transform: translateY(-3px); box-shadow: 0 12px 28px var(--shadow); }
+      .exam-title { font-size: 20px; }
+      .row { font-size: 16px; }
+      .exam-line { font-size: 15.5px; }
+      .narrow { max-width: 780px; }
+      .settings-grid { gap: 22px; }
+      .set-card { padding: 22px; }
+      .modal { width: min(480px, 100%); }
+      .toast { bottom: 28px; }
+    }
     @media (prefers-reduced-motion: reduce) {
       .loader { animation-duration: 2s; }
       * { transition: none !important; }
@@ -812,6 +852,7 @@
   const fDate = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const fTime = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, hour: "numeric", minute: "2-digit" });
   const fStamp = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, day: "numeric", month: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  const fDay = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, weekday: "long", day: "numeric", month: "long" });
   const fShort = new Intl.DateTimeFormat("ar-EG", { timeZone: TZ, day: "numeric", month: "long" });
 
   function fmtLeft(ms) {
@@ -1158,10 +1199,11 @@
       box.appendChild(r);
     };
     add("اسم المادة:", exam.subject);
-    add("تاريخ ووقت المادة:", fDate.format(subjAt) + " · " + fTime.format(subjAt));
+    add("تاريخ ووقت المادة:", fDay.format(subjAt) + " · " + fTime.format(subjAt));
     add("اسم الدكتور:", exam.doctor);
-    add("بداية الامتحان الساعة:", fTime.format(new Date(exam.starts_at)));
-    add("نهاية الامتحان الساعة:", fTime.format(new Date(exam.ends_at)));
+    const sA = new Date(exam.starts_at), eA = new Date(exam.ends_at);
+    add("بداية الامتحان:", fDay.format(sA) + " · " + fTime.format(sA));
+    add("نهاية الامتحان:", fDay.format(eA) + " · " + fTime.format(eA));
     return box;
   }
 
@@ -1256,7 +1298,7 @@
     Object.keys(state.cards).forEach((id) => {
       const ref = state.cards[id];
       updateCard(ref);
-      if (ref.status === "ended") {
+      if (ref.status === "ended" || now() >= new Date(ref.exam.ends_at).getTime()) {
         ref.card.remove();
         delete state.cards[id];
         removed = true;
@@ -1827,7 +1869,7 @@
     renderGrades();
   }
 
-/* ============ الإعدادات: الصورة والحساب ============ */
+  /* ============ الإعدادات: الصورة والحساب ============ */
   function paintAvatars() {
     const a1 = $("setAvatar"), a2 = $("accAvatar"), a3 = $("navAvatar");
     a1.innerHTML = ""; a2.innerHTML = ""; a3.innerHTML = "";
@@ -2062,6 +2104,7 @@
   });
 
   $("logoutBtn").addEventListener("click", async () => {
+    try { await sb.from("user_events").insert({ user_id: me.id, kind: "logout" }); } catch (e) {}
     try { await sb.auth.signOut(); } catch (e) {}
     goLogin();
   });

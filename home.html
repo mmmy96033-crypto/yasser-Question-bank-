@@ -77,12 +77,14 @@
     .loading { display: grid; justify-items: center; gap: 16px; color: var(--muted); font-size: 15px; text-align: center; }
     .loading p { margin: 0; }
     .loading strong { color: var(--fg); font-weight: 600; display: block; margin-bottom: 4px; font-size: 16px; }
-    .loader {
-      width: 34px; height: 34px; border-radius: 50%;
-      border: 3px solid var(--border); border-top-color: var(--accent);
-      animation: spin .8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .pbar { width: min(280px, 72vw); height: 10px; border-radius: 999px; background: var(--border); overflow: hidden; direction: ltr; }
+    .pbar i { display: block; height: 100%; width: 0%; border-radius: 999px; background: var(--accent); transition: width .35s ease; }
+    .pct { font-size: 22px; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; direction: ltr; }
+    .dots { display: flex; gap: 7px; height: 16px; align-items: flex-end; direction: ltr; }
+    .dots b { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: bounce .9s ease-in-out infinite; }
+    .dots b:nth-child(2) { animation-delay: .15s; }
+    .dots b:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); opacity: .45; } 50% { transform: translateY(-8px); opacity: 1; } }
 
     .topbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 40;
@@ -547,7 +549,7 @@
       .toast { bottom: 28px; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .loader { animation-duration: 2s; }
+      .dots b { animation-duration: 2s; }
       * { transition: none !important; }
     }
 
@@ -626,8 +628,10 @@
 
   <div class="boot" id="bootView">
     <div class="loading">
-      <div class="loader" aria-hidden="true"></div>
-      <p><strong>ثانية واحدة...</strong><span>بنتأكد من حسابك</span></p>
+      <div class="dots" aria-hidden="true"><b></b><b></b><b></b></div>
+      <p><strong>ثانية واحدة...</strong><span id="bootMsg">بنتأكد من حسابك</span></p>
+      <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="bootFill"></i></div>
+      <div class="pct" id="bootPct">0%</div>
     </div>
   </div>
 
@@ -2060,8 +2064,6 @@
     }
   });
 
-  });
-
   /* ============ الإعدادات: النوع ورقم التليفون ============ */
   async function saveGender(g) {
     let res = null;
@@ -2304,13 +2306,32 @@
     try { sb.from("user_events").insert({ user_id: me.id, kind: "login" }).then(function () {}, function () {}); } catch (e) {}
   }
 
+  /* شريط التحميل: كل خطوة بتخلص فعلاً بتزوّد النسبة */
+  const BOOT_TOTAL = 6;
+  let bootDone = 0;
+  function bootStep(msg) {
+    bootDone = Math.min(BOOT_TOTAL, bootDone + 1);
+    const pct = Math.round(bootDone / BOOT_TOTAL * 100);
+    const f = $("bootFill"), t = $("bootPct"), m = $("bootMsg");
+    if (f) f.style.width = pct + "%";
+    if (t) t.textContent = pct + "%";
+    if (m && msg) m.textContent = msg;
+    const bar = document.querySelector(".pbar");
+    if (bar) bar.setAttribute("aria-valuenow", pct);
+  }
+  function tracked(fn, msg) {
+    return Promise.resolve().then(fn).then(function (v) { bootStep(msg); return v; }, function (e) { bootStep(msg); throw e; });
+  }
+
   (async function init() {
+    bootStep("بنفتح الصفحة");
     let session = null;
     try {
       const r = await sb.auth.getSession();
       session = r.data && r.data.session;
     } catch (e) {}
     if (!session) { goLogin(); return; }
+    bootStep("بنتأكد من حسابك");
 
     let user = null, err = null;
     try {
@@ -2329,10 +2350,16 @@
       user = session.user;
     }
 
+    bootStep("بنجيب بياناتك");
     me.user = user;
     me.id = user.id;
     try { notif.seenAt = Number(localStorage.getItem(seenKey())) || 0; } catch (e) {}
-    await Promise.all([loadProfile(), loadPhone(), syncClock()]);
+    await Promise.all([
+      tracked(loadProfile, "بنحمّل ملفك"),
+      tracked(loadPhone, "بنحمّل بياناتك"),
+      tracked(syncClock, "بنظبط الوقت")
+    ]);
+    await new Promise(function (r) { setTimeout(r, 400); });
     notif.login = loginStamp();
     mergeNotifs();
     showApp();
@@ -2350,4 +2377,3 @@
   <script src="home-admin.js"></script>
 </body>
 </html>
-

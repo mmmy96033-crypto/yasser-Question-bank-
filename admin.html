@@ -261,6 +261,7 @@
         users: svg('<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'),
         bell: svg('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>'),
         set: svg('<path d="M4 6h8M18 6h2"/><circle cx="15" cy="6" r="2.5"/><path d="M4 12h2M12 12h8"/><circle cx="9" cy="12" r="2.5"/><path d="M4 18h9M19 18h1"/><circle cx="16" cy="18" r="2.5"/>'),
+        grp: svg('<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5"/>'),
         subs: svg('<path d="M9 4h6v3H9z"/><path d="M9 5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="M9 14l2 2 4-4"/>'),
         enter: svg('<path d="M15 3h4v18h-4"/><path d="M10 17l5-5-5-5M15 12H3"/>'),
         cal: svg('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'),
@@ -305,7 +306,7 @@
       }
 
       /* ---------- البيانات ---------- */
-      const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], events: [], range: 30, showAll: false, subSearch: "", subExam: "all", qExam: null, search: "" };
+      const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], events: [], range: 30, showAll: false, subSearch: "", subExam: "all", gSearch: "", gGrp: "all", gSec: "all", qExam: null, search: "" };
       async function pullAll(table) {
         let all = [];
         for (let pg = 0; pg < 30; pg++) {
@@ -484,7 +485,7 @@
       }
 
       /* ---------- التنقل ---------- */
-      const TABS = [["overview", "الرئيسية", IC.home], ["exams", "الامتحانات", IC.exams], ["students", "الطلاب والدرجات", IC.users], ["subs", "تسليم الامتحانات", IC.subs], ["notifs", "الإشعارات", IC.bell], ["logins", "الدخول", IC.enter], ["logouts", "الخروج", IC.out], ["settings", "الإعدادات", IC.set]];
+      const TABS = [["overview", "الرئيسية", IC.home], ["exams", "الامتحانات", IC.exams], ["students", "الطلاب والدرجات", IC.users], ["subs", "تسليم الامتحانات", IC.subs], ["grp", "المجموعات والسكشن", IC.grp], ["notifs", "الإشعارات", IC.bell], ["logins", "الدخول", IC.enter], ["logouts", "الخروج", IC.out], ["settings", "الإعدادات", IC.set]];
       function openMenu() { $("drawer").classList.add("open"); $("scrim").classList.add("open"); $("drawer").setAttribute("aria-hidden", "false"); $("menuBtn").setAttribute("aria-expanded", "true"); }
       function closeMenu() { $("drawer").classList.remove("open"); $("scrim").classList.remove("open"); $("drawer").setAttribute("aria-hidden", "true"); $("menuBtn").setAttribute("aria-expanded", "false"); }
       function buildNav() {
@@ -506,7 +507,7 @@
       function render() {
         document.querySelectorAll(".nav[data-t]").forEach((b) => b.classList.toggle("on", b.dataset.t === S.tab));
         const m = $("main"); m.innerHTML = "";
-        ({ overview: rOverview, exams: rExams, students: rStudents, subs: rSubmissions, notifs: rNotifs, logins: rLogins, logouts: rLogouts, settings: rSettings })[S.tab](m);
+        ({ overview: rOverview, exams: rExams, students: rStudents, subs: rSubmissions, grp: rGroups, notifs: rNotifs, logins: rLogins, logouts: rLogouts, settings: rSettings })[S.tab](m);
       }
       const title = (m, text, extra) => { const t = h("h1", "title", text); t.appendChild(h("span", "sp")); if (extra) t.appendChild(extra); m.appendChild(t); };
 
@@ -801,6 +802,65 @@
           box.appendChild(g);
         }
         s.addEventListener("input", fill); sel.addEventListener("change", fill); fill();
+      }
+
+      /* ---------- المجموعات والسكشن ---------- */
+      const grpIdx = (g) => g === "A" ? 0 : g === "B" ? 1 : g === "C" ? 2 : 3;
+      const grpChip = (g) => h("span", "chip " + (g === "A" ? "a" : g === "B" ? "ok" : "w"), g);
+      function rGroups(m) {
+        title(m, "المجموعات والسكشن");
+        if (!S.students.length) { m.appendChild(h("div", "empty", "مفيش طلاب لسه.")); return; }
+        const hasCols = "grp" in S.students[0];
+        const done = S.students.filter((x) => x.grp && x.section);
+        const st = h("div", "stats4");
+        [[S.students.length, "طالب مسجّل"], [done.length, "اختاروا المجموعة والسكشن"], [S.students.length - done.length, "لسه ما اختاروش"],
+         [done.filter((x) => x.grp === "A").length, "مجموعة A"], [done.filter((x) => x.grp === "B").length, "مجموعة B"], [done.filter((x) => x.grp === "C").length, "مجموعة C"]].forEach((x) => {
+          const d = h("div", "stat"); d.appendChild(h("b", null, ar(x[0]))); d.appendChild(h("span", null, x[1])); st.appendChild(d);
+        });
+        m.appendChild(st);
+        if (!hasCols) m.appendChild(h("div", "empty", "أعمدة المجموعة والسكشن مش موجودة في الداتابيز. شغّل update-v6.sql في Supabase الأول."));
+        else m.appendChild(h("p", "muted", "الصندوق بيظهر لأي طالب لسه ما اختارش، وكل ما يدخل الموقع لحد ما يكمّل بياناته. اللي اختاروا بيظهروا هنا."));
+
+        const bar = h("div", "row"); bar.style.marginBottom = "10px";
+        const s = h("input", "inp search"); s.type = "search"; s.placeholder = "ابحث بالاسم أو الإيميل أو التليفون"; s.value = S.gSearch;
+        const gs = h("select", "sel"); gs.style.maxWidth = "200px";
+        [["all", "كل المجموعات"], ["A", "مجموعة A"], ["B", "مجموعة B"], ["C", "مجموعة C"], ["none", "لسه ما اختاروش"]].forEach((o) => { const e = h("option", null, o[1]); e.value = o[0]; gs.appendChild(e); });
+        gs.value = S.gGrp;
+        const ss = h("select", "sel"); ss.style.maxWidth = "160px";
+        const e0 = h("option", null, "كل السكاشن"); e0.value = "all"; ss.appendChild(e0);
+        for (let n = 1; n <= 48; n++) { const e = h("option", null, "سكشن " + ar(n)); e.value = String(n); ss.appendChild(e); }
+        ss.value = S.gSec;
+        bar.appendChild(s); bar.appendChild(gs); bar.appendChild(ss); m.appendChild(bar);
+        const meta = h("p", "muted"); m.appendChild(meta);
+        const wrap = h("div", "tbl-wrap"); m.appendChild(wrap);
+
+        function fill() {
+          S.gSearch = s.value; S.gGrp = gs.value; S.gSec = ss.value;
+          const q = s.value.trim().toLowerCase();
+          const rows = S.students.filter((x) => {
+            if (S.gGrp === "none" ? (x.grp && x.section) : (S.gGrp !== "all" && x.grp !== S.gGrp)) return false;
+            if (S.gSec !== "all" && String(x.section) !== S.gSec) return false;
+            return !q || (x.full_name || "").toLowerCase().includes(q) || (x.email || "").toLowerCase().includes(q) || phoneClean(x.phone).includes(phoneClean(q) || "§");
+          }).sort((a, b) => grpIdx(a.grp) - grpIdx(b.grp) || (a.section || 99) - (b.section || 99) || (a.full_name || "").localeCompare(b.full_name || "", "ar"));
+          meta.textContent = ar(rows.length) + " طالب" + (rows.length !== S.students.length ? " (من " + ar(S.students.length) + ")" : "");
+          wrap.innerHTML = "";
+          if (!rows.length) { wrap.appendChild(h("div", "empty", "مفيش طلاب بالفلتر ده.")); return; }
+          const t = h("table"); const hr = h("tr");
+          ["الطالب", "الإيميل", "التليفون", "المجموعة", "السكشن"].forEach((x) => hr.appendChild(h("th", null, x)));
+          const th = h("thead"); th.appendChild(hr); t.appendChild(th);
+          const tb = h("tbody");
+          rows.forEach((x) => {
+            const tr = h("tr"); const c0 = h("td"); const w = h("div", "who");
+            w.appendChild(av(x.avatar_url, x.full_name)); w.appendChild(h("div", null, x.full_name || "—")); c0.appendChild(w); tr.appendChild(c0);
+            const em2 = h("td", null, x.email || "—"); em2.style.direction = "ltr"; tr.appendChild(em2);
+            tr.appendChild(phoneCell(x.phone));
+            const cg = h("td"); if (x.grp) cg.appendChild(grpChip(x.grp)); else cg.appendChild(h("span", "chip", "لسه")); tr.appendChild(cg);
+            tr.appendChild(h("td", null, x.section ? ar(x.section) : "—"));
+            tb.appendChild(tr);
+          });
+          t.appendChild(tb); wrap.appendChild(t);
+        }
+        s.addEventListener("input", fill); gs.addEventListener("change", fill); ss.addEventListener("change", fill); fill();
       }
 
       /* ---------- الطلاب والدرجات ---------- */

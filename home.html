@@ -301,6 +301,15 @@
     .seg button { border: none; background: transparent; padding: 9px; border-radius: 9px; font-weight: 600; font-size: 14.5px; cursor: pointer; color: var(--muted); }
     .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
     .seg3 { grid-template-columns: repeat(3, 1fr); }
+    .seg button:disabled { opacity: .35; cursor: not-allowed; }
+    .seg button[aria-pressed="true"]:disabled { opacity: 1; }
+    .gnote { margin: 8px 0 0; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+    .secgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .secgrid button { border: 1px solid var(--border); background: var(--surface); color: var(--fg); border-radius: 12px; padding: 12px 0; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform .12s, background .15s, border-color .15s; }
+    .secgrid button:hover { border-color: var(--accent); }
+    .secgrid button:active { transform: scale(.94); }
+    .secgrid button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+    .secrange { color: var(--accent); font-weight: 700; }
     .seg3 button { font-size: 17px; font-weight: 700; letter-spacing: .5px; }
     select.input { direction: rtl; text-align: start; }
     .lb-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
@@ -2207,34 +2216,56 @@
         const f1 = h("div", "field");
         f1.appendChild(h("span", "label", "المجموعة"));
         grpEl = h("div", "seg seg3");
+        const RANGE = { A: [1, 16], B: [17, 32], C: [33, 48] };
+        const em = String((me.user && me.user.email) || "").trim().toLowerCase();
+        const auto = em.charAt(0) === "y" ? "C" : em.charAt(0) === "a" ? "A" : null;
+        let secVal = null;
+        const f2 = h("div", "field");
+        const lab2 = h("span", "label");
+        const secGrid = h("div", "secgrid");
+        function drawSecs() {
+          secGrid.textContent = "";
+          lab2.textContent = "";
+          if (!grpVal) { lab2.textContent = "السكشن"; secGrid.appendChild(h("p", "gnote", "اختار المجموعة الأول عشان تظهر السكشنات")); secGrid.style.display = "block"; return; }
+          secGrid.style.display = "";
+          lab2.appendChild(document.createTextNode("السكشن (من " + ar(RANGE[grpVal][0]) + " إلى " + ar(RANGE[grpVal][1]) + ")"));
+          for (let n = RANGE[grpVal][0]; n <= RANGE[grpVal][1]; n++) {
+            const sb2 = h("button", null, ar(n));
+            sb2.type = "button";
+            sb2.dataset.n = String(n);
+            sb2.setAttribute("aria-pressed", secVal === n ? "true" : "false");
+            sb2.addEventListener("click", () => {
+              secVal = n;
+              Array.prototype.forEach.call(secGrid.children, (c) => c.setAttribute("aria-pressed", c.dataset.n === String(n) ? "true" : "false"));
+              check();
+            });
+            secGrid.appendChild(sb2);
+          }
+        }
+        function setGrp(k, init) {
+          grpVal = k; secVal = null;
+          Array.prototype.forEach.call(grpEl.children, (c) => c.setAttribute("aria-pressed", c.dataset.k === grpVal ? "true" : "false"));
+          drawSecs(); if (!init) check();
+        }
         ["A", "B", "C"].forEach((k) => {
           const b = h("button", null, k);
           b.type = "button";
           b.dataset.k = k;
           b.setAttribute("aria-pressed", "false");
-          b.addEventListener("click", () => {
-            grpVal = k;
-            Array.prototype.forEach.call(grpEl.children, (c) => c.setAttribute("aria-pressed", c.dataset.k === grpVal ? "true" : "false"));
-            check();
-          });
+          if (auto && k !== auto) b.disabled = true;
+          b.addEventListener("click", () => { if (!auto) setGrp(k); });
           grpEl.appendChild(b);
         });
         f1.appendChild(grpEl);
+        if (auto) f1.appendChild(h("p", "gnote", "✓ مجموعتك اتحددت تلقائي (" + auto + ")"));
         box.appendChild(f1);
-
-        const f2 = h("div", "field");
-        const lab2 = h("label", null, "السكشن (من ١ إلى ٤٨)");
-        lab2.htmlFor = "gateSec";
         f2.appendChild(lab2);
-        secEl = h("select", "input");
-        secEl.id = "gateSec";
-        const ph = h("option", null, "اختار السكشن");
-        ph.value = ""; ph.disabled = true; ph.selected = true;
-        secEl.appendChild(ph);
-        for (let n = 1; n <= 48; n++) { const o = h("option", null, ar(n)); o.value = String(n); secEl.appendChild(o); }
-        secEl.addEventListener("change", check);
-        f2.appendChild(secEl);
+        f2.appendChild(secGrid);
         box.appendChild(f2);
+        drawSecs();
+        secEl = { get value() { return secVal === null ? "" : String(secVal); } };
+        if (auto) setGrp(auto, true);
+        else if (me.grp && RANGE[me.grp]) setGrp(me.grp, true);
       }
       const msg = h("p", "field-msg");
       box.appendChild(msg);
@@ -2272,6 +2303,7 @@
       });
       actions.appendChild(save);
       box.appendChild(actions);
+      check();
     }, true);
   }
 

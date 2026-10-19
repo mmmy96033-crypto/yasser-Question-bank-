@@ -2060,5 +2060,294 @@
     }
   });
 
-  /* ============ الإعدادات: النوع ورقم التليفون ===
-  
+  });
+
+  /* ============ الإعدادات: النوع ورقم التليفون ============ */
+  async function saveGender(g) {
+    let res = null;
+    try { res = await sb.from("profiles").update({ gender: g }).eq("id", me.id); } catch (e) { res = { error: e }; }
+    if (res.error) return false;
+    me.gender = g;
+    return true;
+  }
+  Array.prototype.forEach.call($("genderSeg").children, (b) => {
+    b.addEventListener("click", async () => {
+      const g = b.dataset.g;
+      if (g === me.gender) return;
+      const ok = await saveGender(g);
+      paintGender(); paintAvatars();
+      if (ok) toast("اتحفظ النوع"); else toast("ماقدرناش نحفظ النوع، جرّب تاني.", true);
+    });
+  });
+
+  function cleanPhone(raw) {
+    return (raw || "").replace(/[\s-]/g, "").replace(/[٠-٩]/g, (d) => AR_DIGITS.indexOf(d));
+  }
+  const PHONE_RE = /^01[0125][0-9]{8}$/;
+  async function savePrivate(fields) {
+    const row = Object.assign({ user_id: me.id }, fields, { updated_at: new Date().toISOString() });
+    if (!("phone" in row) && me.phone) row.phone = me.phone;
+    let res = null;
+    try { res = await sb.from("profile_private").upsert(row); } catch (e) { res = { error: e }; }
+    if (res.error) return false;
+    if ("phone" in fields) me.phone = fields.phone;
+    if ("grp" in fields) me.grp = fields.grp;
+    if ("section" in fields) me.section = fields.section;
+    return true;
+  }
+  const savePhone = (value) => savePrivate({ phone: value });
+
+  const phoneMsg = $("phoneMsg");
+  $("phoneSave").addEventListener("click", async () => {
+    const raw = cleanPhone($("phone").value);
+    if (!PHONE_RE.test(raw)) {
+      phoneMsg.className = "field-msg err";
+      phoneMsg.textContent = raw ? "اكتب رقم موبايل مصري صحيح من ١١ رقم، يبدأ بـ ٠١." : "رقم التليفون مطلوب.";
+      return;
+    }
+    const btn = $("phoneSave");
+    btn.disabled = true;
+    phoneMsg.className = "field-msg";
+    phoneMsg.textContent = "";
+    const ok = await savePhone(raw);
+    btn.disabled = false;
+    if (!ok) {
+      phoneMsg.className = "field-msg err";
+      phoneMsg.textContent = "ماقدرناش نحفظ الرقم، جرّب تاني.";
+      return;
+    }
+    $("phone").value = raw;
+    toast("اتحفظ رقم التليفون");
+  });
+
+  $("logoutBtn").addEventListener("click", async () => {
+    try { sessionStorage.removeItem("qb-logged-" + me.id); } catch (e) {}
+    try { await sb.from("user_events").insert({ user_id: me.id, kind: "logout" }); } catch (e) {}
+    try { await sb.auth.signOut(); } catch (e) {}
+    goLogin();
+  });
+
+  /* ============ تثبيت التطبيق والإصدار ============ */
+  $("appVer").textContent = ar(APP_VERSION);
+  const isStandalone = () => (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  function paintInstall() {
+    if (isStandalone()) {
+      $("installBtn").disabled = true;
+      $("installBtn").textContent = "التطبيق مثبّت ✔";
+      $("installMsg").textContent = "";
+    }
+  }
+  window.addEventListener("appinstalled", () => { window.__qbPrompt = null; paintInstall(); toast("اتثبّت التطبيق"); });
+  $("installBtn").addEventListener("click", async () => {
+    const msg = $("installMsg"), p = window.__qbPrompt;
+    if (p) {
+      p.prompt();
+      let c = null;
+      try { c = await p.userChoice; } catch (e) {}
+      window.__qbPrompt = null;
+      msg.textContent = c && c.outcome === "accepted" ? "جاري تثبيت التطبيق..." : "";
+      return;
+    }
+    if (isIOS()) {
+      msg.textContent = "على الآيفون: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».";
+      return;
+    }
+    msg.textContent = "التثبيت مش جاهز دلوقتي، حدّث الصفحة واستنى ثواني وجرّب تاني.";
+  });
+  paintInstall();
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+
+  /* ============ إكمال البيانات الإجباري (النوع والتليفون) ============ */
+  function openGate(needG, needP, needS) {
+    let g = null, grpVal = null;
+    openModal((box) => {
+      box.appendChild(h("h2", null, "كمّل بياناتك"));
+      box.appendChild(h("p", "sub", "محتاجين بيانات بسيطة قبل ما تكمّل. كلها إجبارية."));
+
+      let segEl = null, phoneEl = null, grpEl = null, secEl = null;
+      if (needG) {
+        const f = h("div", "field");
+        f.appendChild(h("span", "label", "النوع"));
+        segEl = h("div", "seg");
+        [["male", "ذكر"], ["female", "أنثى"]].forEach((o) => {
+          const b = h("button", null, o[1]);
+          b.type = "button";
+          b.dataset.g = o[0];
+          b.setAttribute("aria-pressed", "false");
+          b.addEventListener("click", () => {
+            g = o[0];
+            Array.prototype.forEach.call(segEl.children, (c) => c.setAttribute("aria-pressed", c.dataset.g === g ? "true" : "false"));
+            check();
+          });
+          segEl.appendChild(b);
+        });
+        f.appendChild(segEl);
+        box.appendChild(f);
+      }
+      if (needP) {
+        const f = h("div", "field");
+        const lab = h("label", null, "رقم التليفون");
+        lab.htmlFor = "gatePhone";
+        f.appendChild(lab);
+        phoneEl = h("input", "input");
+        phoneEl.id = "gatePhone";
+        phoneEl.type = "tel";
+        phoneEl.inputMode = "numeric";
+        phoneEl.autocomplete = "tel";
+        phoneEl.placeholder = "01xxxxxxxxx";
+        phoneEl.maxLength = 11;
+        phoneEl.addEventListener("input", check);
+        f.appendChild(phoneEl);
+        box.appendChild(f);
+      }
+      if (needS) {
+        const f1 = h("div", "field");
+        f1.appendChild(h("span", "label", "المجموعة"));
+        grpEl = h("div", "seg seg3");
+        ["A", "B", "C"].forEach((k) => {
+          const b = h("button", null, k);
+          b.type = "button";
+          b.dataset.k = k;
+          b.setAttribute("aria-pressed", "false");
+          b.addEventListener("click", () => {
+            grpVal = k;
+            Array.prototype.forEach.call(grpEl.children, (c) => c.setAttribute("aria-pressed", c.dataset.k === grpVal ? "true" : "false"));
+            check();
+          });
+          grpEl.appendChild(b);
+        });
+        f1.appendChild(grpEl);
+        box.appendChild(f1);
+
+        const f2 = h("div", "field");
+        const lab2 = h("label", null, "السكشن (من ١ إلى ٤٨)");
+        lab2.htmlFor = "gateSec";
+        f2.appendChild(lab2);
+        secEl = h("select", "input");
+        secEl.id = "gateSec";
+        const ph = h("option", null, "اختار السكشن");
+        ph.value = ""; ph.disabled = true; ph.selected = true;
+        secEl.appendChild(ph);
+        for (let n = 1; n <= 48; n++) { const o = h("option", null, ar(n)); o.value = String(n); secEl.appendChild(o); }
+        secEl.addEventListener("change", check);
+        f2.appendChild(secEl);
+        box.appendChild(f2);
+      }
+      const msg = h("p", "field-msg");
+      box.appendChild(msg);
+
+      const actions = h("div", "actions");
+      const save = h("button", "btn-primary", "حفظ ومتابعة");
+      save.type = "button";
+      save.disabled = true;
+      const secNum = () => { const n = parseInt(secEl && secEl.value, 10); return n >= 1 && n <= 48 ? n : null; };
+      function check() {
+        const okG = !needG || !!g;
+        const okP = !needP || PHONE_RE.test(cleanPhone(phoneEl.value));
+        const okS = !needS || (!!grpVal && secNum() !== null);
+        save.disabled = !(okG && okP && okS);
+      }
+      save.addEventListener("click", async () => {
+        save.disabled = true;
+        msg.className = "field-msg";
+        msg.textContent = "";
+        let ok = true;
+        if (needG) ok = await saveGender(g);
+        const fields = {};
+        if (needP) fields.phone = cleanPhone(phoneEl.value);
+        if (needS) { fields.grp = grpVal; fields.section = secNum(); }
+        if (ok && Object.keys(fields).length) ok = await savePrivate(fields);
+        if (!ok) {
+          msg.className = "field-msg err";
+          msg.textContent = "ماقدرناش نحفظ البيانات، جرّب تاني.";
+          check();
+          return;
+        }
+        closeModal();
+        renderSettings();
+        toast("اتحفظت بياناتك");
+      });
+      actions.appendChild(save);
+      box.appendChild(actions);
+    }, true);
+  }
+
+  async function ensureProfile() {
+    if (me.profileKnown && !me.gender) {
+      const guess = guessGender(me.fullName);
+      if (guess) await saveGender(guess);
+    }
+    const needG = me.profileKnown && !me.gender;
+    const needP = me.phoneKnown && !me.phone;
+    const needS = me.groupKnown && (!me.grp || !me.section);
+    if (needG || needP || needS) openGate(needG, needP, needS);
+  }
+
+  /* ============ تشغيل الصفحة ============ */
+  function showApp() {
+    $("bootView").hidden = true;
+    $("appView").hidden = false;
+    $("greet").textContent = me.fullName ? "أهلاً يا " + me.fullName : "أهلاً بيك";
+    paintAvatars();
+
+    const hash = window.location.hash.replace("#", "");
+    go(pages[hash] && !AUTH_REDIRECT ? hash : "home", true);
+  }
+
+  function logLogin() {
+    const k = "qb-logged-" + me.id;
+    let done = false;
+    try { done = sessionStorage.getItem(k) === "1"; } catch (e) {}
+    if (done) return;
+    try { sessionStorage.setItem(k, "1"); } catch (e) {}
+    try { sb.from("user_events").insert({ user_id: me.id, kind: "login" }).then(function () {}, function () {}); } catch (e) {}
+  }
+
+  (async function init() {
+    let session = null;
+    try {
+      const r = await sb.auth.getSession();
+      session = r.data && r.data.session;
+    } catch (e) {}
+    if (!session) { goLogin(); return; }
+
+    let user = null, err = null;
+    try {
+      const ur = await sb.auth.getUser();
+      user = ur.data && ur.data.user;
+      err = ur.error;
+    } catch (e) {}
+
+    if (!user) {
+      const expired = err && (err.status === 401 || err.status === 403 || err.name === "AuthSessionMissingError");
+      if (expired) {
+        try { await sb.auth.signOut(); } catch (e) {}
+        goLogin();
+        return;
+      }
+      user = session.user;
+    }
+
+    me.user = user;
+    me.id = user.id;
+    try { notif.seenAt = Number(localStorage.getItem(seenKey())) || 0; } catch (e) {}
+    await Promise.all([loadProfile(), loadPhone(), syncClock()]);
+    notif.login = loginStamp();
+    mergeNotifs();
+    showApp();
+    updateBadge();
+    loadNotifs();
+    ensureProfile();
+    logLogin();
+  })();
+
+  sb.auth.onAuthStateChange((evt) => {
+    if (evt === "SIGNED_OUT") goLogin();
+  });
+})();
+  </script>
+  <script src="home-admin.js"></script>
+</body>
+</html>
+

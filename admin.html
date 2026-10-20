@@ -1269,6 +1269,61 @@
           b.addEventListener("click", () => { try { localStorage.setItem("qb-accent", k); } catch (e) {} window.QBA.apply(); render(); }); sw.appendChild(b);
         });
         c2.appendChild(sw); st.appendChild(c2);
+        // آية القرآن اللي بتظهر للطلاب
+        const c4 = h("div", "card stack");
+        c4.appendChild(h("p", "muted", "آية القرآن (بتظهر للطلاب كل يومين وتتقفل لما تخلص)"));
+        const ay = { on: true, url: "", text: "", v: 0, file: null };
+        const lab4 = h("label", "toggle"); lab4.appendChild(h("span", null, "تشغيل الآية للطلاب"));
+        const cb4 = h("input"); cb4.type = "checkbox"; cb4.checked = true; lab4.appendChild(cb4); lab4.appendChild(h("span", "tk"));
+        cb4.addEventListener("change", () => { ay.on = cb4.checked; });
+        c4.appendChild(lab4);
+        const player = h("audio"); player.controls = true; player.style.cssText = "width:100%"; player.hidden = true;
+        c4.appendChild(player);
+        const fn = h("div", "muted", "لسه ماتحطش ملف صوت.");
+        c4.appendChild(fn);
+        const fi = document.createElement("input"); fi.type = "file"; fi.accept = "audio/*,.mp3,.m4a,.wav,.ogg"; fi.hidden = true;
+        fi.addEventListener("change", () => {
+          const f = fi.files && fi.files[0]; if (!f) return;
+          if (f.size > 15 * 1024 * 1024) { toast("الملف كبير، اختار ملف أقل من ١٥ ميجا.", true); return; }
+          ay.file = f; player.src = URL.createObjectURL(f); player.hidden = false; fn.textContent = "الملف المختار: " + f.name;
+        });
+        c4.appendChild(fi);
+        c4.appendChild(btn("اختار ملف صوت من جهازك", "g", () => fi.click()));
+        const ta4 = h("textarea"); ta4.className = "inp"; ta4.rows = 3; ta4.placeholder = "نص الآية (اختياري، بيظهر للطالب وهو بيسمع)";
+        ta4.style.cssText = "width:100%;min-height:80px;font:inherit;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--fg)";
+        c4.appendChild(ta4);
+        const row4 = h("div", "actions");
+        const save4 = btn("حفظ الآية", "p", async () => {
+          save4.disabled = true;
+          try {
+            if (ay.file) {
+              const ext = (ay.file.name.split(".").pop() || "mp3").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp3";
+              const path = "ayah-" + Date.now() + "." + ext;
+              const up = await sb.storage.from("ayah").upload(path, ay.file, { contentType: ay.file.type || "audio/mpeg", upsert: true });
+              if (up.error) throw up.error;
+              ay.url = sb.storage.from("ayah").getPublicUrl(path).data.publicUrl; ay.v = Date.now(); ay.file = null;
+            }
+            if (!ay.url) { toast("اختار ملف صوت الأول.", true); save4.disabled = false; return; }
+            const r = await sb.from("site_settings").upsert({ key: "ayah", value: { url: ay.url, text: ta4.value.trim(), on: ay.on, v: ay.v || Date.now() }, updated_at: new Date().toISOString() });
+            if (r.error) throw r.error;
+            toast("اتحفظت الآية");
+          } catch (e) { toast("ماقدرناش نحفظ. اتأكد إنك شغّلت update-v8.sql.", true); }
+          save4.disabled = false;
+        });
+        row4.appendChild(save4);
+        row4.appendChild(btn("مسح الآية", "d", async () => {
+          if (!(await ask("مسح الآية", "الآية مش هتظهر للطلاب تاني. متأكد؟", "مسح", true))) return;
+          const r = await sb.from("site_settings").delete().eq("key", "ayah");
+          if (r.error) { toast("ماقدرناش نمسح.", true); return; }
+          ay.url = ""; ay.file = null; player.hidden = true; player.removeAttribute("src"); fn.textContent = "لسه ماتحطش ملف صوت."; ta4.value = ""; toast("اتمسحت الآية");
+        }));
+        c4.appendChild(row4);
+        sb.from("site_settings").select("value").eq("key", "ayah").maybeSingle().then((r) => {
+          const v = r && r.data && r.data.value; if (!v) return;
+          ay.url = v.url || ""; ay.v = v.v || 0; ay.on = v.on !== false; cb4.checked = ay.on; ta4.value = v.text || "";
+          if (ay.url) { player.src = ay.url; player.hidden = false; fn.textContent = "فيه آية محفوظة حالياً."; }
+        }, () => {});
+        st.appendChild(c4);
         const c3 = h("div", "card stack"); c3.appendChild(btn("الرجوع للموقع", "g", () => go(HOME_PAGE)));
         c3.appendChild(btn("تسجيل الخروج", "d", async () => { if (await ask("تسجيل الخروج", "متأكد إنك عايز تسجّل خروج؟", "تأكيد", true)) { try { const ss = (await sb.auth.getSession()).data.session; if (ss) { try { sessionStorage.removeItem("qb-logged-" + ss.user.id); } catch (e2) {} await sb.from("user_events").insert({ user_id: ss.user.id, kind: "logout" }); } } catch (e) {} try { await sb.auth.signOut(); } catch (e) {} go(LOGIN_PAGE); } }));
         st.appendChild(c3); m.appendChild(st);

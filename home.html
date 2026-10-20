@@ -316,6 +316,20 @@
     .rate-stars button.on svg { fill: #f5a524; }
     .rate-word { text-align: center; font-weight: 700; min-height: 1.6em; color: var(--fg); }
     .secrange { color: var(--accent); font-weight: 700; }
+    .ayah-back { position: fixed; inset: 0; z-index: 400; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); animation: ayIn .35s ease; }
+    .ayah-back.out { opacity: 0; transition: opacity .5s ease; }
+    @keyframes ayIn { from { opacity: 0; } to { opacity: 1; } }
+    .ayah-box { width: min(420px, 100%); background: var(--surface); color: var(--fg); border: 1px solid var(--border); border-radius: 24px; padding: 28px 22px 20px; text-align: center; display: grid; gap: 14px; justify-items: center; box-shadow: 0 20px 50px rgba(0,0,0,.35); }
+    .ayah-box h3 { margin: 0; font-size: 19px; }
+    .ayah-txt { margin: 0; font-size: 20px; line-height: 2; font-weight: 600; }
+    .ayah-wave { display: flex; gap: 5px; align-items: center; height: 38px; direction: ltr; }
+    .ayah-wave i { display: block; width: 5px; height: 12px; border-radius: 3px; background: var(--accent); animation: ayWave 1s ease-in-out infinite; animation-play-state: paused; }
+    .ayah-box.playing .ayah-wave i { animation-play-state: running; }
+    .ayah-wave i:nth-child(2) { animation-delay: .12s; } .ayah-wave i:nth-child(3) { animation-delay: .24s; } .ayah-wave i:nth-child(4) { animation-delay: .36s; } .ayah-wave i:nth-child(5) { animation-delay: .48s; }
+    @keyframes ayWave { 0%, 100% { height: 10px; } 50% { height: 36px; } }
+    .ayah-bar { width: 100%; height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; direction: ltr; }
+    .ayah-bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s linear; }
+    .ayah-skip { border: none; background: none; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; padding: 4px 10px; }
     .req-field { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 4px; }
     .ibtn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
     .ibtn svg { width: 18px; height: 18px; flex: none; }
@@ -2656,6 +2670,58 @@
     });
   }
 
+  /* ============ الآية ============ */
+  const AYAH_EVERY_MS = 2 * 24 * 3600 * 1000;
+  const ayah = { open: false };
+  async function ayahInit() {
+    let v = null;
+    try {
+      const r = await sb.from("site_settings").select("value").eq("key", "ayah").maybeSingle();
+      v = r && !r.error && r.data && r.data.value;
+    } catch (e) {}
+    if (!v || v.on === false || !v.url) return;
+    const k = "qb-ayah-" + me.id;
+    let o = null;
+    try { o = JSON.parse(localStorage.getItem(k) || "null"); } catch (e) {}
+    if (o && o.v === v.v && Date.now() - o.t < AYAH_EVERY_MS) return;
+    try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), v: v.v })); } catch (e) {}
+    showAyah(v);
+  }
+  function showAyah(v) {
+    ayah.open = true;
+    const back = h("div", "ayah-back");
+    const box = h("div", "ayah-box");
+    const wave = h("div", "ayah-wave");
+    for (let i = 0; i < 5; i++) wave.appendChild(h("i"));
+    box.appendChild(wave);
+    box.appendChild(h("h3", null, "اسمع الآية"));
+    if (v.text) box.appendChild(h("p", "ayah-txt", v.text));
+    const bar = h("div", "ayah-bar"), fill = h("i"); bar.appendChild(fill); box.appendChild(bar);
+    const play = h("button", "btn-primary", "اضغط للتشغيل"); play.type = "button"; play.hidden = true;
+    box.appendChild(play);
+    const skip = h("button", "ayah-skip", "تخطي"); skip.type = "button";
+    box.appendChild(skip);
+    back.appendChild(box);
+    document.body.appendChild(back);
+    const au = new Audio(v.url);
+    au.preload = "auto";
+    let closed = false;
+    function close(delay) {
+      if (closed) return; closed = true;
+      try { au.pause(); } catch (e) {}
+      setTimeout(() => { back.classList.add("out"); setTimeout(() => { back.remove(); ayah.open = false; }, 500); }, delay || 0);
+    }
+    au.addEventListener("playing", () => { box.classList.add("playing"); play.hidden = true; });
+    au.addEventListener("pause", () => box.classList.remove("playing"));
+    au.addEventListener("timeupdate", () => { if (au.duration) fill.style.width = Math.min(100, au.currentTime / au.duration * 100) + "%"; });
+    au.addEventListener("ended", () => { fill.style.width = "100%"; close(500); });
+    au.addEventListener("error", () => close(0));
+    play.addEventListener("click", () => { au.play().catch(() => close(0)); });
+    skip.addEventListener("click", () => close(0));
+    const pr = au.play();
+    if (pr && pr.catch) pr.catch(() => { play.hidden = false; });
+  }
+
   /* ============ تقييم الموقع ============ */
   const RATE_MAX_PER_DAY = 5, RATE_GAP_MS = 2 * 3600 * 1000;
   const rate = { done: false, ok: true, busy: false };
@@ -2677,7 +2743,7 @@
   }
   function rateTick() {
     if (!me.id || rate.done || !rate.ok || rate.busy || document.hidden) return;
-    if (!$("modal").hidden || !$("examScreen").hidden || !$("appView") || $("appView").hidden) return;
+    if (ayah.open || !$("modal").hidden || !$("examScreen").hidden || !$("appView") || $("appView").hidden) return;
     const o = rateLoad();
     if (o.done || o.n >= RATE_MAX_PER_DAY || Date.now() - o.last < RATE_GAP_MS) return;
     o.n += 1; o.last = Date.now(); rateSave(o);
@@ -2804,6 +2870,7 @@
     loadNotifs();
     loadReq();
     ensureProfile();
+    ayahInit();
     logLogin();
     rateInit().then(function () { setTimeout(rateTick, 20000); setInterval(rateTick, 60000); });
   })();
@@ -2816,3 +2883,4 @@
   <script src="home-admin.js"></script>
 </body>
 </html>
+

@@ -322,13 +322,8 @@
     .ayah-box { width: min(420px, 100%); background: var(--surface); color: var(--fg); border: 1px solid var(--border); border-radius: 24px; padding: 28px 22px 20px; text-align: center; display: grid; gap: 14px; justify-items: center; box-shadow: 0 20px 50px rgba(0,0,0,.35); }
     .ayah-box h3 { margin: 0; font-size: 19px; }
     .ayah-txt { margin: 0; font-size: 20px; line-height: 2; font-weight: 600; }
-    .ayah-wave { display: flex; gap: 5px; align-items: center; height: 38px; direction: ltr; }
-    .ayah-wave i { display: block; width: 5px; height: 12px; border-radius: 3px; background: var(--accent); animation: ayWave 1s ease-in-out infinite; animation-play-state: paused; }
-    .ayah-box.playing .ayah-wave i { animation-play-state: running; }
-    .ayah-wave i:nth-child(2) { animation-delay: .12s; } .ayah-wave i:nth-child(3) { animation-delay: .24s; } .ayah-wave i:nth-child(4) { animation-delay: .36s; } .ayah-wave i:nth-child(5) { animation-delay: .48s; }
-    @keyframes ayWave { 0%, 100% { height: 10px; } 50% { height: 36px; } }
-    .ayah-bar { width: 100%; height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; direction: ltr; }
-    .ayah-bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s linear; }
+    .ayah-wave { display: flex; gap: 6px; align-items: center; justify-content: center; height: 44px; direction: ltr; }
+    .ayah-wave i { display: block; width: 6px; height: 8px; border-radius: 3px; background: var(--accent); transition: height .08s linear; }
     .ayah-skip { border: none; background: none; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; padding: 4px 10px; }
     .req-field { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 4px; }
     .ibtn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
@@ -2673,6 +2668,9 @@
   /* ============ الآية ============ */
   const AYAH_EVERY_MS = 2 * 24 * 3600 * 1000;
   const ayah = { open: false };
+  function ayahLog(v, kind) {
+    try { sb.from("ayah_events").insert({ user_id: me.id, ayah_v: Number(v.v) || 0, kind: kind }).then(function () {}, function () {}); } catch (e) {}
+  }
   async function ayahInit() {
     let v = null;
     try {
@@ -2684,42 +2682,84 @@
     let o = null;
     try { o = JSON.parse(localStorage.getItem(k) || "null"); } catch (e) {}
     if (o && o.v === v.v && Date.now() - o.t < AYAH_EVERY_MS) return;
-    try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), v: v.v })); } catch (e) {}
-    showAyah(v);
-  }
-  function showAyah(v) {
     ayah.open = true;
+    const au = new Audio();
+    au.crossOrigin = "anonymous";
+    au.preload = "auto";
+    au.src = v.url;
+    let started = false;
+    function go2() {
+      if (started) return; started = true;
+      ["pointerdown", "keydown", "touchend"].forEach((ev) => document.removeEventListener(ev, onGesture, true));
+      try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), v: v.v })); } catch (e) {}
+      showAyah(v, au);
+    }
+    function onGesture() { const pr = au.play(); if (pr && pr.then) pr.then(go2, () => { started = true; ayah.open = false; }); else go2(); }
+    // نحاول نشغّلها لوحدها؛ لو المتصفح منع الصوت من غير لمسة، نبدأ أول ما الطالب يلمس الشاشة
+    let pr = null;
+    try { pr = au.play(); } catch (e) {}
+    if (pr && pr.then) pr.then(go2, () => { ["pointerdown", "keydown", "touchend"].forEach((ev) => document.addEventListener(ev, onGesture, true)); });
+    else go2();
+    au.addEventListener("error", () => { if (!started) { started = true; ayah.open = false; ["pointerdown", "keydown", "touchend"].forEach((ev) => document.removeEventListener(ev, onGesture, true)); } });
+  }
+  function showAyah(v, au) {
     const back = h("div", "ayah-back");
     const box = h("div", "ayah-box");
     const wave = h("div", "ayah-wave");
-    for (let i = 0; i < 5; i++) wave.appendChild(h("i"));
+    const bars = [];
+    for (let i = 0; i < 5; i++) { const b = h("i"); bars.push(b); wave.appendChild(b); }
     box.appendChild(wave);
     box.appendChild(h("h3", null, "اسمع الآية"));
     if (v.text) box.appendChild(h("p", "ayah-txt", v.text));
-    const bar = h("div", "ayah-bar"), fill = h("i"); bar.appendChild(fill); box.appendChild(bar);
-    const play = h("button", "btn-primary", "اضغط للتشغيل"); play.type = "button"; play.hidden = true;
-    box.appendChild(play);
     const skip = h("button", "ayah-skip", "تخطي"); skip.type = "button";
     box.appendChild(skip);
     back.appendChild(box);
     document.body.appendChild(back);
-    const au = new Audio(v.url);
-    au.preload = "auto";
-    let closed = false;
-    function close(delay) {
-      if (closed) return; closed = true;
-      try { au.pause(); } catch (e) {}
-      setTimeout(() => { back.classList.add("out"); setTimeout(() => { back.remove(); ayah.open = false; }, 500); }, delay || 0);
+    ayahLog(v, "start");
+
+    // الموجة بتتحرك مع الصوت الحقيقي بس
+    let ctx = null, an = null, raf = 0, data = null;
+    function levels() {
+      an.getByteFrequencyData(data);
+      const bands = [[1, 3], [3, 6], [6, 10], [10, 16], [16, 24]];
+      bars.forEach((b, i) => {
+        let sum = 0, n = 0;
+        for (let j = bands[i][0]; j < bands[i][1]; j++) { sum += data[j] || 0; n++; }
+        const lv = n ? sum / n / 255 : 0;
+        b.style.height = (8 + Math.round(lv * 32)) + "px";
+      });
+      raf = requestAnimationFrame(levels);
     }
-    au.addEventListener("playing", () => { box.classList.add("playing"); play.hidden = true; });
-    au.addEventListener("pause", () => box.classList.remove("playing"));
-    au.addEventListener("timeupdate", () => { if (au.duration) fill.style.width = Math.min(100, au.currentTime / au.duration * 100) + "%"; });
-    au.addEventListener("ended", () => { fill.style.width = "100%"; close(500); });
-    au.addEventListener("error", () => close(0));
-    play.addEventListener("click", () => { au.play().catch(() => close(0)); });
-    skip.addEventListener("click", () => close(0));
-    const pr = au.play();
-    if (pr && pr.catch) pr.catch(() => { play.hidden = false; });
+    function hookAnalyser() {
+      if (ctx) return;
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        ctx = new AC();
+        const go = () => {
+          if (ctx.state !== "running") { ctx.close().catch(() => {}); ctx = null; return; }
+          const src = ctx.createMediaElementSource(au);
+          an = ctx.createAnalyser(); an.fftSize = 64; an.smoothingTimeConstant = 0.7;
+          data = new Uint8Array(an.frequencyBinCount);
+          src.connect(an); an.connect(ctx.destination);
+          levels();
+        };
+        if (ctx.state === "running") go(); else ctx.resume().then(go, () => { ctx = null; });
+      } catch (e) { ctx = null; }
+    }
+    let closed = false;
+    function close(kind) {
+      if (closed) return; closed = true;
+      if (kind) ayahLog(v, kind);
+      cancelAnimationFrame(raf);
+      try { au.pause(); } catch (e) {}
+      back.classList.add("out");
+      setTimeout(() => { back.remove(); ayah.open = false; if (ctx) { ctx.close().catch(() => {}); } }, 500);
+    }
+    au.addEventListener("ended", () => { bars.forEach((b) => { b.style.height = ""; }); setTimeout(() => close("full"), 400); });
+    au.addEventListener("error", () => close(null));
+    skip.addEventListener("click", () => close("skip"));
+    if (au.paused) { const pr = au.play(); if (pr && pr.catch) pr.catch(() => close(null)); }
+    hookAnalyser();
   }
 
   /* ============ تقييم الموقع ============ */
@@ -2883,4 +2923,3 @@
   <script src="home-admin.js"></script>
 </body>
 </html>
-

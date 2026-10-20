@@ -382,7 +382,7 @@
         try { const r = await sb.rpc("admin_site_ratings"); if (r.error) throw r.error; S.ratings = r.data || []; S.rateOk = true; } catch (e5) { S.ratings = []; S.rateOk = false; }
         paintBadges();
         // ما نعيدش الرسم لو فيه نافذة مفتوحة أو بيكتب في بحث
-        if (silent && (!$("modal").hidden || (document.activeElement && document.activeElement.tagName === "INPUT"))) return;
+        if (silent && (S.tab === "settings" || !$("modal").hidden || (document.activeElement && document.activeElement.tagName === "INPUT"))) return;
         render();
       }
       const examOf = (id) => S.exams.find((x) => x.id === id);
@@ -1272,24 +1272,29 @@
         // آية القرآن اللي بتظهر للطلاب
         const c4 = h("div", "card stack");
         c4.appendChild(h("p", "muted", "آية القرآن (بتظهر للطلاب كل يومين وتتقفل لما تخلص)"));
-        const ay = { on: true, url: "", text: "", v: 0, file: null };
+        const ay = S.ay || (S.ay = { on: true, url: "", text: "", v: 0, file: null, fileUrl: "", name: "", loaded: false });
         const lab4 = h("label", "toggle"); lab4.appendChild(h("span", null, "تشغيل الآية للطلاب"));
-        const cb4 = h("input"); cb4.type = "checkbox"; cb4.checked = true; lab4.appendChild(cb4); lab4.appendChild(h("span", "tk"));
+        const cb4 = h("input"); cb4.type = "checkbox"; cb4.checked = ay.on; lab4.appendChild(cb4); lab4.appendChild(h("span", "tk"));
         cb4.addEventListener("change", () => { ay.on = cb4.checked; });
         c4.appendChild(lab4);
         const player = h("audio"); player.controls = true; player.style.cssText = "width:100%"; player.hidden = true;
         c4.appendChild(player);
-        const fn = h("div", "muted", "لسه ماتحطش ملف صوت.");
+        const fn = h("div", "muted", ay.file ? "الملف المختار: " + ay.name : ay.url ? "فيه آية محفوظة حالياً." : "لسه ماتحطش ملف صوت.");
+        if (ay.fileUrl || ay.url) { player.src = ay.fileUrl || ay.url; player.hidden = false; }
         c4.appendChild(fn);
-        const fi = document.createElement("input"); fi.type = "file"; fi.accept = "audio/*,.mp3,.m4a,.wav,.ogg"; fi.hidden = true;
+        const fi = document.createElement("input"); fi.type = "file"; fi.accept = "audio/*,video/*,.mp3,.m4a,.aac,.wav,.ogg,.opus,.flac,.amr,.3gp,.mp4"; fi.hidden = true;
         fi.addEventListener("change", () => {
           const f = fi.files && fi.files[0]; if (!f) return;
-          if (f.size > 15 * 1024 * 1024) { toast("الملف كبير، اختار ملف أقل من ١٥ ميجا.", true); return; }
-          ay.file = f; player.src = URL.createObjectURL(f); player.hidden = false; fn.textContent = "الملف المختار: " + f.name;
+          if (f.size > 20 * 1024 * 1024) { toast("الملف كبير، اختار ملف أقل من ٢٠ ميجا.", true); return; }
+          if (f.type && !/^(audio|video)\//.test(f.type) && !/\.(mp3|m4a|aac|wav|ogg|opus|flac|amr|3gp|mp4)$/i.test(f.name)) { toast("اختار ملف صوت من فضلك.", true); return; }
+          if (ay.fileUrl) URL.revokeObjectURL(ay.fileUrl);
+          ay.file = f; ay.name = f.name; ay.fileUrl = URL.createObjectURL(f); player.src = ay.fileUrl; player.hidden = false; fn.textContent = "الملف المختار: " + f.name;
         });
         c4.appendChild(fi);
-        c4.appendChild(btn("اختار ملف صوت من جهازك", "g", () => fi.click()));
+        c4.appendChild(btn("اختار ملف صوت من جهازك", "g", () => { fi.accept = "audio/*,video/*,.mp3,.m4a,.aac,.wav,.ogg,.opus,.flac,.amr,.3gp,.mp4"; fi.click(); }));
+        c4.appendChild(btn("اختار من تطبيق تاني (كل الملفات)", "g", () => { fi.removeAttribute("accept"); fi.click(); }));
         const ta4 = h("textarea"); ta4.className = "inp"; ta4.rows = 3; ta4.placeholder = "نص الآية (اختياري، بيظهر للطالب وهو بيسمع)";
+        ta4.value = ay.text || ""; ta4.addEventListener("input", () => { ay.text = ta4.value; });
         ta4.style.cssText = "width:100%;min-height:80px;font:inherit;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--fg)";
         c4.appendChild(ta4);
         const row4 = h("div", "actions");
@@ -1299,15 +1304,16 @@
             if (ay.file) {
               const ext = (ay.file.name.split(".").pop() || "mp3").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp3";
               const path = "ayah-" + Date.now() + "." + ext;
-              const up = await sb.storage.from("ayah").upload(path, ay.file, { contentType: ay.file.type || "audio/mpeg", upsert: true });
+              const ct = /^audio\//.test(ay.file.type) ? ay.file.type : "audio/mpeg";
+              const up = await sb.storage.from("ayah").upload(path, ay.file, { contentType: ct, upsert: true });
               if (up.error) throw up.error;
-              ay.url = sb.storage.from("ayah").getPublicUrl(path).data.publicUrl; ay.v = Date.now(); ay.file = null;
+              ay.url = sb.storage.from("ayah").getPublicUrl(path).data.publicUrl; ay.v = Date.now(); ay.file = null; ay.fileUrl = ""; player.src = ay.url; fn.textContent = "فيه آية محفوظة حالياً.";
             }
             if (!ay.url) { toast("اختار ملف صوت الأول.", true); save4.disabled = false; return; }
             const r = await sb.from("site_settings").upsert({ key: "ayah", value: { url: ay.url, text: ta4.value.trim(), on: ay.on, v: ay.v || Date.now() }, updated_at: new Date().toISOString() });
             if (r.error) throw r.error;
             toast("اتحفظت الآية");
-          } catch (e) { toast("ماقدرناش نحفظ. اتأكد إنك شغّلت update-v8.sql.", true); }
+          } catch (e) { toast("ماقدرناش نحفظ: " + em(e), true); }
           save4.disabled = false;
         });
         row4.appendChild(save4);
@@ -1315,12 +1321,13 @@
           if (!(await ask("مسح الآية", "الآية مش هتظهر للطلاب تاني. متأكد؟", "مسح", true))) return;
           const r = await sb.from("site_settings").delete().eq("key", "ayah");
           if (r.error) { toast("ماقدرناش نمسح.", true); return; }
-          ay.url = ""; ay.file = null; player.hidden = true; player.removeAttribute("src"); fn.textContent = "لسه ماتحطش ملف صوت."; ta4.value = ""; toast("اتمسحت الآية");
+          ay.url = ""; ay.file = null; ay.fileUrl = ""; ay.name = ""; player.hidden = true; player.removeAttribute("src"); fn.textContent = "لسه ماتحطش ملف صوت."; ta4.value = ""; toast("اتمسحت الآية");
         }));
         c4.appendChild(row4);
-        sb.from("site_settings").select("value").eq("key", "ayah").maybeSingle().then((r) => {
-          const v = r && r.data && r.data.value; if (!v) return;
-          ay.url = v.url || ""; ay.v = v.v || 0; ay.on = v.on !== false; cb4.checked = ay.on; ta4.value = v.text || "";
+        if (!ay.loaded) sb.from("site_settings").select("value").eq("key", "ayah").maybeSingle().then((r) => {
+          ay.loaded = true;
+          const v = r && r.data && r.data.value; if (!v || ay.file) return;
+          ay.url = v.url || ""; ay.v = v.v || 0; ay.on = v.on !== false; cb4.checked = ay.on; ay.text = v.text || ""; ta4.value = ay.text;
           if (ay.url) { player.src = ay.url; player.hidden = false; fn.textContent = "فيه آية محفوظة حالياً."; }
         }, () => {});
         st.appendChild(c4);

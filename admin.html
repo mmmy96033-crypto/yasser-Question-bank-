@@ -290,6 +290,7 @@
         home: svg('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'),
         exams: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>'),
         users: svg('<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'),
+        ayah: svg('<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>'),
         bell: svg('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>'),
         set: svg('<path d="M4 6h8M18 6h2"/><circle cx="15" cy="6" r="2.5"/><path d="M4 12h2M12 12h8"/><circle cx="9" cy="12" r="2.5"/><path d="M4 18h9M19 18h1"/><circle cx="16" cy="18" r="2.5"/>'),
         grp: svg('<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5"/>'),
@@ -339,7 +340,7 @@
       }
 
       /* ---------- البيانات ---------- */
-      const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], events: [], range: 30, showAll: false, subSearch: "", subExam: "all", gSearch: "", gGrp: "all", gSec: "all", qExam: null, search: "", reqs: [], ratings: [], reqFilter: "pending", reqOk: true, rateOk: true };
+      const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], events: [], range: 30, showAll: false, subSearch: "", subExam: "all", gSearch: "", gGrp: "all", gSec: "all", qExam: null, search: "", reqs: [], ratings: [], reqFilter: "pending", ayahEv: [], ayahV: 0, ayahOk: true, ayFilter: "all", aySearch: "", reqOk: true, rateOk: true };
       async function pullAll(table) {
         let all = [];
         for (let pg = 0; pg < 30; pg++) {
@@ -380,6 +381,17 @@
         } catch (e3) { S.events = []; }
         try { const r = await sb.rpc("admin_group_requests"); if (r.error) throw r.error; S.reqs = r.data || []; S.reqOk = true; } catch (e4) { S.reqs = []; S.reqOk = false; }
         try { const r = await sb.rpc("admin_site_ratings"); if (r.error) throw r.error; S.ratings = r.data || []; S.rateOk = true; } catch (e5) { S.ratings = []; S.rateOk = false; }
+        try {
+          const sv = await sb.from("site_settings").select("value").eq("key", "ayah").maybeSingle();
+          S.ayahV = (sv && sv.data && sv.data.value && Number(sv.data.value.v)) || 0;
+          let allE = [];
+          for (let pg2 = 0; pg2 < 10; pg2++) {
+            const ev2 = await sb.from("ayah_events").select("user_id, kind, created_at").eq("ayah_v", S.ayahV).order("created_at", { ascending: false }).range(pg2 * 1000, pg2 * 1000 + 999);
+            if (ev2.error) throw ev2.error;
+            allE = allE.concat(ev2.data || []); if ((ev2.data || []).length < 1000) break;
+          }
+          S.ayahEv = allE; S.ayahOk = true;
+        } catch (e6) { S.ayahEv = []; S.ayahOk = false; }
         paintBadges();
         // ما نعيدش الرسم لو فيه نافذة مفتوحة أو بيكتب في بحث
         if (silent && (S.tab === "settings" || !$("modal").hidden || (document.activeElement && document.activeElement.tagName === "INPUT"))) return;
@@ -521,7 +533,7 @@
       }
 
       /* ---------- التنقل ---------- */
-      const TABS = [["overview", "الرئيسية", IC.home], ["exams", "الامتحانات", IC.exams], ["students", "الطلاب والدرجات", IC.users], ["subs", "تسليم الامتحانات", IC.subs], ["grp", "المجموعات والسكشن", IC.grp], ["reqs", "طلبات التغيير", IC.req], ["rates", "تقييمات الموقع", IC.star], ["notifs", "الإشعارات", IC.bell], ["logins", "الدخول", IC.enter], ["logouts", "الخروج", IC.out], ["settings", "الإعدادات", IC.set]];
+      const TABS = [["overview", "الرئيسية", IC.home], ["exams", "الامتحانات", IC.exams], ["students", "الطلاب والدرجات", IC.users], ["subs", "تسليم الامتحانات", IC.subs], ["grp", "المجموعات والسكشن", IC.grp], ["reqs", "طلبات التغيير", IC.req], ["rates", "تقييمات الموقع", IC.star], ["ayah", "سماع الآية", IC.ayah], ["notifs", "الإشعارات", IC.bell], ["logins", "الدخول", IC.enter], ["logouts", "الخروج", IC.out], ["settings", "الإعدادات", IC.set]];
       function openMenu() { $("drawer").classList.add("open"); $("scrim").classList.add("open"); $("drawer").setAttribute("aria-hidden", "false"); $("menuBtn").setAttribute("aria-expanded", "true"); }
       function closeMenu() { $("drawer").classList.remove("open"); $("scrim").classList.remove("open"); $("drawer").setAttribute("aria-hidden", "true"); $("menuBtn").setAttribute("aria-expanded", "false"); }
       function buildNav() {
@@ -551,7 +563,7 @@
         paintBadges();
         document.querySelectorAll(".nav[data-t]").forEach((b) => b.classList.toggle("on", b.dataset.t === S.tab));
         const m = $("main"); m.innerHTML = "";
-        ({ overview: rOverview, exams: rExams, students: rStudents, subs: rSubmissions, grp: rGroups, reqs: rReqs, rates: rRates, notifs: rNotifs, logins: rLogins, logouts: rLogouts, settings: rSettings })[S.tab](m);
+        ({ overview: rOverview, exams: rExams, students: rStudents, subs: rSubmissions, grp: rGroups, reqs: rReqs, rates: rRates, ayah: rAyah, notifs: rNotifs, logins: rLogins, logouts: rLogouts, settings: rSettings })[S.tab](m);
       }
       const title = (m, text, extra) => { const t = h("h1", "title", text); t.appendChild(h("span", "sp")); if (extra) t.appendChild(extra); m.appendChild(t); };
 
@@ -1069,6 +1081,50 @@
         m.appendChild(wrap);
       }
 
+      /* ---------- سماع الآية ---------- */
+      function rAyah(m) {
+        title(m, "سماع الآية");
+        if (!S.ayahOk) { m.appendChild(h("div", "empty", "الجدول مش موجود. شغّل update-v9.sql في Supabase الأول.")); return; }
+        if (!S.ayahV) { m.appendChild(h("div", "empty", "لسه ماحطيتش آية. ارفعها من صفحة الإعدادات.")); return; }
+        // حالة كل طالب للآية الحالية: كاملة > تخطّاها > بدأ ومكملش > لسه
+        const rank = { full: 3, skip: 2, start: 1 };
+        const st = {}, when = {};
+        S.ayahEv.forEach((e) => {
+          if (!st[e.user_id] || rank[e.kind] > rank[st[e.user_id]]) { st[e.user_id] = e.kind; when[e.user_id] = e.created_at; }
+        });
+        const rows = S.students.filter((x) => !x.is_admin).map((x) => ({ x, k: st[x.id] || "none", t: when[x.id] }));
+        const cnt = (k) => rows.filter((r) => r.k === k).length;
+        const sx = h("div", "stats4");
+        [[ar(cnt("full")), "سمعوها كاملة"], [ar(cnt("skip")), "تخطّوها"], [ar(cnt("start")), "بدأوا ومكملوش"], [ar(cnt("none")), "لسه ماظهرتش لهم"]].forEach((x) => {
+          const d = h("div", "stat"); d.appendChild(h("b", null, x[0])); d.appendChild(h("span", null, x[1])); sx.appendChild(d);
+        });
+        m.appendChild(sx);
+        const bar = h("div", "row"); bar.style.margin = "12px 0";
+        [["all", "الكل"], ["full", "سمعوها كاملة"], ["skip", "تخطّوها"], ["start", "بدأوا ومكملوش"], ["none", "لسه"]].forEach((o) => {
+          bar.appendChild(btn(o[1], S.ayFilter === o[0] ? "p s" : "g s", () => { S.ayFilter = o[0]; render(); }));
+        });
+        m.appendChild(bar);
+        const q = h("input", "inp search"); q.type = "search"; q.placeholder = "ابحث بالاسم أو الإيميل"; q.value = S.aySearch;
+        m.appendChild(q);
+        const wrap = h("div", "rq"); m.appendChild(wrap);
+        const label = { full: ["ok", "سمعها كاملة"], skip: ["red", "تخطّاها"], start: ["pend", "بدأ ومكمّلش"], none: ["", "لسه"] };
+        function draw() {
+          wrap.innerHTML = "";
+          const term = S.aySearch.trim().toLowerCase();
+          const list = rows.filter((r) => (S.ayFilter === "all" || r.k === S.ayFilter) && (!term || ((r.x.full_name || "") + " " + (r.x.email || "")).toLowerCase().indexOf(term) !== -1));
+          if (!list.length) { wrap.appendChild(h("div", "empty", "مفيش نتايج.")); return; }
+          list.forEach((r) => {
+            const c = h("div", "rq-card"); const hd = h("div", "rq-head"); hd.appendChild(av(r.x.avatar_url, r.x.full_name));
+            const t = h("div"); t.style.flex = "1"; t.style.minWidth = "0"; t.appendChild(h("div", "nm", r.x.full_name || "—"));
+            const e2 = h("div", "sm", r.x.email || ""); e2.style.direction = "ltr"; e2.style.textAlign = "start"; t.appendChild(e2);
+            if (r.t) t.appendChild(h("div", "sm", fDT.format(new Date(r.t))));
+            hd.appendChild(t); hd.appendChild(h("span", "chip " + label[r.k][0], label[r.k][1])); c.appendChild(hd); wrap.appendChild(c);
+          });
+        }
+        q.addEventListener("input", () => { S.aySearch = q.value; draw(); });
+        draw();
+      }
+
       /* ---------- الطلاب والدرجات ---------- */
       function rStudents(m) {
         title(m, "الطلاب والدرجات");
@@ -1305,13 +1361,13 @@
               const ext = (ay.file.name.split(".").pop() || "mp3").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp3";
               const path = "ayah-" + Date.now() + "." + ext;
               const ct = /^audio\//.test(ay.file.type) ? ay.file.type : "audio/mpeg";
-              const up = await sb.storage.from("ayah").upload(path, ay.file, { contentType: ct, upsert: true });
-              if (up.error) throw up.error;
+              const up = await sb.storage.from("ayah").upload(path, ay.file, { contentType: ct });
+              if (up.error) { up.error.message = "رفع الصوت: " + up.error.message; throw up.error; }
               ay.url = sb.storage.from("ayah").getPublicUrl(path).data.publicUrl; ay.v = Date.now(); ay.file = null; ay.fileUrl = ""; player.src = ay.url; fn.textContent = "فيه آية محفوظة حالياً.";
             }
             if (!ay.url) { toast("اختار ملف صوت الأول.", true); save4.disabled = false; return; }
             const r = await sb.from("site_settings").upsert({ key: "ayah", value: { url: ay.url, text: ta4.value.trim(), on: ay.on, v: ay.v || Date.now() }, updated_at: new Date().toISOString() });
-            if (r.error) throw r.error;
+            if (r.error) { r.error.message = "حفظ الإعداد: " + r.error.message; throw r.error; }
             toast("اتحفظت الآية");
           } catch (e) { toast("ماقدرناش نحفظ: " + em(e), true); }
           save4.disabled = false;

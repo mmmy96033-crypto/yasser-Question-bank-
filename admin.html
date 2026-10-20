@@ -168,6 +168,37 @@
     .ph .btn { padding:4px 10px; font-size:12.5px; }
     .btn.wa { background:transparent; border-color:#25d366; color:#25d366; }
     .chip.red { color:var(--danger); border-color:var(--danger); }
+    .nav .nb { margin-inline-start:auto; background:var(--danger); color:#fff; font-size:12px; font-weight:700; min-width:22px; height:22px; border-radius:999px; display:grid; place-items:center; padding:0 6px; }
+    .rq { display:grid; gap:12px; }
+    .rq-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:14px; display:grid; gap:12px; }
+    .rq-card.pending { border-color:var(--accent); box-shadow:0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent); }
+    .rq-head { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .rq-head .nm { font-weight:700; font-size:16px; overflow-wrap:anywhere; }
+    .rq-head .sm { color:var(--muted); font-size:13.5px; overflow-wrap:anywhere; }
+    .rq-move { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-weight:700; }
+    .rq-move .arrow { color:var(--muted); }
+    .rq-reason { background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:10px 12px; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .rq-proof { width:100%; max-height:260px; object-fit:contain; background:#000; border-radius:12px; cursor:zoom-in; display:block; min-height:60px; }
+    .rq-act { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .rq-ph { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .rq-alert { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:14px; border:1px solid var(--accent); background:color-mix(in srgb, var(--accent) 12%, var(--surface)); cursor:pointer; margin-bottom:16px; font-weight:600; }
+    .rq-alert b { color:var(--accent); font-size:20px; }
+    .stars { display:inline-flex; gap:2px; direction:ltr; }
+    .stars svg { width:18px; height:18px; fill:none; stroke:#f5a524; stroke-width:1.8; }
+    .stars svg.on { fill:#f5a524; }
+    .dist { display:grid; gap:8px; margin:6px 0 18px; }
+    .dist .r { display:grid; grid-template-columns:44px 1fr 34px; gap:10px; align-items:center; font-size:14px; }
+    .dist .bar { height:10px; border-radius:999px; background:var(--surface-2); border:1px solid var(--border); overflow:hidden; }
+    .dist .bar i { display:block; height:100%; background:#f5a524; border-radius:999px; }
+    .tg-sw { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; background:var(--surface-2); border:1px solid var(--border); border-radius:12px; }
+    .tg-sw button { border:0; background:transparent; padding:9px; border-radius:9px; font-weight:600; cursor:pointer; color:var(--muted); }
+    .tg-sw button[aria-pressed="true"] { background:var(--accent); color:var(--accent-fg); }
+    .tg-grp { border:1px solid var(--border); border-radius:14px; padding:10px; display:grid; gap:8px; background:var(--surface-2); }
+    .tg-hd { display:flex; align-items:center; justify-content:space-between; gap:8px; font-weight:700; }
+    .tg-grid { display:grid; grid-template-columns:repeat(8, 1fr); gap:6px; }
+    .tg-grid button { border:1px solid var(--border); background:var(--surface); color:var(--fg); border-radius:9px; padding:7px 0; font-size:14px; font-weight:600; cursor:pointer; }
+    .tg-grid button[aria-pressed="true"] { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); }
+    .tg-sum { font-size:13.5px; color:var(--muted); margin:0; }
     .ins { margin-bottom:20px; padding:0; overflow:hidden; }
     .ins-top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:14px 16px; border-bottom:1px solid var(--border); }
     .ins-range { display:flex; align-items:center; gap:12px; min-width:0; }
@@ -266,7 +297,9 @@
         enter: svg('<path d="M15 3h4v18h-4"/><path d="M10 17l5-5-5-5M15 12H3"/>'),
         cal: svg('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'),
         out: svg('<path d="M9 21H5V3h4"/><path d="M16 17l5-5-5-5M21 12H9"/>'),
-        back: svg('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>')
+        back: svg('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'),
+        req: svg('<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>'),
+        star: svg('<path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>')
       };
       const PRESETS = {
         boy: '<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#cfe3ff"/><path d="M16 100c0-20 15-32 34-32s34 12 34 32z" fill="#2f6fd6"/><path d="M41 68l9 9 9-9z" fill="#fff" opacity=".9"/><rect x="43" y="55" width="14" height="16" rx="6" fill="#e3a982"/><circle cx="50" cy="42" r="18" fill="#f2c29c"/><path d="M31.5 41c-2-15 7-24 18.500-24s20.500 8 18.500 24c-3-8-8-11-18.500-11s-15.500 3-18.500 11z" fill="#2b2118"/><circle cx="43" cy="45" r="2" fill="#2b2118"/><circle cx="57" cy="45" r="2" fill="#2b2118"/><path d="M44 52c3.500 3 8.500 3 12 0" stroke="#a65a3a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
@@ -306,7 +339,7 @@
       }
 
       /* ---------- البيانات ---------- */
-      const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], events: [], range: 30, showAll: false, subSearch: "", subExam: "all", gSearch: "", gGrp: "all", gSec: "all", qExam: null, search: "" };
+      const S = { tab: "overview", exams: [], qs: [], students: [], atts: [], notifs: [], events: [], range: 30, showAll: false, subSearch: "", subExam: "all", gSearch: "", gGrp: "all", gSec: "all", qExam: null, search: "", reqs: [], ratings: [], reqFilter: "pending", reqOk: true, rateOk: true };
       async function pullAll(table) {
         let all = [];
         for (let pg = 0; pg < 30; pg++) {
@@ -345,6 +378,9 @@
           }
           S.events = all;
         } catch (e3) { S.events = []; }
+        try { const r = await sb.rpc("admin_group_requests"); if (r.error) throw r.error; S.reqs = r.data || []; S.reqOk = true; } catch (e4) { S.reqs = []; S.reqOk = false; }
+        try { const r = await sb.rpc("admin_site_ratings"); if (r.error) throw r.error; S.ratings = r.data || []; S.rateOk = true; } catch (e5) { S.ratings = []; S.rateOk = false; }
+        paintBadges();
         // ما نعيدش الرسم لو فيه نافذة مفتوحة أو بيكتب في بحث
         if (silent && (!$("modal").hidden || (document.activeElement && document.activeElement.tagName === "INPUT"))) return;
         render();
@@ -485,7 +521,7 @@
       }
 
       /* ---------- التنقل ---------- */
-      const TABS = [["overview", "الرئيسية", IC.home], ["exams", "الامتحانات", IC.exams], ["students", "الطلاب والدرجات", IC.users], ["subs", "تسليم الامتحانات", IC.subs], ["grp", "المجموعات والسكشن", IC.grp], ["notifs", "الإشعارات", IC.bell], ["logins", "الدخول", IC.enter], ["logouts", "الخروج", IC.out], ["settings", "الإعدادات", IC.set]];
+      const TABS = [["overview", "الرئيسية", IC.home], ["exams", "الامتحانات", IC.exams], ["students", "الطلاب والدرجات", IC.users], ["subs", "تسليم الامتحانات", IC.subs], ["grp", "المجموعات والسكشن", IC.grp], ["reqs", "طلبات التغيير", IC.req], ["rates", "تقييمات الموقع", IC.star], ["notifs", "الإشعارات", IC.bell], ["logins", "الدخول", IC.enter], ["logouts", "الخروج", IC.out], ["settings", "الإعدادات", IC.set]];
       function openMenu() { $("drawer").classList.add("open"); $("scrim").classList.add("open"); $("drawer").setAttribute("aria-hidden", "false"); $("menuBtn").setAttribute("aria-expanded", "true"); }
       function closeMenu() { $("drawer").classList.remove("open"); $("scrim").classList.remove("open"); $("drawer").setAttribute("aria-hidden", "true"); $("menuBtn").setAttribute("aria-expanded", "false"); }
       function buildNav() {
@@ -504,16 +540,31 @@
         $("scrim").addEventListener("click", closeMenu);
         document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
       }
+      function paintBadges() {
+        const n = S.reqs.filter((r) => r.status === "pending").length;
+        document.querySelectorAll('.nav[data-t="reqs"]').forEach((b) => {
+          const o = b.querySelector(".nb"); if (o) o.remove();
+          if (n) b.appendChild(h("span", "nb", ar(n)));
+        });
+      }
       function render() {
+        paintBadges();
         document.querySelectorAll(".nav[data-t]").forEach((b) => b.classList.toggle("on", b.dataset.t === S.tab));
         const m = $("main"); m.innerHTML = "";
-        ({ overview: rOverview, exams: rExams, students: rStudents, subs: rSubmissions, grp: rGroups, notifs: rNotifs, logins: rLogins, logouts: rLogouts, settings: rSettings })[S.tab](m);
+        ({ overview: rOverview, exams: rExams, students: rStudents, subs: rSubmissions, grp: rGroups, reqs: rReqs, rates: rRates, notifs: rNotifs, logins: rLogins, logouts: rLogouts, settings: rSettings })[S.tab](m);
       }
       const title = (m, text, extra) => { const t = h("h1", "title", text); t.appendChild(h("span", "sp")); if (extra) t.appendChild(extra); m.appendChild(t); };
 
       /* ---------- الرئيسية ---------- */
       function rOverview(m) {
         title(m, "نظرة عامة");
+        const pend = S.reqs.filter((r) => r.status === "pending").length;
+        if (pend) {
+          const al = h("div", "rq-alert"); al.appendChild(h("b", null, ar(pend)));
+          al.appendChild(h("span", null, pend === 1 ? "طلب تغيير مجموعة مستني مراجعتك" : "طلبات تغيير مجموعة مستنية مراجعتك"));
+          al.addEventListener("click", () => { S.tab = "reqs"; S.reqFilter = "pending"; render(); window.scrollTo(0, 0); });
+          m.appendChild(al);
+        }
         const st = h("div", "stats4");
         [[S.students.length, "طالب"], [S.exams.length, "امتحان"], [S.qs.length, "سؤال"], [S.atts.filter((a) => a.submitted_at).length, "تسليم"]].forEach((x) => {
           const d = h("div", "stat"); d.appendChild(h("b", null, ar(x[0]))); d.appendChild(h("span", null, x[1])); st.appendChild(d);
@@ -545,6 +596,17 @@
       }
 
       /* ---------- الامتحانات ---------- */
+      const GR = { A: [1, 16], B: [17, 32], C: [33, 48] };
+      function targetLabel(arr) {
+        if (!arr || !arr.length) return "كل الطلاب";
+        const set = new Set(arr), out = [];
+        ["A", "B", "C"].forEach((g) => {
+          const ns = []; for (let n = GR[g][0]; n <= GR[g][1]; n++) if (set.has(n)) ns.push(n);
+          if (ns.length === 16) out.push("مجموعة " + g + " كلها");
+          else if (ns.length) out.push(g + ": سكشن " + ns.map(ar).join("، "));
+        });
+        return out.join(" · ") || "كل الطلاب";
+      }
       function rExams(m) {
         if (S.qExam) return rQuestions(m, S.qExam);
         title(m, "الامتحانات", btn("+ امتحان جديد", "p", () => examForm(null)));
@@ -555,7 +617,7 @@
           const hd = h("div", "row"); hd.appendChild(h("span", "e-title", e.subject)); hd.appendChild(h("span", "chip a", "جولة " + ar(e.round_no || 1)));
           c.appendChild(hd);
           const kv = h("div", "kv");
-          [["الدكتور", e.doctor || "—"], ["البداية", fDT.format(new Date(e.starts_at))], ["النهاية", fDT.format(new Date(e.ends_at))], ["الأسئلة", ar(qOf(e.id).length) + " سؤال"]].forEach((p) => {
+          [["الدكتور", e.doctor || "—"], ["البداية", fDT.format(new Date(e.starts_at))], ["النهاية", fDT.format(new Date(e.ends_at))], ["الأسئلة", ar(qOf(e.id).length) + " سؤال"], ["بيظهر لـ", targetLabel(e.target_sections)]].forEach((p) => {
             const r = h("div", "row"); r.appendChild(h("span", null, p[0] + ":")); r.appendChild(h("b", null, p[1])); kv.appendChild(r);
           });
           c.appendChild(kv);
@@ -590,6 +652,40 @@
             end: mk("نهاية الامتحان", "datetime-local", toInput(ex ? ex.ends_at : later))
           };
           f.round.min = 1;
+          // بيظهر لمين؟
+          let tSet = new Set((ex && ex.target_sections) || []), tMode = tSet.size ? "pick" : "all";
+          const tw = h("div", "fld"); tw.appendChild(h("span", null, "الامتحان ده بيظهر لمين؟"));
+          const sw = h("div", "tg-sw");
+          const bAll = h("button", null, "كل الطلاب"), bPick = h("button", null, "مجموعات وسكاشن معينة");
+          bAll.type = bPick.type = "button"; sw.appendChild(bAll); sw.appendChild(bPick); tw.appendChild(sw);
+          const tBox = h("div"); tBox.style.cssText = "display:grid;gap:10px;margin-top:8px"; tw.appendChild(tBox);
+          const tSum = h("p", "tg-sum");
+          function paintT() {
+            bAll.setAttribute("aria-pressed", tMode === "all" ? "true" : "false"); bPick.setAttribute("aria-pressed", tMode === "pick" ? "true" : "false");
+            tBox.innerHTML = ""; tBox.hidden = tMode === "all";
+            if (tMode === "pick") {
+              ["A", "B", "C"].forEach((g) => {
+                const box = h("div", "tg-grp"), hd = h("div", "tg-hd");
+                hd.appendChild(h("span", null, "مجموعة " + g));
+                const all = btn("", "g s", () => {
+                  const full = []; for (let n = GR[g][0]; n <= GR[g][1]; n++) full.push(n);
+                  const isFull = full.every((n) => tSet.has(n)); full.forEach((n) => isFull ? tSet.delete(n) : tSet.add(n)); paintT();
+                });
+                const cnt = []; for (let n = GR[g][0]; n <= GR[g][1]; n++) if (tSet.has(n)) cnt.push(n);
+                all.textContent = cnt.length === 16 ? "إلغاء الكل" : "اختار كل السكاشن"; hd.appendChild(all); box.appendChild(hd);
+                const gr = h("div", "tg-grid");
+                for (let n = GR[g][0]; n <= GR[g][1]; n++) {
+                  const b2 = h("button", null, ar(n)); b2.type = "button"; b2.setAttribute("aria-pressed", tSet.has(n) ? "true" : "false");
+                  b2.addEventListener("click", () => { tSet.has(n) ? tSet.delete(n) : tSet.add(n); paintT(); });
+                  gr.appendChild(b2);
+                }
+                box.appendChild(gr); tBox.appendChild(box);
+              });
+            }
+            tSum.textContent = tMode === "all" ? "هيظهر لكل الطلاب." : (tSet.size ? "هيظهر لـ: " + targetLabel(Array.from(tSet)) : "اختار سكشن واحد على الأقل.");
+          }
+          bAll.addEventListener("click", () => { tMode = "all"; paintT(); }); bPick.addEventListener("click", () => { tMode = "pick"; paintT(); });
+          b.appendChild(tw); b.appendChild(tSum); paintT();
           const fFull = new Intl.DateTimeFormat("ar-EG", { timeZone: "Africa/Cairo", weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" });
           const pv = h("p", "muted"); pv.style.margin = "0"; pv.style.whiteSpace = "pre-line";
           const upd = () => { pv.textContent = (f.start.value && f.end.value) ? "يبدأ: " + fFull.format(new Date(f.start.value)) + "\nينتهي: " + fFull.format(new Date(f.end.value)) : ""; };
@@ -601,6 +697,9 @@
             if (new Date(f.end.value) <= new Date(f.start.value)) { er.textContent = "النهاية لازم تكون بعد البداية."; return; }
             const p = { subject: f.subject.value.trim(), doctor: f.doctor.value.trim() || null, round_no: Math.max(1, parseInt(f.round.value, 10) || 1),
               subject_at: new Date(f.subj.value || f.start.value).toISOString(), starts_at: new Date(f.start.value).toISOString(), ends_at: new Date(f.end.value).toISOString() };
+            if (tMode === "pick" && !tSet.size) { er.textContent = "اختار سكشن واحد على الأقل، أو خلّيه لكل الطلاب."; return; }
+            const tArr = tMode === "pick" && tSet.size < 48 ? Array.from(tSet).sort((x, y) => x - y) : null;
+            if (tArr || (ex && "target_sections" in ex)) p.target_sections = tArr;
             save.disabled = true;
             const r = ex ? await sb.from("exams").update(p).eq("id", ex.id) : await sb.from("exams").insert(p);
             if (r.error) { er.textContent = em(r.error); save.disabled = false; return; }
@@ -861,6 +960,113 @@
           t.appendChild(tb); wrap.appendChild(t);
         }
         s.addEventListener("input", fill); gs.addEventListener("change", fill); ss.addEventListener("change", fill); fill();
+      }
+
+      /* ---------- طلبات تغيير المجموعة ---------- */
+      function starsEl(n) {
+        const w = h("span", "stars");
+        for (let i = 1; i <= 5; i++) { const t = document.createElement("span"); t.innerHTML = '<svg class="' + (i <= n ? "on" : "") + '" viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg>'; w.appendChild(t.firstChild); }
+        return w;
+      }
+      function proofImg(path) {
+        const im = h("img", "rq-proof"); im.alt = "";
+        sb.storage.from("group-proofs").createSignedUrl(path, 3600).then((r) => {
+          if (r.error || !r.data) { im.replaceWith(h("div", "muted", "ماقدرناش نحمّل الصورة")); return; }
+          im.src = r.data.signedUrl;
+          im.addEventListener("click", () => modal((b) => { b.appendChild(h("h2", null, "صورة الفصل والسكشن")); const f = h("img", "fullimg"); f.src = r.data.signedUrl; b.appendChild(f); const a = h("div", "actions"); a.style.gridTemplateColumns = "1fr"; a.appendChild(btn("إغلاق", "g", () => closeModal())); b.appendChild(a); }));
+        }, () => { im.replaceWith(h("div", "muted", "ماقدرناش نحمّل الصورة")); });
+        return im;
+      }
+      async function decideReq(r, approve) {
+        let note = null;
+        if (approve) { if (!(await ask("الموافقة على الطلب؟", (r.full_name || "الطالب") + " هيتنقل إلى مجموعة " + r.new_grp + " · سكشن " + ar(r.new_section) + ".", "وافق"))) return; }
+        else {
+          note = await new Promise((res) => modal((b) => {
+            b.appendChild(h("h2", null, "رفض الطلب"));
+            const t = h("textarea", "inp"); t.placeholder = "سبب الرفض (اختياري، الطالب هيشوفه)"; b.appendChild(t);
+            const a = h("div", "actions"); let done = false;
+            a.appendChild(btn("ارفض", "d", () => { done = true; onCancel = null; closeModal(); res(t.value.trim()); }));
+            a.appendChild(btn("إلغاء", "g", () => closeModal())); b.appendChild(a); onCancel = () => { if (!done) res(null); };
+          }));
+          if (note === null) return;
+        }
+        const x = await sb.rpc("admin_decide_group_request", { p_id: r.id, p_approve: approve, p_note: note });
+        if (x.error) { toast(em(x.error), true); return; }
+        toast(approve ? "تمت الموافقة" : "اترفض الطلب"); loadAll();
+      }
+      function rReqs(m) {
+        title(m, "طلبات تغيير المجموعة والسكشن");
+        if (!S.reqOk) { m.appendChild(h("div", "empty", "الجداول مش موجودة. شغّل update-v7.sql في Supabase الأول.")); return; }
+        const cnt = (s) => S.reqs.filter((r) => r.status === s).length;
+        const bar = h("div", "row"); bar.style.marginBottom = "12px";
+        [["pending", "مستنية (" + ar(cnt("pending")) + ")"], ["approved", "اتوافق عليها (" + ar(cnt("approved")) + ")"], ["rejected", "مرفوضة (" + ar(cnt("rejected")) + ")"], ["all", "الكل (" + ar(S.reqs.length) + ")"]].forEach((o) => {
+          const b = btn(o[1], S.reqFilter === o[0] ? "p s" : "g s", () => { S.reqFilter = o[0]; render(); }); bar.appendChild(b);
+        });
+        m.appendChild(bar);
+        const list = S.reqs.filter((r) => S.reqFilter === "all" || r.status === S.reqFilter);
+        if (!list.length) { m.appendChild(h("div", "empty", S.reqFilter === "pending" ? "مفيش طلبات مستنية." : "مفيش طلبات هنا.")); return; }
+        const wrap = h("div", "rq");
+        list.forEach((r) => {
+          const c = h("div", "rq-card " + r.status);
+          const hd = h("div", "rq-head"); hd.appendChild(av(r.avatar_url, r.full_name));
+          const t = h("div"); t.style.flex = "1"; t.style.minWidth = "0";
+          t.appendChild(h("div", "nm", r.full_name || "—"));
+          const e2 = h("div", "sm", r.email || ""); e2.style.direction = "ltr"; e2.style.textAlign = "start"; t.appendChild(e2);
+          t.appendChild(h("div", "sm", gLabel(r.gender) + " · " + fDT.format(new Date(r.created_at)))); hd.appendChild(t);
+          hd.appendChild(h("span", "chip " + (r.status === "pending" ? "pend" : r.status === "approved" ? "ok" : "red"), r.status === "pending" ? "مستني" : r.status === "approved" ? "اتوافق" : "اترفض"));
+          c.appendChild(hd);
+          if (r.phone) {
+            const ph = h("div", "rq-ph"); const n = h("b", null, r.phone); n.style.direction = "ltr"; ph.appendChild(n);
+            const call = h("a", "btn g s", "اتصل"); call.href = "tel:" + phoneClean(r.phone);
+            const wa = h("a", "btn wa s", "واتساب"); wa.href = "https://wa.me/" + waNum(r.phone); wa.target = "_blank"; wa.rel = "noopener";
+            ph.appendChild(call); ph.appendChild(wa); c.appendChild(ph);
+          }
+          const mv = h("div", "rq-move");
+          const from = h("span", "chip", r.old_grp ? "مجموعة " + r.old_grp + " · سكشن " + ar(r.old_section) : "غير محدد");
+          mv.appendChild(from); mv.appendChild(h("span", "arrow", "←"));
+          const to = h("span", "chip a", "مجموعة " + r.new_grp + " · سكشن " + ar(r.new_section)); mv.appendChild(to); c.appendChild(mv);
+          const rl = h("div"); rl.appendChild(h("div", "rv-lab", "السبب")); rl.appendChild(h("div", "rq-reason", r.reason || "—")); c.appendChild(rl);
+          if (r.card_path) { const cf = h("div"); cf.appendChild(h("div", "rv-lab", "صورة الكارنيه (اضغط للتكبير)")); cf.appendChild(proofImg(r.card_path)); c.appendChild(cf); }
+          if (r.proof_path) { const pf = h("div"); pf.appendChild(h("div", "rv-lab", "صورة الفصل والسكشن من ابن الهيثم (اضغط للتكبير)")); pf.appendChild(proofImg(r.proof_path)); c.appendChild(pf); }
+          if (r.status === "pending") {
+            const a = h("div", "rq-act"); a.appendChild(btn("موافقة", "p", () => decideReq(r, true))); a.appendChild(btn("رفض", "d", () => decideReq(r, false))); c.appendChild(a);
+          } else {
+            if (r.admin_note) c.appendChild(h("div", "muted", "ملاحظة: " + r.admin_note));
+            if (r.decided_at) c.appendChild(h("div", "muted", "اتراجع: " + fDT.format(new Date(r.decided_at))));
+          }
+          wrap.appendChild(c);
+        });
+        m.appendChild(wrap);
+      }
+
+      /* ---------- تقييمات الموقع ---------- */
+      function rRates(m) {
+        title(m, "تقييمات الموقع");
+        if (!S.rateOk) { m.appendChild(h("div", "empty", "الجداول مش موجودة. شغّل update-v7.sql في Supabase الأول.")); return; }
+        const R = S.ratings;
+        if (!R.length) { m.appendChild(h("div", "empty", "لسه مفيش تقييمات.")); return; }
+        const avg = R.reduce((a, x) => a + x.stars, 0) / R.length;
+        const st = h("div", "stats4");
+        [[avg.toFixed(1).replace(".", "٫").replace(/\d/g, (d) => ar(d)), "متوسط التقييم"], [ar(R.length), "تقييم"], [ar(S.students.length ? Math.round(R.length / S.students.length * 100) : 0) + "٪", "من الطلاب قيّموا"]].forEach((x) => {
+          const d = h("div", "stat"); d.appendChild(h("b", null, x[0])); d.appendChild(h("span", null, x[1])); st.appendChild(d);
+        });
+        m.appendChild(st);
+        const dist = h("div", "dist");
+        for (let k = 5; k >= 1; k--) {
+          const n = R.filter((x) => x.stars === k).length, r = h("div", "r");
+          r.appendChild(h("span", null, ar(k) + " ★")); const b = h("div", "bar"); const i = h("i"); i.style.width = (n / R.length * 100) + "%"; b.appendChild(i); r.appendChild(b); r.appendChild(h("span", null, ar(n))); dist.appendChild(r);
+        }
+        m.appendChild(dist);
+        const wrap = h("div", "rq");
+        R.forEach((x) => {
+          const c = h("div", "rq-card"); const hd = h("div", "rq-head"); hd.appendChild(av(x.avatar_url, x.full_name));
+          const t = h("div"); t.style.flex = "1"; t.style.minWidth = "0"; t.appendChild(h("div", "nm", x.full_name || "—"));
+          const e2 = h("div", "sm", x.email || ""); e2.style.direction = "ltr"; e2.style.textAlign = "start"; t.appendChild(e2); hd.appendChild(t);
+          const rt = h("div"); rt.appendChild(starsEl(x.stars)); rt.appendChild(h("div", "sm", fDT.format(new Date(x.created_at)))); hd.appendChild(rt); c.appendChild(hd);
+          if (x.comment) c.appendChild(h("div", "rq-reason", x.comment));
+          wrap.appendChild(c);
+        });
+        m.appendChild(wrap);
       }
 
       /* ---------- الطلاب والدرجات ---------- */

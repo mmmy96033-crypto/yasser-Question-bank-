@@ -324,6 +324,7 @@
     .ayah-txt { margin: 0; font-size: 20px; line-height: 2; font-weight: 600; }
     .ayah-wave { display: flex; gap: 6px; align-items: center; justify-content: center; height: 44px; direction: ltr; }
     .ayah-wave i { display: block; width: 6px; height: 8px; border-radius: 3px; background: var(--accent); transition: height .08s linear; }
+    .ayah-hint { margin: 0; font-size: 14px; color: var(--muted); }
     .ayah-skip { border: none; background: none; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; padding: 4px 10px; }
     .req-field { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 4px; }
     .ibtn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
@@ -2687,20 +2688,8 @@
     au.crossOrigin = "anonymous";
     au.preload = "auto";
     au.src = v.url;
-    let started = false;
-    function go2() {
-      if (started) return; started = true;
-      ["pointerdown", "keydown", "touchend"].forEach((ev) => document.removeEventListener(ev, onGesture, true));
-      try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), v: v.v })); } catch (e) {}
-      showAyah(v, au);
-    }
-    function onGesture() { const pr = au.play(); if (pr && pr.then) pr.then(go2, () => { started = true; ayah.open = false; }); else go2(); }
-    // نحاول نشغّلها لوحدها؛ لو المتصفح منع الصوت من غير لمسة، نبدأ أول ما الطالب يلمس الشاشة
-    let pr = null;
-    try { pr = au.play(); } catch (e) {}
-    if (pr && pr.then) pr.then(go2, () => { ["pointerdown", "keydown", "touchend"].forEach((ev) => document.addEventListener(ev, onGesture, true)); });
-    else go2();
-    au.addEventListener("error", () => { if (!started) { started = true; ayah.open = false; ["pointerdown", "keydown", "touchend"].forEach((ev) => document.removeEventListener(ev, onGesture, true)); } });
+    try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), v: v.v })); } catch (e) {}
+    showAyah(v, au);
   }
   function showAyah(v, au) {
     const back = h("div", "ayah-back");
@@ -2712,10 +2701,13 @@
     box.appendChild(h("h3", null, "اسمع الآية"));
     if (v.text) box.appendChild(h("p", "ayah-txt", v.text));
     const skip = h("button", "ayah-skip", "تخطي"); skip.type = "button";
+    const hint = h("p", "ayah-hint", "المس الشاشة لتشغيل الآية"); hint.hidden = true;
+    box.appendChild(hint);
     box.appendChild(skip);
     back.appendChild(box);
     document.body.appendChild(back);
-    ayahLog(v, "start");
+    let logged = false;
+    au.addEventListener("playing", () => { hint.hidden = true; if (!logged) { logged = true; ayahLog(v, "start"); } });
 
     // الموجة بتتحرك مع الصوت الحقيقي بس
     let ctx = null, an = null, raf = 0, data = null;
@@ -2752,14 +2744,22 @@
       if (kind) ayahLog(v, kind);
       cancelAnimationFrame(raf);
       try { au.pause(); } catch (e) {}
+      document.removeEventListener("pointerdown", onTap, true);
       back.classList.add("out");
       setTimeout(() => { back.remove(); ayah.open = false; if (ctx) { ctx.close().catch(() => {}); } }, 500);
     }
     au.addEventListener("ended", () => { bars.forEach((b) => { b.style.height = ""; }); setTimeout(() => close("full"), 400); });
     au.addEventListener("error", () => close(null));
     skip.addEventListener("click", () => close("skip"));
-    if (au.paused) { const pr = au.play(); if (pr && pr.catch) pr.catch(() => close(null)); }
-    hookAnalyser();
+    // لو المتصفح منع الصوت من غير لمسة، أول لمسة في أي مكان بتشغّلها
+    function onTap(e) {
+      if (e.target === skip) return;
+      const p2 = au.play();
+      if (p2 && p2.then) p2.then(() => { document.removeEventListener("pointerdown", onTap, true); hookAnalyser(); }, () => {});
+    }
+    au.addEventListener("playing", () => hookAnalyser());
+    const pr = au.play();
+    if (pr && pr.catch) pr.catch(() => { hint.hidden = false; document.addEventListener("pointerdown", onTap, true); });
   }
 
   /* ============ تقييم الموقع ============ */
